@@ -5,8 +5,9 @@ modelled, what you need to supply, how it was checked, and where it is weaker
 than the real board.
 
 > **Who made it.** The PET boards were written by Claude (Anthropic's AI model,
-> in Claude Code), directed and tested by the owner of this repository against a
-> real PET 8032080-03 board. The simulator itself is
+> in Claude Code), directed and tested by David Green
+> ([daver99999](https://github.com/daver99999)) against a real PET 8032080-03
+> board. The simulator itself is
 > [antirez](https://github.com/antirez)'s
 > [c64-hw-simulator](https://github.com/antirez/c64-hw-simulator), extended by
 > zzleezz in [8bit-hw-simulator](https://github.com/zzleezz/8bit-hw-simulator).
@@ -63,9 +64,14 @@ At the pins, with the same engine as the C64 and the Spectrum:
 
 ### The ROMs
 
-They are Commodore's and are **not** in this repository. Put your own images in
-`roms/pet/`, `roms/`, or the folder the program starts from. They are found by
-the part number in the file name:
+They are Commodore's and are **not** in this repository. They can be found on
+[Zimmers.net](https://www.zimmers.net/anonftp/pub/cbm/firmware/computers/pet/index.html), the Commodore firmware archive
+(`/pub/cbm/firmware/computers/pet/`), under the names in the table below. Put the
+images in `roms/pet/` (make the folders next to the program), `roms/`, or the
+folder the program starts from, and keep the file names: they are found by the
+part number in the name. They are fitted when a board is made, so after adding
+one restart the program, or open the file from the file browser (Ctrl+O), which
+fits it in its socket and starts the machine over:
 
 | Socket | ROM | Part number found in the name |
 |---|---|---|
@@ -193,5 +199,6 @@ check keys and nets; they need your ROMs and print their own usage.
   [masswerk.at, "PET keys, 2001 edition"](https://www.masswerk.at/nowgobang/2023/pet-keys-2001-edition).
 - Commodore Business Machines: the logic diagram 8032081 and the PCB assembly
   drawing 8032080, the ROMs and the machine.
+- [Zimmers.net](https://www.zimmers.net/anonftp/pub/cbm/firmware/computers/pet/index.html): the archive the PET ROM images come from.
 - Claude (Anthropic): the PET netlist, the 6520, 6522 and 6545 cores, the board
   models, video, keyboards, power section, loading, layout, tests and this text.

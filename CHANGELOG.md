@@ -5,7 +5,7 @@ Changes not yet in a release are under "Unreleased".
 
 This project is AI-generated: the code and these notes were written with
 Claude (Anthropic's AI), directed and tested by zzleezz (and, for the Commodore
-PET, by the owner of this repository). It started as antirez's
+PET, by David Green, github.com/daver99999). It started as antirez's
 [c64-hw-simulator](https://github.com/antirez/c64-hw-simulator).
 
 ## Unreleased
@@ -21,7 +21,7 @@ PET, by the owner of this repository). It started as antirez's
   opened from the file browser; RESET button. Netlist transcribed from Commodore's
   logic diagram 8032081 rev E (`tools/pet-netlist-src/`, rebuilt by
   `tools/pet_netlist2c.py`), placement read from the assembly drawing 8032080 rev
-  J. Written by Claude, directed and tested by the repository owner. See
+  J. Written by Claude, directed and tested by David Green (daver99999). See
   `docs/PET.md`. The PET ROMs are not included.
 - The fault atlas and the diagnosis tools do not cover the PET; the Diagnose
   section says so instead of failing.

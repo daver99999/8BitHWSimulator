@@ -19,7 +19,7 @@ picture on the monitor, the keyboard, every signal on the board.
 > **The Commodore PET boards** (the netlist, the 6520, 6522 and 6545
 > chip models, the video, the keyboards, the power section, program and
 > ROM loading, the board layout and the PET documentation) were also
-> written by Claude, directed and tested by the owner of this repository
+> written by Claude, directed and tested by David Green ([daver99999](https://github.com/daver99999))
 > against a real PET 8032080-03 board. Where
 > the model had to assume something about the hardware, the assumption
 > is written down next to it (for example in "The 250469 board"). Check
@@ -124,9 +124,10 @@ transcribed by Claude from Commodore's logic diagram 8032081 (rev E), and its
 chip placement read from Commodore's PCB assembly drawing 8032080 (rev J, sheet
 7); those two documents are Commodore Business Machines', used here as a
 reference and not included. The PET ROM images are Commodore's too and not
-included: you supply your own (see [docs/PET.md](docs/PET.md)). The real
-8032080-03 board that the model was checked against belongs to the owner of
-this repository.
+included: you supply your own (see [docs/PET.md](docs/PET.md); they can be
+found on [Zimmers.net](https://www.zimmers.net/anonftp/pub/cbm/firmware/computers/pet/index.html)). The real
+8032080-03 board that the model was checked against belongs to David Green,
+who directed and tested the PET work.
 
 The light theme is by Henry, published here with permission.
 
@@ -921,9 +922,25 @@ Pick **PET** in the control panel, then **4032 (40 col)** or **8032 (80 col)**
 under it. Both boards are in the same program (`--board 8032080-40` or
 `--board 8032080-80` on the command line).
 
-**The ROMs are not included.** They are Commodore's. Put your own images in a
-folder `roms/pet` (or `roms`, or the folder you start the program from) with
-their usual file names, which carry the part number the program recognises:
+**The ROMs are not included.** They are Commodore's, and the PET does nothing
+without them. They can be found on **[Zimmers.net](https://www.zimmers.net/anonftp/pub/cbm/firmware/computers/pet/index.html)**
+(the Commodore firmware archive, `/pub/cbm/firmware/computers/pet/`), which
+names them the way the program expects. To add them:
+
+1. Download the files in the table below from Zimmers.net. You need the KERNAL
+   (`kernal-4.901465-22.bin`), the three BASIC 4 ROMs, the character set
+   (`characters-2.901447-10.bin`) and the editor of the board you want: the 40
+   column one for the 4032, the 80 column one for the 8032 (or both).
+2. Make a folder called `roms` next to the program and a folder `pet` inside it
+   (`roms/pet`), and put the files there. The program also looks in `roms` and in
+   the folder you start it from. Keep the file names as they are: the part
+   number in the name tells the program which socket each one goes in.
+3. Start the program, click **PET**, and pick the board. The ROMs are fitted
+   when the board is made, so if you add one while the program is running,
+   restart the program, or open the file from the file browser (Ctrl+O): it
+   goes in its socket and the machine starts over.
+
+The part numbers the program recognises:
 
 | Socket | ROM | Part number |
 |---|---|---|
