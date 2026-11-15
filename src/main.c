@@ -1,7 +1,8 @@
 /* main.c - c64-hw-sim entry point.
  *
  *   c64-hw-sim [program.prg | cartridge.crt | image.rom | image.bin] [--harness]
- *       [--fault SPEC]... [--machine c64|c64c|zx48|zx48i2|zx48i1|zx48i4b|zx48i6a]
+ *       [--fault SPEC]... [--machine c64|c64c|zx48|zx48i2|zx48i1|zx48i4b|zx48i6a|pet4032|pet8032]
+ *       [--rom UD6=FILE]... (the PET's ROMs: UD6 $F000 ... UD12 $9000, UA3 the character ROM)
  *       [--board 250407|250469|issue3b|issue4b|issue6a|issue2|issue1]
  *       [--option ID=VALUE]... [--bank N] [--socket u4|port]
  *       Graphical simulator. The optional .prg is loaded and RUN after boot;
@@ -185,6 +186,7 @@
 #include "board.h"
 #include "c64.h"
 #include "zx48.h"
+#include "pet.h"
 #include "png.h"
 #include "diagnose.h"
 #include "healthy.h"
@@ -197,6 +199,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <ctype.h>
 #include <time.h>
 #ifdef _WIN32
 #include <mmsystem.h>
@@ -236,6 +239,7 @@ static struct {
     const char *la_window;
     const machine_t *machine;
     const char *options[8]; int noptions;   /* --option ID=VALUE */
+    const char *roms[16]; int nroms;        /* --rom REF=FILE (the PET's ROM sockets) */
     /* The fault atlas (atlas.h). */
     const char *atlas_tier, *atlas_path, *atlas_png, *atlas_diff, *carts;
     bool atlas_report;
@@ -263,7 +267,8 @@ static board_t *board;
 
 /* The machines, for --machine. */
 static const machine_t *const machines[] = { &machine_c64, &machine_c64c, &machine_zx48, &machine_zx48i2,
-                                             &machine_zx48i1, &machine_zx48i4b, &machine_zx48i6a };
+                                             &machine_zx48i1, &machine_zx48i4b, &machine_zx48i6a,
+                                             &machine_pet4032, &machine_pet8032 };
 
 static const machine_t *machine_named(const char *id) {
     for (size_t k = 0; k < sizeof(machines) / sizeof(machines[0]); k++)
@@ -653,6 +658,7 @@ int main(int argc, char **argv) {
                 args.keys[args.nkeys++].chars = chars;
             }
         }
+        else if (!strcmp(argv[i], "--rom") && i + 1 < argc && args.nroms < 16) args.roms[args.nroms++] = argv[++i];
         else if (!strcmp(argv[i], "--machine") && i + 1 < argc) {
             const char *id = argv[++i];
             args.machine = machine_named(id);
@@ -663,9 +669,10 @@ int main(int argc, char **argv) {
             args.machine = !strcmp(id, "250407") ? &machine_c64 : !strcmp(id, "250469") ? &machine_c64c :
                            !strcasecmp(id, "issue2") ? &machine_zx48i2 : !strcasecmp(id, "issue3b") ? &machine_zx48 :
                            !strcasecmp(id, "issue1") ? &machine_zx48i1 : !strcasecmp(id, "issue4b") ? &machine_zx48i4b :
-                           !strcasecmp(id, "issue6a") ? &machine_zx48i6a : NULL;
+                           !strcasecmp(id, "issue6a") ? &machine_zx48i6a :
+                           !strcmp(id, "8032080-40") ? &machine_pet4032 : !strcmp(id, "8032080-80") ? &machine_pet8032 : NULL;
             if (!args.machine) {
-                fprintf(stderr, "unknown board %s (250407, 250469, issue3b, issue4b, issue6a, issue2, issue1)\n", id);
+                fprintf(stderr, "unknown board %s (250407, 250469, issue3b, issue4b, issue6a, issue2, issue1, 8032080-40, 8032080-80)\n", id);
                 return 1;
             }
         }
@@ -841,6 +848,21 @@ int main(int argc, char **argv) {
     }
     (void)atlas;
     board = board_create(args.machine ? args.machine : &machine_c64);
+    for (int i = 0; i < args.nroms; i++) {
+        /* --rom REF=FILE: the PET's ROM in socket REF (UD6..UD12, or UA3 the character ROM) */
+        char ref[16]; const char *eq = strchr(args.roms[i], '=');
+        if (!eq || eq - args.roms[i] >= (int)sizeof(ref)) { fprintf(stderr, "--rom wants REF=FILE\n"); return 1; }
+        memcpy(ref, args.roms[i], (size_t)(eq - args.roms[i])); ref[eq - args.roms[i]] = 0;
+        for (char *c = ref; *c; c++) *c = (char)toupper((unsigned char)*c);
+        FILE *f = fopen(eq + 1, "rb");
+        uint8_t buf[8192]; size_t n = f ? fread(buf, 1, sizeof(buf), f) : 0;
+        if (f) fclose(f);
+        if (board->m != &machine_pet4032 && board->m != &machine_pet8032) { fprintf(stderr, "--rom is for the PET\n"); return 1; }
+        if (!f || !pet_set_rom(board, ref, buf, n)) {
+            fprintf(stderr, "--rom %s: can't use it (a 2K or 4K file for UD6..UD12, 2K for UA3)\n", args.roms[i]);
+            return 1;
+        }
+    }
     for (int i = 0; i < args.noptions; i++)
         if (!apply_option(board, args.options[i])) {
             fprintf(stderr, "%s has no option %s\n", board->m->board_name, args.options[i]);

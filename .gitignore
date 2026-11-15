@@ -21,3 +21,10 @@ tools/__pycache__/
 WORK_SUMMARY.md
 zxtest/*.lst
 zxtest/*.sym
+
+# Commodore's PET ROMs and scans: yours to supply, never committed
+roms/
+sheets/
+crops/
+__pycache__/
+*.pyc

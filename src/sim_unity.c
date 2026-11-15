@@ -47,4 +47,7 @@
 #include "harness.c"
 #include "zx48.c"
 #include "ula.c"
+#include "pet_parts.c"
+#include "pet_chips.c"
+#include "pet.c"
 #include "png.c"

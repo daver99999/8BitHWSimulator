@@ -4,24 +4,34 @@
 (c64-hw-sim); the program is still called `c64-hw-sim`.*
 
 c64-hw-sim simulates the motherboards of the Commodore 64 (ASSY 250407
-and 250469) and of the ZX Spectrum (boards Issue 1, 2, 3B, 4B and 6A), pin by pin. You can lift the
+and 250469), of the ZX Spectrum (boards Issue 1, 2, 3B, 4B and 6A) and of
+the Commodore PET (the 8032080 universal dynamic board, as a 4032 with 40
+columns and as an 8032 with 80), pin by pin. You can lift the
 leg of a chip, short it to ground or to +5V, pull a chip out of its
 socket, or open a resistor. Then you watch what the machine does: the
 picture on the monitor, the keyboard, every signal on the board.
 
 > **An AI-generated project.** What this fork adds to antirez's original
 > (the code, the board models, the tests and this documentation) was
-> written by Claude, Anthropic's AI model, working in Claude Code, at the
-> direction of zzleezz, who decided what to build and tested it. Where
+> written by Claude, Anthropic's AI model, working in Claude Code. The
+> ZX Spectrum, the C64's 250469 board, the fault atlas and the diagnosis
+> tools were directed and tested by zzleezz, who decided what to build.
+> **The Commodore PET boards** (the netlist, the 6520, 6522 and 6545
+> chip models, the video, the keyboards, the power section, program and
+> ROM loading, the board layout and the PET documentation) were also
+> written by Claude, directed and tested by the owner of this repository
+> against a real PET 8032080-03 board. Where
 > the model had to assume something about the hardware, the assumption
 > is written down next to it (for example in "The 250469 board"). Check
 > a diagnosis against the real machine before acting on it.
 
 > **Credits.** Based on [c64-hw-simulator](https://github.com/antirez/c64-hw-simulator)
 > by Salvatore Sanfilippo ([antirez](https://github.com/antirez)), the
-> original project. This is a modified version of it, not the original:
-> the ZX Spectrum, the C64's 250469 board, the fault atlas and the
-> diagnosis tools were added here. The ZX Spectrum board layouts (Issues
+> original project, through its fork
+> [8bit-hw-simulator](https://github.com/zzleezz/8bit-hw-simulator) by
+> zzleezz, which added the ZX Spectrum, the C64's 250469 board, the fault
+> atlas and the diagnosis tools. This is a modified version of both, not
+> the original: the Commodore PET was added here. The ZX Spectrum board layouts (Issues
 > 1, 2, 3B, 4B and 6A) come from the KiCad projects of
 > [liveboxandy](https://github.com/liveboxandy), the C64 ones from
 > [bwack](https://github.com/bwack)'s.
@@ -107,6 +117,17 @@ the gate netlist of the 6C001 recovered from the die by the emu-russia/ula
 project (CC0). The ROM is Amstrad's, who allow its distribution. The ZX
 Spectrum Diagnostics ROM is by Brendan Alford and its contributors (LGPL).
 
+For the Commodore PET: the 6502 is floooh's core. The 6520 PIA, 6522 VIA
+and 6545 CRT controller cores were written for this project by Claude, from the
+chips' data sheets, in the calling style of floooh's chips. The board was
+transcribed by Claude from Commodore's logic diagram 8032081 (rev E), and its
+chip placement read from Commodore's PCB assembly drawing 8032080 (rev J, sheet
+7); those two documents are Commodore Business Machines', used here as a
+reference and not included. The PET ROM images are Commodore's too and not
+included: you supply your own (see [docs/PET.md](docs/PET.md)). The real
+8032080-03 board that the model was checked against belongs to the owner of
+this repository.
+
 The light theme is by Henry, published here with permission.
 
 ## Building
@@ -141,9 +162,10 @@ monitor and the scope screen look the same either way.
 ## Using it
 
 The window shows the board, the monitor, a control panel and an
-oscilloscope. The two buttons at the top of the control panel switch
-between the Commodore 64 and the ZX Spectrum 48K: the machine that runs
-is switched off, the other one on.
+oscilloscope. The three buttons at the top of the control panel switch
+between the Commodore 64, the ZX Spectrum 48K and the Commodore PET: the
+machine that runs is switched off, the other one on. The drop-down under
+them picks the board (on the PET, the 4032 or the 8032).
 
 Pins show their state as a logic probe would: red high, blue low, yellow
 pulsing, gray floating, magenta when two outputs fight. Zoom in and the
@@ -882,6 +904,58 @@ edge of its clock, and its pins follow the Zilog timing diagrams. Its
 instructions, flags and timings are those of the original core.
 `tests/z80` has the tests: the pin waveforms of every kind of bus cycle,
 and ZEXDOC and ZEXALL. `chips/codegen` has the code generator.
+
+## Commodore PET
+
+The board is the **8032080 universal dynamic PET board** (the "-03" is the
+40 column build, used in the 4032; the 8032 is the same board built for 80
+columns), with all its chips modelled at the pins: the 6502 (UB14), the two
+6520 PIAs (UB12 keyboard and cassette, UB16 IEEE-488), the 6522 VIA (UB15),
+the 6545 CRT controller (UB13), sixteen 4116 DRAMs (UA4 to UA19), the seven
+ROM sockets (UD6 to UD12), the 2316 character ROM (UA3), the 2114 video RAM,
+the 74xx glue logic, the IEEE-488 buffers and the power section (the bridges,
+the regulators and their protection diodes). Chips are laid out where they sit
+on the real board.
+
+Pick **PET** in the control panel, then **4032 (40 col)** or **8032 (80 col)**
+under it. Both boards are in the same program (`--board 8032080-40` or
+`--board 8032080-80` on the command line).
+
+**The ROMs are not included.** They are Commodore's. Put your own images in a
+folder `roms/pet` (or `roms`, or the folder you start the program from) with
+their usual file names, which carry the part number the program recognises:
+
+| Socket | ROM | Part number |
+|---|---|---|
+| UD6 | KERNAL | 901465-22 |
+| UD7 | screen editor | 901499-01 (40 column), 901474-03 (80 column) |
+| UD8 | BASIC 4 $D000 | 901465-21 |
+| UD9 | BASIC 4 $C000 | 901465-20 |
+| UD10 | BASIC 4 $B000 | 901465-23 |
+| UA3 | character set | 901447-10 |
+
+The board takes the editor of its column count, so both editors can sit in the
+folder. Without the KERNAL or the character set the status line says so. A ROM
+image can also be opened from the file browser: it goes in its socket and the
+machine starts over. With the ROMs in place the PET shows `*** COMMODORE BASIC
+4.0 ***` about 3 seconds (of simulated time) after power on.
+
+Programs (`.prg` or `.pet`, with the two byte load address in front) are written
+straight into the 4116 chips and RUN (a BASIC program at $0401) or started with
+SYS (machine code). The keyboard is the graphics keyboard on the 4032 and the
+business keyboard on the 8032; the host keys type as on the real keys (Esc is
+STOP, End is RVS, Home and Del are HOME and CLR). RESET shorts the 6502's /RES to
+GND, as the board's reset switch does.
+
+The power section is modelled too: take out a bridge or a regulator, open a
+protection diode, and the rails that depend on it go away. The continuity test
+(Shift-click a pad) follows the netlist.
+
+The details, what was checked against the real board, the assumptions made and
+what is missing are in [docs/PET.md](docs/PET.md). In short: no tape or disk
+units on the IEEE-488 bus, no 40/80 column switcher daughterboard, and the fault
+atlas and the screenshot diagnosis do not cover the PET.
+
 
 ## Command line
 

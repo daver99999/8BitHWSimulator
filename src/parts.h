@@ -41,6 +41,20 @@ extern const int zx8401_mux[ZX8401_NMUX][3];
  * trigger, the clock generator, the HMOS 6510, VIC-II and SID, and the
  * Super PLA (see parts.c). */
 extern const part_type_t PT_41464, PT_27128, PT_74LS14, PT_8701, PT_8500, PT_8565, PT_8580, PT_SUPERPLA;
+
+/* The Commodore PET 8032080's: TTL glue, the 16 MHz timing chain, the
+ * character ROM, the IEEE-488 transceivers, the oscillator and the
+ * power-up reset (pet_parts.c). */
+extern const part_type_t PT_74LS02, PT_74LS10, PT_74LS20, PT_7425, PT_74LS86, PT_74S04, PT_74S04_OSC, PT_7417;
+extern const part_type_t PT_74LS138, PT_74LS145, PT_74154, PT_74LS244, PT_MC3446;
+extern const part_type_t PT_74LS74R, PT_74S74, PT_74177, PT_74LS164, PT_74166;
+extern const part_type_t PT_2316, PT_XTAL16, PT_LM555, PT_2114_PET;
+/* pet_chips.c: the PET's 6502, 6520 (x2), 6522 and 6545 around the cores in chips/ */
+extern const part_type_t PT_PET6502, PT_PET6520, PT_PET6522, PT_PET6545;
+uint32_t pet_cpu_cycles_of(const part_t *p);
+void pet_cpu_regs_of(const part_t *p, char *buf, int len);
+uint8_t pet_crtc_reg_of(const part_t *p, int r);
+
 /* A 64K x 1 DRAM, whole or half good (a 4164, 4532, 3732). */
 bool part_is_dram64(const part_t *p);
 

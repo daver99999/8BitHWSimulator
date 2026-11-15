@@ -44,3 +44,10 @@ Parts of this repository come from others and keep their own licenses:
   gate level netlist of the 6C001 recovered from the die by the
   emu-russia/ula project (CC0), which is not included here: see
   tools/ulacheck.c.
+- chips/m6520.h, m6522.h, m6545.h, src/pet*.c, src/pet.h, tools/pet*, tests/pet and
+  docs/PET.md: the Commodore PET additions, written by Claude (Anthropic) for this
+  fork and covered by the license above.
+- The Commodore PET ROM images (KERNAL, BASIC 4, editor and character ROMs) are not
+  in this repository. They belong to their copyright holders. So do Commodore's logic
+  diagram 8032081 and PCB assembly drawing 8032080, from which the PET netlist and
+  board layout were made; the drawings are not included.

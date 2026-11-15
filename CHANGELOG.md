@@ -4,10 +4,30 @@ What changed in each release of 8bit-hw-simulator, newest first.
 Changes not yet in a release are under "Unreleased".
 
 This project is AI-generated: the code and these notes were written with
-Claude (Anthropic's AI), directed and tested by zzleezz.
+Claude (Anthropic's AI), directed and tested by zzleezz (and, for the Commodore
+PET, by the owner of this repository). It started as antirez's
+[c64-hw-simulator](https://github.com/antirez/c64-hw-simulator).
 
 ## Unreleased
 
+- **Commodore PET.** The 8032080 universal dynamic board, as a 4032 (40
+  columns, graphics keyboard) and an 8032 (80 columns, business keyboard), both
+  in the same program: pick PET in the control panel, then the board (`--board
+  8032080-40` or `8032080-80`). Pin level models of the 6520, 6522 and 6545 (new
+  cores, `chips/m6520.h`, `m6522.h`, `m6545.h`, with unit tests in
+  `tests/chips/`), the 4116 and 2114 RAMs, the ROM sockets, the glue logic and the
+  power section, with the chips where they sit on the real board. Programs
+  (`.prg`, `.pet`) load and run; ROMs are found in `roms/pet` by part number or
+  opened from the file browser; RESET button. Netlist transcribed from Commodore's
+  logic diagram 8032081 rev E (`tools/pet-netlist-src/`, rebuilt by
+  `tools/pet_netlist2c.py`), placement read from the assembly drawing 8032080 rev
+  J. Written by Claude, directed and tested by the repository owner. See
+  `docs/PET.md`. The PET ROMs are not included.
+- The fault atlas and the diagnosis tools do not cover the PET; the Diagnose
+  section says so instead of failing.
+- `board_part_info` and the other part accessors cope with a part that has no
+  description (a chip with none used to crash the board drawing).
+- The Makefile links `winmm` on Windows (`timeBeginPeriod`), as build.bat already did.
 - Builds with any MinGW toolchain again (MSYS2, TDM-GCC, older mingw-w64),
   not just w64devkit: win_perf.h now looks up its Windows 10 power and
   CPU-set functions at run time instead of needing headers that declare

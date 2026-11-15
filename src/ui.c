@@ -13,6 +13,7 @@
 #include "ui_common.h"
 #include "atlas.h"
 #include "c64.h"
+#include "pet.h"
 #include "diagnose.h"
 #include "atlas_browse.h"
 #include "thumbtex.h"
@@ -169,7 +170,7 @@ static struct {
     char status[512];
     /* A machine chosen in the controls, put on the bench after the frame;
      * the Spectrum and the C64 boards last on the bench (their buttons'). */
-    const machine_t *switch_to, *last_zx, *last_c64;
+    const machine_t *switch_to, *last_zx, *last_c64, *last_pet;
     /* A fault put on the board from a diagnosis: the view goes to its part
      * (once the board is drawn), which is outlined for a while. */
     bool focus_pending;
@@ -2048,6 +2049,7 @@ static void save_state_file(const char *path) {
 
 /* Load a program or plug a cartridge (what the machine can take). A file
  * loaded goes on the list of recent ones. */
+static int board_family(const board_t *b);
 static bool load_prg(const char *path, bool run) {
     if (board_is_state_file(path)) return load_state_file(path);
     size_t n = strlen(path);
@@ -2057,12 +2059,19 @@ static bool load_prg(const char *path, bool run) {
     /* A file for the other machine (a Spectrum ROM dropped on the C64, a
      * C64 one on the Spectrum): that machine goes on the bench after the
      * frame, and gets the file then. */
-    const machine_t *other = board_is_c64(U.b) ? U.last_zx : U.last_c64;
-    if ((!fk || bad) && other->file_kind(path, info, sizeof(info), &other_bad) && !other_bad) {
-        U.switch_to = other;
-        snprintf(U.pending_load, sizeof(U.pending_load), "%s", path);
-        U.pending_run = run;
-        return true;
+    const machine_t *const fams[] = { U.last_c64, U.last_zx, U.last_pet };
+    if (!fk || bad) {
+        for (int i = 0; i < 3; i++) {
+            const machine_t *other = fams[i];
+            if (i == board_family(U.b)) continue;
+            other_bad = true;
+            if (other->file_kind(path, info, sizeof(info), &other_bad) && !other_bad) {
+                U.switch_to = other;
+                snprintf(U.pending_load, sizeof(U.pending_load), "%s", path);
+                U.pending_run = run;
+                return true;
+            }
+        }
     }
     if (fk && fk->role == ROLE_ROM) {       /* cartridges and ROMs go in with the power off */
         ok = board_load(U.b, path, run, U.status, sizeof(U.status));
@@ -2212,6 +2221,10 @@ static void diagnose_picture(const char *path) {
     U.diag_status[0] = 0;
     int machine = bench_machine();
     unlock_board();
+    if (machine < 0) {          /* a PET: nothing in the atlas to match against */
+        snprintf(U.diag_status, sizeof(U.diag_status), "No fault atlas for this board (C64 and Spectrum only)");
+        return;
+    }
     diagnose_open(path, machine);
     lock_board();
     U.diag_serial++;
@@ -2482,19 +2495,24 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
     static const machine_t *const c64_boards[] = { &machine_c64, &machine_c64c };
     const machine_t *m = b->m;
     if (!m->issue) return;
-    bool zx = board_is_zx48(b);
-    const machine_t *const *boards = zx ? zx_boards : c64_boards;
-    int nb = zx ? (int)(sizeof(zx_boards) / sizeof(zx_boards[0])) : (int)(sizeof(c64_boards) / sizeof(c64_boards[0]));
+    static const machine_t *const pet_boards[] = { &machine_pet4032, &machine_pet8032 };
+    int fam = board_family(b);
+    bool zx = fam == 1;
+    const machine_t *const *boards = fam == 1 ? zx_boards : fam == 2 ? pet_boards : c64_boards;
+    int nb = fam == 1 ? (int)(sizeof(zx_boards) / sizeof(zx_boards[0]))
+           : fam == 2 ? (int)(sizeof(pet_boards) / sizeof(pet_boards[0]))
+                      : (int)(sizeof(c64_boards) / sizeof(c64_boards[0]));
     nk_layout_row_dynamic(ctx, 24, 1 + m->noptions < 3 ? 1 + m->noptions : 3);   /* more go on a row below */
     char names[8][32];
     const char *issues[8];
     int cur = 0;
     for (int i = 0; i < nb; i++) {
-        snprintf(names[i], sizeof(names[i]), zx ? "%s" : "ASSY %s", boards[i]->issue);
+        snprintf(names[i], sizeof(names[i]), fam == 0 ? "ASSY %s" : "%s", boards[i]->issue);
         issues[i] = names[i];
         if (boards[i] == m) cur = i;
     }
     int pick = combo_tip(ctx, issues, nb, cur, 20, nk_vec2(140, 20.0f * nb + 20),
+                         fam == 2 ? "Which PET is on the bench: the 4032 (40 columns, graphics keyboard) or the 8032 (80 columns, business keyboard)" :
                          zx ? "Which issue of the board is on the bench" :
                               "Which board is on the bench: the 250407 (breadbin) or the 250469 (C64C, Super PLA)");
     if (pick != cur) U.switch_to = boards[pick];
@@ -2523,13 +2541,14 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
         board_t *b = U.b;
         /* The machine on the bench: a click puts the other one there (the
          * Spectrum board last on the bench). */
-        const machine_t *const machines[] = { U.last_c64, U.last_zx };
-        nk_layout_row_dynamic(ctx, 24, 2);
-        for (int i = 0; i < 2; i++) {
-            bool cur = board_is_zx48(b) == (i == 1);
+        const machine_t *const machines[] = { U.last_c64, U.last_zx, U.last_pet };
+        static const char *const fam_names[] = { "C64", "Spectrum", "PET" };
+        nk_layout_row_dynamic(ctx, 24, 3);
+        for (int i = 0; i < 3; i++) {
+            bool cur = board_family(b) == i;
             if (nk_widget_is_hovered(ctx) && !cur)
                 nk_tooltip(ctx, "Put this machine's board on the bench (the other one is switched off)");
-            if (nk_select_label(ctx, machines[i]->name, NK_TEXT_CENTERED, cur) && !cur) U.switch_to = machines[i];
+            if (nk_select_label(ctx, fam_names[i], NK_TEXT_CENTERED, cur) && !cur) U.switch_to = machines[i];
         }
         board_choice(ctx, b);
         nk_layout_row_dynamic(ctx, 26, 4);
@@ -2676,6 +2695,11 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
             nk_tree_pop(ctx);
         }
         if (nk_tree_push(ctx, NK_TREE_TAB, "Diagnose", NK_MAXIMIZED)) {
+          if (bench_machine() < 0) {    /* the PET: no fault atlas of its own boards yet */
+            nk_layout_row_dynamic(ctx, 44, 1);
+            nk_label_wrap(ctx, "The fault atlas and the diagnosis by probing or by screenshot cover the C64 and "
+                               "Spectrum boards only. Faults can still be put on this board by hand.");
+          } else {
             nk_layout_row_dynamic(ctx, 26, 1);
             if (nk_widget_is_hovered(ctx))
                 nk_tooltip(ctx, "Probe the real broken machine with a logic probe: the faults that fit your readings, "
@@ -2723,6 +2747,7 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
             nk_layout_row_dynamic(ctx, 20, 1);
             nk_label_colored(ctx, U.diag_status[0] ? U.diag_status : "or drop a .png, .jpg or .bmp screenshot on the window, or Ctrl+V",
                              NK_TEXT_LEFT, U.diag_status[0] ? COL_FAULT : COL_DIMTEXT);
+          }
             nk_tree_pop(ctx);
         }
         if (nk_tree_push(ctx, NK_TREE_TAB, "Programs and cartridges", NK_MAXIMIZED)) {
@@ -3167,7 +3192,7 @@ void ui_frame(void) {
         lock_board();
         int machine = bench_machine();
         unlock_board();
-        diagnose_set_machine(machine);
+        if (machine >= 0) diagnose_set_machine(machine);
         lock_board();
         U.diag_serial++;
         if (probe_is_open()) probe_take_diagnosis();
@@ -3349,12 +3374,20 @@ static void handle_event(const sapp_event *ev) {
 /* Setup                                                                     */
 /* ------------------------------------------------------------------------ */
 
+/* The machine family of a board: 0 C64, 1 Spectrum, 2 PET. */
+static int board_family(const board_t *b) {
+    return board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : 0;
+}
+
 /* Everything of the interface that depends on the board: at start, and
  * when switching machines. */
 static void attach_board(board_t *b) {
     U.b = b;
-    if (board_is_zx48(b)) U.last_zx = b->m;
-    else U.last_c64 = b->m;
+    switch (board_family(b)) {
+    case 1: U.last_zx = b->m; break;
+    case 2: U.last_pet = b->m; break;
+    default: U.last_c64 = b->m; break;
+    }
     U.hover_pin = U.hover_part = -1;
     U.menu_open = U.dragging = U.reset_hold = false;
     U.fitted = false;           /* the new board fills the view */
@@ -3468,6 +3501,7 @@ void ui_init(board_t *b, const char *prg, const char *scope_pin) {
     U.timebase = 1;
     U.last_zx = &machine_zx48;
     U.last_c64 = &machine_c64;
+    U.last_pet = &machine_pet4032;
     if (prg) { snprintf(U.autoload, sizeof(U.autoload), "%s", prg); U.autoload_run = true; }
     U.smp = sg_make_sampler(&(sg_sampler_desc){ .min_filter = SG_FILTER_LINEAR, .mag_filter = SG_FILTER_LINEAR,
                                                 .wrap_u = SG_WRAP_CLAMP_TO_EDGE, .wrap_v = SG_WRAP_CLAMP_TO_EDGE });
@@ -3511,6 +3545,7 @@ void ui_browse_atlas(int pick) {
 
 bool chip_records_button(struct nk_context *ctx, int part) {
     const char *ref = S()->parts[part].ref;
+    if (bench_machine() < 0) return false;     /* a PET: no repair records */
     int n = diagnose_records_of_chip(bench_machine(), ref);
     char lab[64];
     if (n) snprintf(lab, sizeof(lab), "Repair records with %s faulty (%d)...", ref, n);

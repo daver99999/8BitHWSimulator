@@ -181,17 +181,17 @@ static const part_def_t *part_def(board_t *b, int part) {
 
 const char *board_part_label(board_t *b, int part) {
     const part_def_t *d = part_def(b, part);
-    return d ? d->label : b->sim.parts[part].name;
+    return d && d->label ? d->label : b->sim.parts[part].name;
 }
 
 const char *board_part_detail(board_t *b, int part) {
     const part_def_t *d = part_def(b, part);
-    return d ? d->detail : b->sim.parts[part].name;
+    return d && d->detail ? d->detail : b->sim.parts[part].name;
 }
 
 const char *board_part_info(board_t *b, int part) {
     const part_def_t *d = part_def(b, part);
-    return d ? d->info : "";
+    return d ? (d->info ? d->info : b->sim.parts[part].name) : "";
 }
 
 int board_part_role(board_t *b, int part) {
@@ -256,8 +256,12 @@ static void setup_passive(board_t *b, int idx) {
     bool isolated = strstr(p->name, "isolated") != NULL;
     bool bussed = !isolated && (strstr(p->name, "Bussed") || strstr(fp, "R_Array_SIP") || strstr(fp, "RP_ARRAY"));
     if (bussed) {
-        for (int n = 2; n < PIN_NUMBERS && npairs < 16; n++)
-            if (p->pinmap[n] >= 0) { pairs[npairs][0] = p->pinmap[n]; pairs[npairs][1] = p->pinmap[1]; npairs++; }
+        /* The common is pin 1, or the last pin of a "_C14" array (the PET's UB11). */
+        int common = strstr(fp, "_C14") ? 14 : 1;
+        for (int n = 1; n < PIN_NUMBERS && npairs < 16; n++)
+            if (n != common && p->pinmap[n] >= 0 && p->pinmap[common] >= 0) {
+                pairs[npairs][0] = p->pinmap[n]; pairs[npairs][1] = p->pinmap[common]; npairs++;
+            }
     } else if (isolated) {
         for (int n = 1; n + 1 < PIN_NUMBERS && npairs < 16; n += 2)
             if (p->pinmap[n] >= 0 && p->pinmap[n + 1] >= 0) {

@@ -7,7 +7,7 @@ CC      ?= cc
 OPT     ?= -O3 -flto
 CFLAGS  := $(OPT) -g -Wall -Wextra -Wno-unused-parameter -Isrc -Ichips -Ithird_party -DSOKOL_GLCORE
 
-SIM_SRC = src/sim.c src/parts.c src/board.c src/c64.c src/cart.c src/harness.c src/c64_board_data.c src/c64c_board_data.c src/zx48.c src/ula.c src/zx48_board_data.c src/zx48i2_board_data.c src/zx48i1_board_data.c src/zx48i4b_board_data.c src/zx48i6a_board_data.c src/png.c src/chips_impl.c
+SIM_SRC = src/sim.c src/parts.c src/board.c src/c64.c src/cart.c src/harness.c src/c64_board_data.c src/c64c_board_data.c src/zx48.c src/pet_parts.c src/pet_chips.c src/pet.c src/ula.c src/zx48_board_data.c src/zx48i2_board_data.c src/zx48i1_board_data.c src/zx48i4b_board_data.c src/zx48i6a_board_data.c src/pet4032_board_data.c src/pet8032_board_data.c src/png.c src/chips_impl.c
 APP_SRC = src/main.c src/ui.c src/inspect.c src/browser.c src/diagnose.c src/repairs.c src/icon_data.c src/atlas_browse.c src/thumbtex.c src/probe.c src/probe_db.c src/probe_file.c src/filedialog.c src/atlas.c src/atlas_match.c src/stb_image_impl.c src/healthy.c src/lacap.c src/lacap_file.c src/lacap_record.c src/lacap_compare.c src/lacap_capture.c src/lacap_rules.c src/lacap_verdict.c src/lacap_diagnose.c src/lacap_zxtest.c src/lapico.c src/la_window.c
 
 EXE =
@@ -19,7 +19,7 @@ ifeq ($(OS),Windows_NT)
   EXE = .exe
   SOKOL_FLAGS = -Wno-unused-but-set-variable -Wno-sign-compare -Wno-unused-variable \
                 -Wno-cast-function-type -Wno-unknown-pragmas
-  LIBS = -mwindows -static -lpthread -lkernel32 -luser32 -lgdi32 -lshell32 -lcomdlg32 -lopengl32 -ladvapi32 -lsetupapi -lcfgmgr32 -lm
+  LIBS = -mwindows -static -lpthread -lkernel32 -luser32 -lgdi32 -lshell32 -lcomdlg32 -lopengl32 -ladvapi32 -lsetupapi -lcfgmgr32 -lwinmm -lm
 else ifeq ($(shell uname -s),Darwin)
   SOKOL_FLAGS = -x objective-c -Wno-deprecated-declarations -Wno-unused-but-set-variable \
                 -Wno-sign-compare -Wno-unused-variable

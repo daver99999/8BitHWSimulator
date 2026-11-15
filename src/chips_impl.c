@@ -8,3 +8,6 @@
 #include "m6581.h"
 #include "kbd.h"
 #include "z80.h"
+#include "m6520.h"
+#include "m6522.h"
+#include "m6545.h"

@@ -292,6 +292,58 @@ const part_type_t PT_2114 = { "2114 SRAM",
     "A6:M A5:M A4:M A3:M A0:M A1:M A2:M /CS:M GND:P /WE:M IO4:B IO3:B IO2:B IO1:B "
     "A9:M A8:M A7:M VCC:P", sram_eval, sram_commit, sram_reset, sizeof(sram_state_t), TECH_NMOS };
 
+/* The PET's display RAM: the same 2114, but with an access time. The video
+ * logic is built on it. A character period is 32 steps; the CRTC puts out the
+ * address of character k about 5 steps (150 ns) after CLK1 falls, which is
+ * 16 steps before the latch UB3 (and the load of the dot shift register UA2)
+ * closes the period. The 2114 answers 10 steps (312 ns) after its address
+ * changes: too late for the address of character k+1 to reach the latch in its
+ * own period, so the latch catches the data of character k at the end of the
+ * period after, and the display enable chain UB1 is built for exactly that
+ * delay. With an instant RAM the first character of every line is blanked and
+ * one more is shown at the end. The outputs keep the old data until the new
+ * data arrives. */
+#ifndef SRAM_ACCESS_STEPS
+#define SRAM_ACCESS_STEPS 8
+#endif
+//        /* half periods of 16 MHz: 312 ns */
+typedef struct { sram_state_t base; uint16_t addr_seen; uint8_t wait, shown, read_seen; } sram_slow_state_t;
+
+static void sram_slow_eval(sim_t *s, part_t *p) {
+    sram_slow_state_t *st = p->state;
+    bool read = !pin_in(s, p, 8) && pin_in(s, p, 10);
+    part_drive_bus_cached(s, p, sram_io_pins, 4, st->shown, read, &st->base.out_cache);
+}
+
+static void sram_slow_commit(sim_t *s, part_t *p) {
+    sram_slow_state_t *st = p->state;
+    sram_commit(s, p);
+    bool read = !pin_in(s, p, 8) && pin_in(s, p, 10);
+    if (!read) { st->read_seen = 0; return; }
+    unsigned addr = mem_addr(p, part_read_bus(s, p, sram_addr_pins, 10));
+    unsigned v = p->mfault ? mem_read(p, addr, st->base.cells[addr]) & 15 : st->base.cells[addr];
+    if (!st->read_seen || addr != st->addr_seen) {
+        st->read_seen = 1;
+        st->addr_seen = (uint16_t)addr;
+        st->wait = SRAM_ACCESS_STEPS;
+    } else if (st->wait) {
+        if (--st->wait == 0 && v != st->shown) { st->shown = (uint8_t)v; sim_mark_dirty(s, (int)(p - s->parts)); }
+    } else if (v != st->shown) {
+        st->shown = (uint8_t)v;
+        sim_mark_dirty(s, (int)(p - s->parts));
+    }
+}
+
+static void sram_slow_reset(sim_t *s, part_t *p) {
+    sram_slow_state_t *st = p->state;
+    sram_reset(s, p);
+    st->wait = st->shown = st->read_seen = 0;
+}
+
+const part_type_t PT_2114_PET = { "2114 SRAM",
+    "A6:M A5:M A4:M A3:M A0:M A1:M A2:M /CS:M GND:P /WE:M IO4:B IO3:B IO2:B IO1:B "
+    "A9:M A8:M A7:M VCC:P", sram_slow_eval, sram_slow_commit, sram_slow_reset, sizeof(sram_slow_state_t), TECH_NMOS };
+
 /* ------------------------------------------------------------------------ */
 /* 4164 dynamic RAM 64K x 1 (U9-U12, U21-U24)                                */
 /* ------------------------------------------------------------------------ */
