@@ -14,6 +14,7 @@
 #include "atlas.h"
 #include "c64.h"
 #include "pet.h"
+#include "ts2068.h"
 #include "diagnose.h"
 #include "atlas_browse.h"
 #include "thumbtex.h"
@@ -170,7 +171,7 @@ static struct {
     char status[512];
     /* A machine chosen in the controls, put on the bench after the frame;
      * the Spectrum and the C64 boards last on the bench (their buttons'). */
-    const machine_t *switch_to, *last_zx, *last_c64, *last_pet;
+    const machine_t *switch_to, *last_zx, *last_c64, *last_pet, *last_ts;
     /* A fault put on the board from a diagnosis: the view goes to its part
      * (once the board is drawn), which is outlined for a while. */
     bool focus_pending;
@@ -2059,9 +2060,9 @@ static bool load_prg(const char *path, bool run) {
     /* A file for the other machine (a Spectrum ROM dropped on the C64, a
      * C64 one on the Spectrum): that machine goes on the bench after the
      * frame, and gets the file then. */
-    const machine_t *const fams[] = { U.last_c64, U.last_zx, U.last_pet };
+    const machine_t *const fams[] = { U.last_c64, U.last_zx, U.last_pet, U.last_ts };
     if (!fk || bad) {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             const machine_t *other = fams[i];
             if (i == board_family(U.b)) continue;
             other_bad = true;
@@ -2541,10 +2542,10 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
         board_t *b = U.b;
         /* The machine on the bench: a click puts the other one there (the
          * Spectrum board last on the bench). */
-        const machine_t *const machines[] = { U.last_c64, U.last_zx, U.last_pet };
-        static const char *const fam_names[] = { "C64", "Spectrum", "PET" };
-        nk_layout_row_dynamic(ctx, 24, 3);
-        for (int i = 0; i < 3; i++) {
+        const machine_t *const machines[] = { U.last_c64, U.last_zx, U.last_pet, U.last_ts };
+        static const char *const fam_names[] = { "C64", "Spectrum", "PET", "TS2068" };
+        nk_layout_row_dynamic(ctx, 24, 4);
+        for (int i = 0; i < 4; i++) {
             bool cur = board_family(b) == i;
             if (nk_widget_is_hovered(ctx) && !cur)
                 nk_tooltip(ctx, "Put this machine's board on the bench (the other one is switched off)");
@@ -3374,9 +3375,9 @@ static void handle_event(const sapp_event *ev) {
 /* Setup                                                                     */
 /* ------------------------------------------------------------------------ */
 
-/* The machine family of a board: 0 C64, 1 Spectrum, 2 PET. */
+/* The machine family of a board: 0 C64, 1 Spectrum, 2 PET, 3 TS2068. */
 static int board_family(const board_t *b) {
-    return board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : 0;
+    return board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : b->m == &machine_ts2068 ? 3 : 0;
 }
 
 /* Everything of the interface that depends on the board: at start, and
@@ -3386,6 +3387,7 @@ static void attach_board(board_t *b) {
     switch (board_family(b)) {
     case 1: U.last_zx = b->m; break;
     case 2: U.last_pet = b->m; break;
+    case 3: U.last_ts = b->m; break;
     default: U.last_c64 = b->m; break;
     }
     U.hover_pin = U.hover_part = -1;
@@ -3502,6 +3504,7 @@ void ui_init(board_t *b, const char *prg, const char *scope_pin) {
     U.last_zx = &machine_zx48;
     U.last_c64 = &machine_c64;
     U.last_pet = &machine_pet4032;
+    U.last_ts = &machine_ts2068;
     if (prg) { snprintf(U.autoload, sizeof(U.autoload), "%s", prg); U.autoload_run = true; }
     U.smp = sg_make_sampler(&(sg_sampler_desc){ .min_filter = SG_FILTER_LINEAR, .mag_filter = SG_FILTER_LINEAR,
                                                 .wrap_u = SG_WRAP_CLAMP_TO_EDGE, .wrap_v = SG_WRAP_CLAMP_TO_EDGE });
