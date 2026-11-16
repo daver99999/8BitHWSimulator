@@ -113,7 +113,7 @@ class Netlist:
 
     def dump(self, path):
         with open(path, 'w') as f:
-            f.write('# Timex Sinclair 1000 (US ZX81 Issue 1) netlist, reconstructed from the known ZX81 circuit (see sheet01.py)\n')
+            f.write('# Timex Sinclair 1000 (US ZX81 Issue 3) netlist, reconstructed from the known ZX81 circuit (see sheet01.py)\n')
             f.write('# chips: ref type\n')
             for ref in sorted(self.chips):
                 f.write('chip %s %s\n' % (ref, self.chips[ref]))

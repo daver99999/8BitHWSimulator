@@ -14,8 +14,8 @@ PET, by David Green, github.com/daver99999). It started as antirez's
   ULA (a functional model, `src/ula81.c`), 8K ROM, 2K RAM, the buffer resistors, the /WAIT and clock transistors,
   keyboard diodes and the edge connector. Boots to the K cursor headless and runs `PRINT 1`. **The netlist is
   reconstructed from published descriptions of the ZX81 circuit, not from a schematic of this board** (the
-  uncertain nets are marked INFERRED in `tools/ts1000-netlist-src/sheet01.py`) and the placement is generic;
-  both are to be checked against a real Issue 3 board. The 8K ROM is not shipped: put it in `roms/ts1000`.
+  uncertain nets are marked INFERRED in `tools/ts1000-netlist-src/sheet01.py`) and the placement is from a photo of an Issue 3 board;
+  both are to be checked against it. The 8K ROM is not shipped: put it in `roms/ts1000`.
   The Keyboard window has the ZX81 keys (RUBOUT is the same as DELETE).
 - **Keyboard map.** A Keyboard button in the controls opens a window with the machine's keys and the
   PC key that types each one (`src/keymap_view.c`): the Spectrum and TS2068 (keywords, SYMBOL SHIFT
