@@ -41,12 +41,18 @@ N.note('U16 control pins: /CS 20 = ROMCS (SCLD 27); 22 and 27 (OE) INFERRED tied
 a20 = {2:'A12',23:'A11',21:'A10',24:'A9',25:'A8',3:'A7',4:'A6',5:'A5',6:'A4',7:'A3',8:'A2',9:'A1',10:'A0'}
 N.pins('U20', {**a20, **{11+i if i < 3 else 12+i: 'D%d' % i for i in range(8)}, 20:'EXROM', 22:'MREQ', 26:'RD'})
 # ---- DRAM ----
-for ref, cas, hi in (('U6','CASI',0),('U7','CASI',1),('U12','CAS2',0),('U13','CAS2',1),('U17','CAS3',0),('U18','CAS3',1)):
+# U6/U7: the 16K display RAM, on the SCLD's own strobes (RASI, CASI, DRAMWE), addressed by MA0-MA7 and on the primed data bus D0'-D7'
+# (Technical Manual 2.1.10: two 4416s).  U12/U13 (chunk 4-5, CAS2) and U17/U18 (CAS3): the 32K upper RAM, on the CPU data bus,
+# /WR straight from the CPU (schematic label "WR" on their pin 4), /RAS from /MREQ (INFERRED: RAS-only refresh by the Z80), addresses A0'-A7'.
+for ref, hi in (('U6',0),('U7',1)):
     N.chip(ref, '4416')
-    d = ['D%dP' % (hi*4 + k) for k in range(4)]
-    N.pins(ref, {1:'GND' if False else 'DROE', 2:d[0], 3:d[1], 15:d[2], 17:d[3], 4:'DRAMWE', 5:'RASI' if ref in ('U6','U7') else 'RAS',
-                 16:cas, 14:'A0P',13:'A1P',12:'A2P',11:'A3P',8:'A4P',7:'A5P',6:'A6P',10:'A7P'})
-N.note('4416 pins 2,3,15,17 are D1..D4 (data in AND out share 3-state); /OE tied to DROE (INFERRED low). Which RAS the upper 32K uses (RAS vs RASI) is INFERRED: check.')
+    N.pins(ref, {1:'DISP_OE', 2:'D%dP' % (hi*4), 3:'D%dP' % (hi*4+1), 15:'D%dP' % (hi*4+2), 17:'D%dP' % (hi*4+3),
+                 4:'DRAMWE', 5:'RASI', 16:'CASI', 14:'MA0',13:'MA1',12:'MA2',11:'MA3',8:'MA4',7:'MA5',6:'MA6',10:'MA7'})
+for ref, cas, hi in (('U12','CAS2',0),('U13','CAS2',1),('U17','CAS3',0),('U18','CAS3',1)):
+    N.chip(ref, '4416')
+    N.pins(ref, {1:'DROE', 2:'D%d' % (hi*4), 3:'D%d' % (hi*4+1), 15:'D%d' % (hi*4+2), 17:'D%d' % (hi*4+3),
+                 4:'WR', 5:'RAS', 16:cas, 14:'A0P',13:'A1P',12:'A2P',11:'A3P',8:'A4P',7:'A5P',6:'A6P',10:'A7P'})
+N.note('INFERRED: /RAS of the upper RAM (net RAS) is the CPU /MREQ; the schematic shows the wire but its source was not traced. DROE and DISP_OE (the 4416 /OE pins) are tied low on the real board (the schematic shows them joined to a ground/enable node).')
 # ---- AY-3-8912 U14 ----
 N.chip('U14', 'AY8912')
 N.pins('U14', {28:'D0',27:'D1',26:'D2',25:'D3',24:'D4',23:'D5',22:'D6',21:'D7', 19:'+5V', 17:'+5V', 20:'BC1', 18:'BDIR',

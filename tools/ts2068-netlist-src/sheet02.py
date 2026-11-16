@@ -1,34 +1,29 @@
 """Address buffer U5, DRAM address multiplexers U10/U11, glue U21, A' bus.
-READ FROM THE SCHEMATIC: U5 inputs MA7..MA0 (pins 18,12,16,7,3,5,14,9), outputs A7'..A1',A0' (2,8,4,13,17,15,6,11);
-U5 /OE pins 1+19 tied together to a node pulled to GND by R74 390R and driven through diode CR28 by U21 pin 11;
-U10 outputs YD,YC,YB,YA = A6',A5',A4',A3'; U11 outputs YD,YB = A2',A1'; U11 IIA = A7R (SCLD pin 38); /G pins to GND.
-INFERRED (the inputs are unlabelled bus lines): which CPU address bit goes to which mux input, and U11 YA/YC = A0'/A7'.
-The schematic has U5 and the 157s both driving the A' bus; the 157 is not tri-state, so this needs checking against the real board."""
+
+READ FROM THE SCHEMATIC (and Technical Manual 2.1.8, Table 2.1.8-1):
+ - U5 (74LS244) takes the muxed CPU address A7'..A0' (its input pins 2,8,4,13,17,15,6,11) and drives the display RAM's address bus MA7..MA0
+   (its output pins 18,12,16,7,3,5,14,9).  It is on while the CPU addresses the display RAM; the SCLD lets go of MA then (TS).
+ - U10 outputs YA,YB,YC,YD = A3',A4',A5',A6'; U11 outputs YB,YD = A1',A2'.  The 74LS157 select is the SCLD's MUX; /G (pin 15) is GND.
+   The manual says the 4416 has 8 row and 6 column address bits: A0'-A5' are row A0-A5 then column A8-A13, A6' and A7' only matter as row bits.
+ - U11 IIA/IOA (pins 3, 2) ... see below; the 8th row bit A7' comes from the SCLD's ATR (pin 38) through U11.
+ MEASURED on a 03D board: DRAM A0 (U12 pin 14) is not connected to U11 pin 12.  So A0' is U11 YA (pin 4) and A7' is YC (pin 12) here.
+ INFERRED: which CPU address bit goes to which mux input; the 74LS00 U21 and the wired-OR on U5's /OE (CR27, CR28, R74, jumpers H/G) were not
+ followed: U5's /OE pins are tied to TS here (same as U9's /E), U21 is left unconnected.  The 03D has an extra patch board here (see the README)."""
 from netlib import N
 N.sheet_is('02')
 N.chip('U5', 'LS244'); N.chip('U10', 'LS157'); N.chip('U11', 'LS157'); N.chip('U21', 'LS00')
-# U5: inputs (1A1..1A4, 2A1..2A4) = MA7..MA0, outputs A7'..A0'
-N.pins('U5', {1:'U5OE', 19:'U5OE',
+N.pins('U5', {1:'TS', 19:'TS',
               18:'MA7', 12:'MA6', 16:'MA5', 7:'MA4', 3:'MA3', 5:'MA2', 14:'MA1', 9:'MA0',
               2:'A7P', 8:'A6P', 4:'A5P', 13:'A4P', 17:'A3P', 15:'A2P', 6:'A1P', 11:'A0P'})
-N.chip('R74', 'RES'); N.pins('R74', {1: 'U5OE', 2: 'GND'})
-N.chip('CR28', 'DIODE'); N.pins('CR28', {'1': 'U21_11', '2': 'U5OE'})
-# U10 / U11: select = MUX (SCLD pin 21) INFERRED, /G low
-N.pins('U10', {1:'MUX', 15:'GND', 9:'A6P', 12:'A5P', 7:'A4P', 4:'A3P'})
-N.pins('U11', {1:'MUX', 15:'GND', 9:'A2P', 7:'A1P'})
-# INFERRED mux inputs: row (select low) = CPU A(n), column (select high) = CPU A(n+7)
-rowcol = {('U10',2,3,'A3P'):None}
-mux = {  # (A-in pin, B-in pin, CPU row bit, CPU column bit) by output pin; 74LS157: 1A=2 1B=3 1Y=4 / 2A=5 2B=6 2Y=7 / 3A=11 3B=10 3Y=9 / 4A=14 4B=13 4Y=12
- 'U10': {4:(2,3,3,10), 7:(5,6,4,11), 9:(11,10,5,12), 12:(14,13,6,13)},
- 'U11': {7:(5,6,1,8), 9:(11,10,2,9)},
-}
-for ref, outs in mux.items():
-    for ypin, (pa, pb, row, col) in outs.items():
-        N.pins(ref, {pa: 'A%d' % row, pb: 'A%d' % col})
-N.note('U10/U11 data inputs: row = A(n), column = A(n+7), INFERRED. U11 YA (pin 4) = A7P (dock A7RB): input 1B (pin 3) = A7R from the SCLD, 1A (pin 2) = A0 INFERRED; YC (pin 12) inputs 13 and 14 joined, INFERRED = A0P source.')
-N.pins('U11', {2: 'A0', 3: 'A7R', 4: 'A7P', 12: 'U11_YC', 13: 'A7', 14: 'A7'})
-N.note('MEASURED on a 03D board: DRAM A0 (U12 pin 14) is NOT connected to U11 pin 12, so U11 YC is not A0P; A0P is driven by U5 pin 11 (and the 03D daughterboard).')
-# U21 74LS00: only part of the sheet read (gates feeding CR28 / wired-OR with CR27); inputs INFERRED
-N.pins('U21', {1:'+5V', 2:'MREQ', 3:'U21_3', 4:'U21_3', 5:'U21_3', 6:'U21_6', 9:'RFSH', 10:'MREQ', 8:'U21_8',
-               12:'U21_6', 13:'+5V', 11:'U21_11'})
-N.note('U21 connections beyond pins 11 (out), 6, 3, 8 are INFERRED from the drawing (74LS00, 4 gates: 1-2/3, 4-5/6, 9-10/8, 12-13/11).')
+# 74LS157 pins: 1A=2 1B=3 1Y=4 / 2A=5 2B=6 2Y=7 / 3A=11 3B=10 3Y=9 / 4A=14 4B=13 4Y=12 ; A = selected while MUX is low (row), B while high (column)
+N.pins('U10', {1:'MUX', 15:'GND',
+               4:'A3P',  2:'A3',  3:'A11',     # YA
+               7:'A4P',  5:'A4',  6:'A12',     # YB
+               12:'A5P', 14:'A5', 13:'A13',    # YC
+               9:'A6P',  11:'A6', 10:'GND'})   # YD
+N.pins('U11', {1:'MUX', 15:'GND',
+               4:'A0P',  2:'A0',  3:'A8',      # YA
+               7:'A1P',  5:'A1',  6:'A9',      # YB
+               9:'A2P',  11:'A2', 10:'A10',    # YD
+               12:'A7P', 14:'A7R', 13:'A7R'})  # YC: both inputs on ATR
+N.note('A7 row bit: U11 YC = ATR (SCLD pin 38) in both phases (INFERRED from the joined inputs 13/14 on the drawing).')
