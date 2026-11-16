@@ -138,7 +138,7 @@ static int t1_kind_of(const char *ref) {
     if (!strcmp(ref, "X1") || !strcmp(ref, "MIC") || !strcmp(ref, "EAR") || !strcmp(ref, "MOD") || !strcmp(ref, "DC") ||
         !strncmp(ref, "KB", 2) || ref[0] == 'J') return PART_CONNECTOR;
     if (!strncmp(ref, "IC", 2) || !strcmp(ref, "TR1")) return PART_IC;
-    if (ref[0] == 'R' && ref[1] >= '0' && ref[1] <= '9') return PART_RESISTOR;
+    if (ref[0] == 'R' && ((ref[1] >= '0' && ref[1] <= '9') || ref[1] == 'X')) return PART_RESISTOR;
     return PART_OTHER;      /* the diodes and TR2 (made elements in t1_create) */
 }
 
@@ -233,15 +233,15 @@ static void t1_create(board_t *b) {
     ((ula81_state_t *)s->parts[z->p_ula].state)->fb = b->screen;
     ((ula81_state_t *)s->parts[z->p_ula].state)->running = true;     /* X1 is not simulated: it always oscillates */
     /* Resistors that do logic: the buffers (470 ohm on the data bus, 1K on the ROM address lines, 680 ohm on the chip
-     * selects) let each side drive its own half of the bus; R21 and R22 are base resistors, wires here. */
-    for (int i = 1; i <= 8; i++) { char ref[8]; snprintf(ref, sizeof(ref), "R%d", i); part_t *p = t1_find(b, ref);
+     * selects) let each side drive its own half of the bus; RX1 and RX3 are base resistors, wires here. */
+    for (int i = 7; i <= 14; i++) { char ref[8]; snprintf(ref, sizeof(ref), "R%d", i); part_t *p = t1_find(b, ref);
         if (p && p->state && ((resistor_state_t *)p->state)->nel) element_set_type(s, p, 0, EL_SERIES); }
-    for (int i = 51; i <= 59; i++) { char ref[8]; snprintf(ref, sizeof(ref), "R%d", i); part_t *p = t1_find(b, ref);
+    for (int i = 18; i <= 26; i++) { char ref[8]; snprintf(ref, sizeof(ref), "R%d", i); part_t *p = t1_find(b, ref);
         if (p && p->state && ((resistor_state_t *)p->state)->nel) element_set_type(s, p, 0, EL_SERIES); }
-    static const char *const ser[] = { "R18", "R19" };
+    static const char *const ser[] = { "R2", "R28" };
     for (int i = 0; i < 2; i++) { part_t *p = t1_find(b, ser[i]);
         if (p && p->state && ((resistor_state_t *)p->state)->nel) element_set_type(s, p, 0, EL_SERIES); }
-    static const char *const links[] = { "R21", "R22" };
+    static const char *const links[] = { "RX1", "RX3" };
     for (int i = 0; i < 2; i++) { part_t *p = t1_find(b, links[i]);
         if (p && p->state) ((resistor_state_t *)p->state)->el[0].type = EL_LINK; }
     /* The keyboard diodes: the half row (pin 1) is the anode, the address line (pin 2) the cathode. */
@@ -424,7 +424,7 @@ const machine_t machine_ts1000 = {
     .ready_cycles = 2 * T1_FREQ,
     .parts = t1_part_defs, .nparts = sizeof(t1_part_defs) / sizeof(t1_part_defs[0]),
     .conns = t1_conn_defs, .nconns = sizeof(t1_conn_defs) / sizeof(t1_conn_defs[0]),
-    .link_resistors = "R21 R22", .crystals = "X1",
+    .link_resistors = "RX1 RX3", .crystals = "X1",
     .diodes = "D", .jumpers = "", .supplies = "",
     .keys_help = "Keys: type; Left Shift = SHIFT, Enter = NEWLINE, Backspace = RUBOUT (= DELETE), arrows = cursor, Esc = BREAK",
     .reset_help = "Hold to press RESET: shorts the Z80 /RESET (IC3 pin 26) to GND",

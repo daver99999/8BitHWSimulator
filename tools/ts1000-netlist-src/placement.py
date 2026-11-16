@@ -29,20 +29,20 @@ def put(ref, px, py, horizontal_in_sim=False):
     TWO_PAD[ref] = (x, y, 'h') if horizontal_in_sim else (x, y)
 for k, px in enumerate([370, 405, 432, 458, 490, 518, 545, 572]):      # the row at the top left: R35-R42
     put('R%d' % (35 + k), px, 770, True)
-for k, px in enumerate([237, 267, 293, 327, 355, 380, 410, 437]):      # 8 resistors, left: the 470 ohm data resistors
-    put('R%d' % (1 + k), px, 1010, True)
-for k, px in enumerate([237, 267, 295, 327]):                          # 4 resistors, left, below: address resistors
-    put('R%d' % (51 + k), px, 1210, True)
-for k, px in enumerate([885, 910, 935, 962, 985]):                     # a row right of the ROM: address resistors
-    put('R%d' % (55 + k), px, 1215, True)
+for k, px in enumerate([237, 267, 293, 327, 355, 380, 410, 437]):      # 8 resistors, left: the 470 ohm data resistors R7-R14
+    put('R%d' % (7 + k), px, 1010, True)
+for k, px in enumerate([237, 267, 295, 327]):                          # 4 resistors, left, below: the address resistors R23-R26
+    put('R%d' % (23 + k), px, 1210, True)
+for k, px in enumerate([885, 910, 935, 962, 985]):                     # a row right of the ROM: the address resistors R18-R22
+    put('R%d' % (18 + k), px, 1215, True)
 for k in range(5):                                                     # R43-R47, beside the keyboard connector
     put('R%d' % (43 + k), 440, 1455 + 23 * k)
 for k in range(8):                                                     # D1-D8, below them
     put('D%d' % (1 + k), 425, 1590 + 21 * k)
-put('R18', 665, 873); put('R19', 665, 897)                             # the pairs between the ULA and the Z80
-put('R60', 850, 872); put('R61', 860, 896)
-put('R30', 940, 628)                                                   # near R31, R32, D9 (the USA/France strap)
+put('R2', 665, 873); put('R28', 665, 897)                              # the pairs between the ULA and the Z80 (680 ohm)
+put('R16', 850, 872); put('R15', 860, 896)
+put('R31', 790, 640)                                                   # R31, R32, D9: the USA/France strap near the ULA
 put('R17', 1025, 1630, True)                                           # the /WAIT pull-up, next to its transistor
-put('R22', 1112, 1650, True)
-put('R20', 1160, 985, True); put('R21', 1110, 1010, True)
-OTHER = {'X1': P(1125, 800), 'TR1': P(1075, 1665), 'TR2': P(1068, 962)}
+put('RX3', 1112, 1650, True)
+put('RX2', 1160, 985, True); put('RX1', 1110, 1010, True)
+OTHER = {'C5': P(1075, 1220), 'X1': P(1125, 800), 'TR1': P(1075, 1665), 'TR2': P(1068, 962)}
