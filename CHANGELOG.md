@@ -13,9 +13,10 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 - **Timex Sinclair 1500.** A sixth machine (`--machine ts1500`, Timex in the control panel): Z80A, the 68 pin gate array U5
   (the ZX81 ULA's logic, reused from `src/ula81.c`, plus its own DRAM timing), 8K ROM, eight 4116 DRAMs (16K), the
   74LS244/245 buffers, keyboard diodes and edge connector. Boots to the K cursor headless and runs `PRINT 1`. The netlist
-  is transcribed from a low resolution schematic: **the pin numbers of U5 are INFERRED** (only two were legible), see
-  `docs/TS1500.md` for the continuity test that checks them on a real board. The ROM is not shipped: put it in `roms/ts1500`.
-  The Keyboard window shows the TS1000 keys for it.
+  is transcribed from the schematic "TS-1500 Rev 1.0, redrawn 2015" (Dick Berry), which prints every pin of U5; ten of
+  them (the Z80 control lines) were also checked by continuity on a real board and agree. The refs are the real ones (Z80
+  U7, keyboard J5 / J6, diodes D10-D17, R25 and R28 in the ROM lines, U6 DIR on /WR). The video, MIC and EAR corner is
+  transcribed (passives only). The ROM is not shipped: put it in `roms/ts1500`. The Keyboard window shows the TS1000 keys.
 
 - **Timex Sinclair 1000 (ZX81), Issue 3.** A fifth machine (`--machine ts1000`, Timex in the control panel): Z80A,
   ULA (a functional model, `src/ula81.c`), 8K ROM, 2K RAM, the buffer resistors, the /WAIT and clock transistors,

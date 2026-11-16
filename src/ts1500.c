@@ -1,9 +1,8 @@
 /* ts1500.c - the Timex Sinclair 1500, board with the 68 pin gate array U5.
  *
- * THE NETLIST IS TRANSCRIBED FROM A LOW RESOLUTION SCHEMATIC (1024 x 653): the chips, the buses, the DRAMs, the keyboard
- * and the edge connector are legible; the PIN NUMBERS OF U5 ARE NOT (two of them are: 59 TAPE IN and 54 CH SEL OUTPUT).
- * They are INFERRED from the order of the pins on the symbol and are to be checked with a continuity test: see
- * docs/TS1500.md and tools/ts1500-netlist-src/sheet01.py.
+ * THE NETLIST IS TRANSCRIBED FROM THE SCHEMATIC "TS-1500 Rev 1.0, redrawn 2015" (Dick Berry), which prints every pin number of
+ * U5. Ten of them (/M1 2, /NMI 3, /IORQ 4, /RD 5, /WR 6, /MREQ 7, /HALT 8, /WAIT 9, /RESET 10, /RFSH 16) were also checked with
+ * continuity readings on a real board, and agree. See docs/TS1500.md and tools/ts1500-netlist-src/sheet01.py.
  *
  * WHAT U5 IS. Not a Ferranti ULA but a custom 68 pin NCR gate array. From the schematic it is the ULA's job (CPU clock from
  * the 6.5 MHz oscillator, ROM select, the video, the NMI line counter, the keyboard and tape port, the WAIT line that
@@ -15,8 +14,8 @@
  * HOW TIME MOVES: as the TS1000's (ts1000.c): U5 advances every half period of the 6.5 MHz oscillator, the board
  * settles, the Z80 sees an edge of its clock if U5 made one, the memories see their strobes, the board settles again.
  *
- * ASSUMED where the schematic can not be read: DIR of U6 (on /RD), which U5 pins are inputs or outputs among RAMRM,
- * RAMCS and CONTROL, the keyboard pull-ups (inside U5 here), the DRAM refresh (RAS only cycles are not made: the DRAM
+ * ASSUMED where the schematic does not say: which U5 pins are inputs or outputs (RAMRM, RAMCS, pin 18), the keyboard pull-ups
+ * (inside U5 here), which of pins 57 and 58 is on the Z80's CLK (both carry the clock here), the DRAM refresh (RAS only cycles are not made: the DRAM
  * model keeps its data), and the character bitmap path in a video fetch (read from the ROM's outputs here).
  * NOT modeled: the power supply, the modulator and the video signal levels, the tape circuits, the expansion pack. */
 #include "ts1500.h"
@@ -85,7 +84,7 @@ static const part_type_t PT_T5DRAM = { "4116",
     "VBB:X D:m /WE:m /RAS:m A0:m A2:m A1:m VDD:X VCC:P A5:m A4:m A3:m A6:m Q:O /CAS:m VSS:P",
     t5_dram_eval, t5_dram_commit, t5_dram_reset, sizeof(dram_state_t), TECH_NMOS };
 
-/* 74LS245 (U6): DIR high sends A (the CPU) to B (the memories), low B to A; /G high isolates. */
+/* 74LS245 (U6): the B side (pins 11-18) is the CPU bus, the A side (pins 2-9) the memories' bus D0'-D7'. DIR (on /WR) high sends A to B (memories to CPU, a read), low B to A; /G high isolates. */
 static void t5_245_eval(sim_t *s, part_t *p) {
     static const int a[8] = { 2, 3, 4, 5, 6, 7, 8, 9 }, bb[8] = { 18, 17, 16, 15, 14, 13, 12, 11 };
     bool en = !pin_in(s, p, 19), dir = pin_in(s, p, 1);
@@ -107,23 +106,25 @@ static const part_type_t PT_T5245 = { "74LS245",
 /* ------------------------------------------------------------------------ */
 /* U5, the gate array                                                        */
 /* ------------------------------------------------------------------------ */
-/* Pin numbers: INFERRED (see the header), except 59 TAPE IN and 54 CH SEL OUTPUT. Counted along the symbol: the left side
- * from the top (59..43), the bottom from the left (42..22), the right side from the bottom (21..4), the top from the right
- * (3, 2, 1, 68..60). */
+/* Pin numbers: the schematic's (see the header). The address and data pins are not in runs, so they are tables. */
 enum {
-    G_MREQ = 1, G_WR = 2, G_M1 = 3, G_CLKN = 4, G_CLK = 5, G_CPUCLK = 6, G_OSCIN = 7, G_OSCOUT = 8, G_RESET = 9, G_RFSH = 10,
-    G_D0 = 11, G_DEN = 19, G_AEN = 20, G_ROMCS = 21, G_A0P = 22, G_A9 = 31, G_A15 = 37, G_KBD0 = 38,
-    G_RA7 = 43, G_RA0 = 50, G_WRD = 51, G_CAS = 52, G_RAS = 53, G_CHSEL = 54, G_REFADJ = 56, G_GND = 57, G_VCC = 58, G_TAPEIN = 59,
-    G_TV = 60, G_CONTROL = 61, G_RAMRM = 62, G_RAMCS = 63, G_WAIT = 64, G_RD = 65, G_HALT = 66, G_IORQ = 67, G_NMI = 68
+    G_KBD0 = 1, G_M1 = 2, G_NMI = 3, G_IORQ = 4, G_RD = 5, G_WR = 6, G_MREQ = 7, G_HALT = 8, G_WAIT = 9, G_RESET = 10,
+    G_RAMRM = 11, G_DEN = 12, G_AEN = 13, G_ROMCS = 15, G_RFSH = 16, G_A8P = 48, G_VCC = 52, G_TV = 53, G_CHSEL = 54,
+    G_OSCOUT = 55, G_OSCIN = 56, G_CPUCLK = 57, G_SYSCLK = 58, G_TAPEIN = 59, G_GND = 60, G_CAS = 62, G_RAS = 63, G_WRD = 64
 };
+static const int t5_ga_a0p[9] = { 46, 51, 19, 24, 28, 32, 36, 40, 48 };            /* A0'..A7' (to U3's outputs / the ROM), A8 */
+static const int t5_ga_ahi[7] = { 49, 22, 26, 30, 34, 38, 42 };                    /* A9..A15 */
+static const int t5_ga_ra[8] = { 44, 50, 23, 27, 31, 35, 39, 43 };                 /* RA0..RA7 */
+static const int t5_ga_d[8] = { 25, 29, 33, 37, 41, 47, 20, 17 };                  /* D0..D7 */
+static const int t5_ga_kbd[5] = { 1, 68, 67, 66, 65 };                             /* KBD0..KBD4 */
 static uint8_t t5_rom_bitmap(sim_t *s);
 static const ula81_pins_t t5_ga_pins = {
-    .a0p = G_A0P, .a1p = G_A0P + 1, .a2p = G_A0P + 2, .a7p = G_A0P + 7, .a8p = G_A0P + 8,
-    .rd = G_RD, .iorq = G_IORQ, .wr = G_WR, .mreq = G_MREQ, .m1 = G_M1, .a14 = G_A15 - 1, .a15 = G_A15,
+    .a0p = 46, .a1p = 51, .a2p = 19, .a7p = 40, .a8p = G_A8P,
+    .rd = G_RD, .iorq = G_IORQ, .wr = G_WR, .mreq = G_MREQ, .m1 = G_M1, .a14 = 38, .a15 = 42,
     .ramcs = G_RAMRM, .romcs = G_ROMCS, .clk = G_CPUCLK, .clk_true = true, .nmi = G_NMI, .tv = G_TV, .halt = G_HALT,
     .tape = G_TAPEIN, .ukus = 0, .push_pull = true, .bitmap = t5_rom_bitmap,
-    .data = { 11, 12, 13, 14, 15, 16, 17, 18 }, .kbd = { 38, 39, 40, 41, 42 },
-    .alt = { 22, 23, 24, 25, 26, 27, 28, 29, 30 },
+    .data = { 25, 29, 33, 37, 41, 47, 20, 17 }, .kbd = { 1, 68, 67, 66, 65 },
+    .alt = { 46, 51, 19, 24, 28, 32, 36, 40, 48 },
 };
 typedef struct {
     ula81_state_t ula;      /* first: the ULA logic runs on this */
@@ -137,12 +138,10 @@ static void t5_ga_eval(sim_t *s, part_t *p) {
     ula81_state_t *u = &g->ula;
     ula81_eval(s, p);
     bool mreq = !pin_in(s, p, G_MREQ), wr = !pin_in(s, p, G_WR);
-    pin_out(s, p, G_CLKN, DRV_BIT(!u->cpuclk));
-    pin_out(s, p, G_CLK, DRV_BIT(u->cpuclk));
+    pin_out(s, p, G_SYSCLK, DRV_BIT(u->cpuclk));                                     /* SYS Clk (the edge connector); pin 57 is driven by the ULA logic */
     pin_out(s, p, G_RESET, DRV_PULLUP);                                              /* the power-on RC (C23) pulls /RESET up: INFERRED */
-    pin_out(s, p, G_CONTROL, DRV_LO);
     pin_out(s, p, G_CHSEL, DRV_LO);
-    for (int i = 0; i < 5; i++) pin_out(s, p, 38 + i, DRV_PULLUP);                 /* the keyboard columns */
+    for (int i = 0; i < 5; i++) pin_out(s, p, t5_ga_kbd[i], DRV_PULLUP);           /* the keyboard columns */
     /* /WAIT (the TS1000 makes it with TR1): low when the NMI line is active and the CPU is not halted. */
     bool nmi_on = u->nmi_en && ula81_hsync_cycle(u);
     pin_out(s, p, G_WAIT, DRV_BIT(!(nmi_on && pin_in(s, p, G_HALT))));
@@ -155,12 +154,11 @@ static void t5_ga_eval(sim_t *s, part_t *p) {
     pin_out(s, p, G_CAS, DRV_BIT(!g->cas));
     pin_out(s, p, G_WRD, DRV_BIT(!wr));
     unsigned a = 0;
-    for (int i = 0; i < 9; i++) if (pin_in(s, p, G_A0P + i)) a |= 1u << i;
-    for (int i = 0; i < 5; i++) if (pin_in(s, p, G_A9 + i)) a |= 1u << (9 + i);
+    for (int i = 0; i < 9; i++) if (pin_in(s, p, t5_ga_a0p[i])) a |= 1u << i;
+    for (int i = 0; i < 5; i++) if (pin_in(s, p, t5_ga_ahi[i])) a |= 1u << (9 + i);
     unsigned ra = g->cas ? (a >> 7) & 0x7F : a & 0x7F;
-    for (int i = 0; i < 7; i++) pin_out(s, p, G_RA0 - i, DRV_BIT((ra >> i) & 1));
-    pin_out(s, p, G_RA7, DRV_LO);
-    pin_out(s, p, G_REFADJ, DRV_Z);
+    for (int i = 0; i < 7; i++) pin_out(s, p, t5_ga_ra[i], DRV_BIT((ra >> i) & 1));
+    pin_out(s, p, t5_ga_ra[7], DRV_LO);
 }
 
 static void t5_ga_reset(sim_t *s, part_t *p) {
@@ -179,7 +177,7 @@ static void t5_ga_step(sim_t *s, part_t *p) {
     t5_ga_t *g = p->state;
     if (p->dead) return;
     bool mreq = !pin_in(s, p, G_MREQ), rd = !pin_in(s, p, G_RD), wr = !pin_in(s, p, G_WR);
-    bool a14 = pin_in(s, p, G_A15 - 1), rfsh = !pin_in(s, p, G_RFSH);
+    bool a14 = pin_in(s, p, t5_ga_ahi[5]), rfsh = !pin_in(s, p, G_RFSH);
     bool ras = mreq && a14 && !rfsh;
     g->acc = ras && (rd || wr) ? (uint8_t)(g->acc < 3 ? g->acc + 1 : 3) : 0;
     bool cas = ras && g->acc >= 3;      /* /RAS first, then the column: the data of a write are valid by then */
@@ -189,18 +187,18 @@ static void t5_ga_step(sim_t *s, part_t *p) {
 }
 
 static const part_type_t PT_T5GA = { "U5 gate array",
-    "MREQ:T WR:T M1:T /CLKN:O CLK:O CPUCLK:O OSCIN:X OSCOUT:X RESET:B RFSH:T D0:B D1:B D2:B D3:B D4:B D5:B D6:B D7:B "
-    "/DEN:O /AEN:O /ROMCS:O A0P:B A1P:B A2P:B A3P:B A4P:B A5P:B A6P:B A7P:B A8P:B A9:T A10:T A11:T A12:T A13:T A14:T A15:T "
-    "KBD0:B KBD1:B KBD2:B KBD3:B KBD4:B RA7:O RA6:O RA5:O RA4:O RA3:O RA2:O RA1:O RA0:O WRD:O CAS:O RAS:O CHSEL:O "
-    "NC55:X REFADJ:X GND:P +5V:P TAPEIN:T TV/TAPE:O CONTROL:O RAMRM:O RAMCS:T WAIT:O RD:T HALT:T IORQ:T NMI:O",
+    "KBD0:B M1:T /NMI:O IORQ:T RD:T WR:T MREQ:T HALT:T /WAIT:O RESET:B RAMRM:O /DEN:O /AEN:O RAMCS:X /ROMCS:O RFSH:T D7:B CONT:X "
+    "A2P:B D6:B HZ:X A10:T RA2:O A3P:B D0:B A11:T RA3:O A4P:B D1:B A12:T RA4:O A5P:B D2:B A13:T RA5:O A6P:B D3:B A14:T RA6:O "
+    "A7P:B D4:B A15:T RA7:O RA0:O NC45:X A0P:B D5:B A8P:B A9:T RA1:O A1P:B +5V:P TV/TAPE:O CHSEL:O OSCOUT:X OSCIN:X "
+    "CPUCLK:O SYSCLK:O TAPEIN:T GND:P NC61:X /CAS:O /RAS:O WRD:O KBD4:B KBD3:B KBD2:B KBD1:B",
     t5_ga_eval, 0, t5_ga_reset, sizeof(t5_ga_t), TECH_TTL };
 
 static const part_def_t t5_part_defs[] = {
-    { "U5", &PT_T5GA, "U5", ROLE_CHIP, "U5\nGATE ARRAY", "Custom 68 pin gate array (NCR): the ULA's job (clock, ROM select, video, sync, NMI, keyboard, tape port, WAIT) and the DRAM control (/RAS, /CAS, /WE, RA0-RA7) and the buffer controls /DEN, /AEN. PIN NUMBERS INFERRED" },
-    { "U1", &PT_T5Z80, "CPU", ROLE_CHIP, "Z80A", "Z80A CPU, 3.25 MHz" },
+    { "U5", &PT_T5GA, "U5", ROLE_CHIP, "U5\nGATE ARRAY", "Custom 68 pin gate array (NCR): the ULA's job (clock, ROM select, video, sync, NMI, keyboard, tape port, WAIT) and the DRAM control (/RAS, /CAS, /WE, RA0-RA7) and the buffer controls /DEN, /AEN. Pin numbers from the schematic" },
+    { "U7", &PT_T5Z80, "CPU", ROLE_CHIP, "Z80A", "Z80A CPU, 3.25 MHz" },
     { "U2", &PT_2364, "ROM", ROLE_ROM, "8K ROM\n$0000-$1FFF", "ROM: BASIC and the character set, 8K (the TS1500's own: TS1510 cartridge support, fixes)" },
     { "U3", &PT_74LS244, "BUF", ROLE_GLUE, "74LS244", "Address buffer: CPU A0-A7 to the ROM (A0'-A7'); off (/AEN high) while U5 drives the character address in a video fetch" },
-    { "U6", &PT_T5245, "BUF", ROLE_GLUE, "74LS245", "Data transceiver between the CPU bus and the memories' bus (D0'-D7'); /G is U5's /DEN" },
+    { "U6", &PT_T5245, "BUF", ROLE_GLUE, "74LS245", "Data transceiver between the CPU bus and the memories' bus (D0'-D7'); /G is U5's /DEN, DIR is /WR" },
     { "U10", &PT_T5DRAM, "DRAM", ROLE_VRAM, "4116\nD0", "16K x 1 dynamic RAM, data bit 0 ($4000-$7FFF)" },
     { "U9", &PT_T5DRAM, "DRAM", ROLE_VRAM, "4116\nD1", "16K x 1 dynamic RAM, data bit 1" },
     { "U8", &PT_T5DRAM, "DRAM", ROLE_VRAM, "4116\nD2", "16K x 1 dynamic RAM, data bit 2" },
@@ -212,16 +210,16 @@ static const part_def_t t5_part_defs[] = {
 };
 
 static const conn_def_t t5_conn_defs[] = {
-    { "P1", "Edge connector", "1=D7 2=+5V 3=/RAMRM 4=+9V 7=D0 8=GND 9=D1 10=GND 11=D2 12=CLK 13=D6 14=A0 15=D5 16=A1 17=D3 18=A2 "
-                              "19=D4 20=A3 21=/INT 22=A15 23=/NMI 24=A14 25=/HALT 26=A13 27=/MREQ 28=A12 29=/IORQ 30=A11 31=/RD "
+    { "P1", "Edge connector", "1=D7' 2=+5V 3=/RAMRM 4=+9V 7=D0' 8=GND 9=D1' 10=GND 11=D2' 12=SYS_CLK 13=D6' 14=A0 15=D5' 16=A1 17=D3' 18=A2 "
+                              "19=D4' 20=A3 21=/INT 22=A15 23=/NMI 24=A14 25=/HALT 26=A13 27=/MREQ 28=A12 29=/IORQ 30=A11 31=/RD "
                               "32=A10 33=/WR 34=A9 35=/BUSAK 36=A8 37=/WAIT 38=A7 39=/BUSRQ 40=A6 41=/RESET 42=A5 43=/M1 44=A4 "
                               "45=/RFSH 46=/ROMCS" },
-    { "KB1", "Keyboard (columns)", "1=KBD0 2=KBD1 3=KBD2 4=KBD3 5=KBD4" },
-    { "KB2", "Keyboard (half rows)", "1=A11 2=A10 3=A9 4=A12 5=A13 6=A8 7=A14 8=A15" },
-    { "MICJ", "MIC jack", "1=MIC 2=GND" },
-    { "EARJ", "EAR jack", "1=EAR 2=GND" },
+    { "J5", "KBD COLS", "1=KBD0 2=KBD1 3=KBD2 4=KBD3 5=KBD4" },
+    { "J6", "KBD ROWS", "1=A8 2=A9 3=A10 4=A11 5=A12 6=A13 7=A14 8=A15" },
+    { "J2", "MIC jack", "1=MIC 2=sleeve" },
+    { "J1", "EAR jack", "1=EAR 2=GND" },
     { "MOD", "Modulator", "1=video 2=CH_SEL 3=GND 4=+5V" },
-    { "DC", "9V input", "1=+9V 2=GND" },
+    { "J3", "9V input", "1=+9V 2=GND" },
 };
 
 static int t5_rail_of(const char *name) {
@@ -231,8 +229,7 @@ static int t5_rail_of(const char *name) {
 }
 
 static int t5_kind_of(const char *ref) {
-    if (!strcmp(ref, "X1") || !strcmp(ref, "MICJ") || !strcmp(ref, "EARJ") || !strcmp(ref, "MOD") || !strcmp(ref, "DC") ||
-        !strncmp(ref, "KB", 2) || !strcmp(ref, "P1")) return PART_CONNECTOR;
+    if (!strcmp(ref, "X1") || !strcmp(ref, "MOD") || !strcmp(ref, "P1") || (ref[0] == 'J' && ref[1] >= '0' && ref[1] <= '9')) return PART_CONNECTOR;
     if (ref[0] == 'U') return PART_IC;
     if (ref[0] == 'R' && (ref[1] >= '0' && ref[1] <= '9')) return PART_RESISTOR;
     return PART_OTHER;      /* the diodes (made elements in t5_create) */
@@ -327,7 +324,7 @@ static uint8_t t5_rom_bitmap(sim_t *s) {
 static void t5_create(board_t *b) {
     ts1500_t *z = T5(b);
     sim_t *s = &b->sim;
-    z->p_cpu = sim_find_part(s, "U1");
+    z->p_cpu = sim_find_part(s, "U7");
     z->p_ula = sim_find_part(s, "U5");
     z->p_rom = sim_find_part(s, "U2");
     static const char *const dram_refs[8] = { "U10", "U9", "U8", "U11", "U12", "U13", "U14", "U15" };      /* D0'..D7' */
@@ -343,20 +340,20 @@ static void t5_create(board_t *b) {
     g->ula.running = true;                               /* X1 is not simulated: it always oscillates */
     t5_ga_bitmap_part = z->p_rom;
     t5_ga_bitmap_sim = s;
-    /* R18 (1K) is in the ROM's A8 line, a series resistor: the gate array and the CPU side drive their own halves. */
-    static const char *const ser[] = { "R18" };
-    for (int i = 0; i < 1; i++) { part_t *p = t5_find(b, ser[i]);
+    /* R28 (1K) is in the ROM's A8 line, a series resistor: the gate array and the CPU side drive their own halves. R25 (680) is in
+     * the /ROMCS line. */
+    static const char *const ser[] = { "R28", "R25" };
+    for (int i = 0; i < 2; i++) { part_t *p = t5_find(b, ser[i]);
         if (p && p->state && ((resistor_state_t *)p->state)->nel) element_set_type(s, p, 0, EL_SERIES); }
-    /* The keyboard diodes: the half row (pin 1) is the anode, the address line (pin 2) the cathode. */
-    for (int i = 1; i <= 8; i++) { char ref[8]; snprintf(ref, sizeof(ref), "D%d", i); t5_make_element(b, ref, 1, 2, EL_DIODE); }
-    static const int row_pin[8] = { 6, 3, 2, 1, 4, 5, 7, 8 };      /* KB2 pins of the half rows A8..A15 */
-    for (int c = 0; c < 8; c++) z->pin_row[c] = t5_pin_of(b, "KB2", row_pin[c]);
-    for (int l = 0; l < 5; l++) z->pin_kb[l] = t5_pin_of(b, "KB1", 1 + l);
+    /* The keyboard diodes D10-D17: the half row (pin 1) is the anode, the address line (pin 2) the cathode. */
+    for (int i = 10; i <= 17; i++) { char ref[8]; snprintf(ref, sizeof(ref), "D%d", i); t5_make_element(b, ref, 1, 2, EL_DIODE); }
+    for (int c = 0; c < 8; c++) z->pin_row[c] = t5_pin_of(b, "J6", 1 + c);      /* J6 pins 1..8: the half rows A8..A15 */
+    for (int l = 0; l < 5; l++) z->pin_kb[l] = t5_pin_of(b, "J5", 1 + l);
     t5_init_keymap(z);
     memset(z->key_matrix, 0, sizeof(z->key_matrix));
-    z->pin_reset_net = t5_pin_of(b, "U1", 26);           /* /RESET: held low at power on (the RC of the real board is not drawn) */
-    b->pin_reset = t5_pin_of(b, "U1", 26);
-    b->pin_reset_gnd = t5_pin_of(b, "U1", 29);
+    z->pin_reset_net = t5_pin_of(b, "U7", 26);           /* /RESET: held low at power on (the RC of the real board is not drawn) */
+    b->pin_reset = t5_pin_of(b, "U7", 26);
+    b->pin_reset_gnd = t5_pin_of(b, "U7", 29);
     char name[16];
     int bit = 0;
     static const struct { const char *fmt; int n; } buses[] = { { "A%d", 16 }, { "D%d", 8 }, { "D%dP", 8 }, { "A%dP", 9 } };
@@ -521,7 +518,7 @@ const machine_t machine_ts1500 = {
     .id = "ts1500",
     .name = "Timex Sinclair 1500",
     .issue = "TS1500",
-    .board_name = "TS1500 (schematic, U5 pins inferred)",
+    .board_name = "TS1500 (schematic Rev 1.0, redrawn 2015)",
     .size = sizeof(ts1500_t),
     .data = &bd_ts1500,
     .sim = { .rail_of = t5_rail_of, .kind_of = t5_kind_of, .cycles_per_us = 3.25 },
@@ -535,7 +532,7 @@ const machine_t machine_ts1500 = {
     .link_resistors = "", .crystals = "X1",
     .diodes = "D", .jumpers = "", .supplies = "",
     .keys_help = "Keys: type; Left Shift = SHIFT, Enter = NEWLINE, Backspace = RUBOUT (= DELETE), arrows = cursor, Esc = BREAK",
-    .reset_help = "Hold to press RESET: shorts the Z80 /RESET (U1 pin 26) to GND",
+    .reset_help = "Hold to press RESET: shorts the Z80 /RESET (U7 pin 26) to GND",
     .create = t5_create,
     .destroy = t5_destroy,
     .power_on = t5_power_on,

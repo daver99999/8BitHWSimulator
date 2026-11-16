@@ -24,7 +24,7 @@ typedef struct ts1500 {
     bool rom_loaded;
     kbd_t kbd;
     uint16_t key_matrix[5];
-    int pin_row[8], pin_kb[5];  /* KB2 (the half rows A8-A15) and KB1 (KBD0-KBD4) */
+    int pin_row[8], pin_kb[5];  /* J6 (the half rows A8-A15) and J5 (KBD0-KBD4) */
     int pin_reset_net;
     uint64_t reset_until;
 } ts1500_t;
