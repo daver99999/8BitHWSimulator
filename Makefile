@@ -1,6 +1,6 @@
 # c64-hw-sim - pin level simulator of the C64 ASSY 250407 motherboard.
 #
-#   make            build ./c64-hw-sim (c64-hw-sim.exe on Windows)
+#   make            build ./8BitHWSimulator (8BitHWSimulator.exe on Windows)
 #   make clean
 
 CC      ?= cc
@@ -29,7 +29,7 @@ else
   LIBS = -lX11 -lXi -lXcursor -lGL -ldl -lpthread -lm
 endif
 
-all: c64-hw-sim$(EXE)
+all: 8BitHWSimulator$(EXE)
 
 build/sokol_impl.o: src/sokol_impl.c third_party/sokol/*.h third_party/nuklear/*.h
 	@mkdir -p build
@@ -41,10 +41,10 @@ build/%.o: src/%.c src/*.h chips/*.h
 
 OBJS = $(patsubst src/%.c,build/%.o,$(SIM_SRC) $(APP_SRC)) build/sokol_impl.o
 
-c64-hw-sim$(EXE): $(OBJS)
+8BitHWSimulator$(EXE): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $@ $(LIBS)
 
 clean:
-	rm -rf build c64-hw-sim$(EXE)
+	rm -rf build 8BitHWSimulator$(EXE)
 
 .PHONY: all clean

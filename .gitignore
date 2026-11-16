@@ -1,6 +1,6 @@
 build/
-c64-hw-sim
-c64-hw-sim.exe
+8BitHWSimulator
+8BitHWSimulator.exe
 *.dSYM/
 .DS_Store
 chips/codegen/.venv/
@@ -16,7 +16,7 @@ repairs.bin
 *.hwstate
 ui-debug.log
 match_test/
-c64-hw-sim-*.exe
+8BitHWSimulator-*.exe
 tools/__pycache__/
 WORK_SUMMARY.md
 zxtest/*.lst

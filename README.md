@@ -1,9 +1,9 @@
 # 8bit-hw-simulator
 
 *Started as antirez's [c64-hw-simulator](https://github.com/antirez/c64-hw-simulator)
-(c64-hw-sim); the program is still called `c64-hw-sim`.*
+(c64-hw-sim); the program is now called `8BitHWSimulator`.*
 
-c64-hw-sim simulates the motherboards of the Commodore 64 (ASSY 250407
+8BitHWSimulator simulates the motherboards of the Commodore 64 (ASSY 250407
 and 250469), of the ZX Spectrum (boards Issue 1, 2, 3B, 4B and 6A) and of
 the Commodore PET (the 8032080 universal dynamic board, as a 4032 with 40
 columns and as an 8032 with 80), pin by pin. You can lift the
@@ -134,11 +134,11 @@ The light theme is by Henry, published here with permission.
 ## Building
 
     make
-    ./c64-hw-sim [program.prg]
+    ./8BitHWSimulator [program.prg]
 
 It runs on macOS, Linux (X11) and Windows, with OpenGL. On Windows, build
 with MinGW-w64 gcc from a POSIX shell (Git Bash or MSYS2), for example
-`mingw32-make`, then run `c64-hw-sim.exe`. The graphics library (sokol)
+`mingw32-make`, then run `8BitHWSimulator.exe`. The graphics library (sokol)
 and the interface library (nuklear) are in `third_party/`. Two of their
 headers carry local fixes to mouse input and window handling; they are
 listed in `third_party/PATCHES.md`.
@@ -287,7 +287,7 @@ and zenity or kdialog on Linux; without either, drop the file on the
 window. `--build-atlas=full` builds the atlas again (see Command line).
 It only adds the faults the file doesn't have yet. After a change to how
 a few parts work, `C64HW_ATLAS_REDO="IC5 JROM1 LNK2 IC5.20 IC5.27"
-./c64-hw-sim --build-atlas=full` runs again the faults on those parts and
+./8BitHWSimulator --build-atlas=full` runs again the faults on those parts and
 on the nets of those pins (as the links join them, and one series
 resistor further); the newest run of a fault counts, and a picture no
 fault gives any more goes. `C64HW_ATLAS_TODO=1` lists what would run.
@@ -976,7 +976,7 @@ atlas and the screenshot diagnosis do not cover the PET.
 
 ## Command line
 
-    ./c64-hw-sim --headless 200 --text --shot out.png --fault U17:removed
+    ./8BitHWSimulator --headless 200 --text --shot out.png --fault U17:removed
 
 This runs four seconds (200 frames) without a window. It prints the text
 read from the monitor picture, as a person would read it, and saves the

@@ -1,13 +1,13 @@
 @echo off
 rem ==========================================================================
-rem  build.bat - build c64-hw-sim.exe (native Windows 64-bit) with w64devkit.
+rem  build.bat - build 8BitHWSimulator.exe (native Windows 64-bit) with w64devkit.
 rem
 rem  Just double-click this file, or run it from a command prompt.
 rem  The toolchain is expected at ..\w64devkit\bin\gcc.exe (next to this
 rem  source folder). Every path is quoted, so spaces in the folder name
 rem  (e.g. "Claude work") are fine.
 rem
-rem    build.bat          build c64-hw-sim.exe
+rem    build.bat          build 8BitHWSimulator.exe
 rem    build.bat clean    delete the build folder and the exe
 rem ==========================================================================
 setlocal enabledelayedexpansion
@@ -139,13 +139,13 @@ set "OBJS=!OBJS! "%SRCDIR%\build\icon.o""
 
 rem --- Link ------------------------------------------------------------------
 echo.
-echo linking c64-hw-sim.exe ...
-"%CC%" %CFLAGS% !OBJS! -o "%SRCDIR%\c64-hw-sim.exe" %LIBS%
+echo linking 8BitHWSimulator.exe ...
+"%CC%" %CFLAGS% !OBJS! -o "%SRCDIR%\8BitHWSimulator.exe" %LIBS%
 if errorlevel 1 goto :failed
 
 echo.
 echo ==========================================================
-echo  Built: "%SRCDIR%\c64-hw-sim.exe"
+echo  Built: "%SRCDIR%\8BitHWSimulator.exe"
 echo ==========================================================
 endlocal
 exit /b 0
@@ -153,7 +153,7 @@ exit /b 0
 :clean
 echo Cleaning...
 if exist "%SRCDIR%\build" rmdir /s /q "%SRCDIR%\build"
-if exist "%SRCDIR%\c64-hw-sim.exe" del /q "%SRCDIR%\c64-hw-sim.exe"
+if exist "%SRCDIR%\8BitHWSimulator.exe" del /q "%SRCDIR%\8BitHWSimulator.exe"
 echo Done.
 endlocal
 exit /b 0
