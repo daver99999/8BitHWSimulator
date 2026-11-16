@@ -6,7 +6,7 @@
 8BitHWSimulator simulates the motherboards of the Commodore 64 (ASSY 250407
 and 250469), of the ZX Spectrum (boards Issue 1, 2, 3B, 4B and 6A) and of
 the Commodore PET (the 8032080 universal dynamic board, as a 4032 with 40
-columns and as an 8032 with 80) and of the Timex Sinclair TS2068 (board 335-850001-03), pin by pin. You can lift the
+columns and as an 8032 with 80) and of the Timex Sinclair TS2068 (board 335-850001-03), TS1000 (ZX81, Issue 3), TS1500 and the Sinclair ZX80, pin by pin. You can lift the
 leg of a chip, short it to ground or to +5V, pull a chip out of its
 socket, or open a resistor. Then you watch what the machine does: the
 picture on the monitor, the keyboard, every signal on the board.
@@ -25,13 +25,19 @@ picture on the monitor, the keyboard, every signal on the board.
 > is written down next to it (for example in "The 250469 board"). Check
 > a diagnosis against the real machine before acting on it.
 
+> **The Timex Sinclair TS1000, TS1500 and the Sinclair ZX80** (the netlists, the part models, the keyboards,
+> the video and the board layouts) were also written by Claude, directed by David Green against his own boards. The
+> TS1000 and TS1500 netlists come from schematics redrawn by Ron Reuter and Dick Berry; the ZX80 netlist was read
+> programmatically from the vector PDF of the ZX80 circuit diagram. Some positions and pin assignments are marked
+> INFERRED in each machine's document: check them against the real board.
+
 > **Credits.** Based on [c64-hw-simulator](https://github.com/antirez/c64-hw-simulator)
 > by Salvatore Sanfilippo ([antirez](https://github.com/antirez)), the
 > original project, through its fork
 > [8bit-hw-simulator](https://github.com/zzleezz/8bit-hw-simulator) by
 > zzleezz, which added the ZX Spectrum, the C64's 250469 board, the fault
 > atlas and the diagnosis tools. This is a modified version of both, not
-> the original: the Commodore PET and the Timex Sinclair TS2068 were added here. The ZX Spectrum board layouts (Issues
+> the original: the Commodore PET and the Timex Sinclair TS2068, TS1000, TS1500 and the Sinclair ZX80 were added here. The ZX Spectrum board layouts (Issues
 > 1, 2, 3B, 4B and 6A) come from the KiCad projects of
 > [liveboxandy](https://github.com/liveboxandy), the C64 ones from
 > [bwack](https://github.com/bwack)'s.
@@ -164,7 +170,7 @@ monitor and the scope screen look the same either way.
 
 The window shows the board, the monitor, a control panel and an
 oscilloscope. The four buttons at the top of the control panel switch
-between the Commodore 64, the ZX Spectrum 48K, the Commodore PET and the Timex Sinclair TS2068: the
+between the Commodore 64, the ZX Spectrum 48K, the Commodore PET and the Timex Sinclair family (TS2068, TS1000, TS1500, ZX80, picked in the drop-down): the
 machine that runs is switched off, the other one on. The drop-down under
 them picks the board (on the PET, the 4032 or the 8032).
 
@@ -988,6 +994,22 @@ the keyboard. The SCLD (the custom video/timing chip) is a model written from th
 manual's description, with assumed timing; there is no tape, file loading or sound yet. A
 03D board's undocumented bank-switching patch board is not modelled. What is simulated
 and what is missing are in [docs/TS2068.md](docs/TS2068.md).
+
+## Timex Sinclair TS1000, TS1500 and the Sinclair ZX80
+
+Pick **Timex** in the control panel, then the machine in the drop-down. None of the ROMs are included.
+
+- **TS1000** (ZX81, Issue 3): Z80A, the 40 pin ULA, 8K ROM, 2K RAM. ROM: the 8K ZX81 ROM in `roms/ts1000/`.
+  [docs/TS1000.md](docs/TS1000.md).
+- **TS1500**: the same ZX81 logic in a 68 pin gate array (U5) with eight 4116 DRAMs (16K). ROM: its 8K ROM in
+  `roms/ts1500/`. The board's green buck regulator and the wires on it are mods and are not modeled.
+  [docs/TS1500.md](docs/TS1500.md).
+- **ZX80**: Z80A and discrete TTL (no ULA), 1K RAM. ROM: the 4K ZX80 ROM in `roms/zx80/`, or the ZX81's 8K ROM in
+  `roms/ts1000/`; choose with the ROM button or `--option rom=zx80|zx81` (the ZX81 ROM runs in FAST mode only).
+  [docs/ZX80.md](docs/ZX80.md).
+
+All three boot to the BASIC prompt and take the keyboard. No tape, file loading or sound yet; the power supplies, the
+modulator and the expansion connectors are not simulated. Use `--machine ts1000|ts1500|zx80` on the command line.
 
 ## Command line
 

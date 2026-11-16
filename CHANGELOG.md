@@ -10,6 +10,8 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 ## Unreleased
 
+- **TS1500 placement.** The TS1500's parts are placed from a photo of the board; the buck regulator and wires on it are mods and are not drawn.
+
 - **Sinclair ZX80.** A seventh machine (`--machine zx80`, Timex in the control panel): Z80A and discrete TTL (no ULA), 2 x 2114
   (1K), the character latch, address multiplexers, line counter, video shift register and sync logic, from the ZX80 circuit
   diagram (netlist read from the vector PDF, `tools/zx80-extract/`). Two ROMs: the ZX80's own 4K (`roms/zx80/`) or the ZX81's 8K
