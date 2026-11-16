@@ -85,6 +85,15 @@ static int bank_of(const scld_state_t *u, const cpu_in_t *c) {
     return (u->ff & 0x80) ? 2 : 1;
 }
 
+/* Does the CPU's cycle drive /RASI (a display RAM access or a refresh while the display is not using it)? The row
+ * strobe waits for the precharge of the display's last one (gap). */
+static bool cpu_ras_on(const scld_state_t *u, const cpu_in_t *c) {
+    bool home_mem = c->mreq && c->be && bank_of(u, c) == 0;
+    bool disp_cpu = home_mem && !c->a15 && c->a14;
+    bool disp_refresh = c->mreq && c->rfsh && !c->iorq && !c->a15;      /* ASSUMED: it refreshes the display RAM too */
+    return ((disp_cpu && !c->rfsh) || disp_refresh) && !u->busy && u->gap >= 2;
+}
+
 static void scld_eval(sim_t *s, part_t *p) {
     scld_state_t *u = p->state;
     cpu_in_t c;
@@ -97,24 +106,27 @@ static void scld_eval(sim_t *s, part_t *p) {
     pin_out(s, p, P_ROMCS, DRV_BIT(!(home_mem && !c.a15 && !c.a14)));
     pin_out(s, p, P_ROSCS, DRV_BIT(!(c.mreq && c.be && bank == 1)));
     pin_out(s, p, P_EXROM, DRV_BIT(!(c.mreq && c.be && bank == 2)));
-    /* The CPU's RAM cycle: row, then column. */
+    /* The CPU's RAM cycle: row, then column. The display RAM's is timed from its own /RASI (after the display's
+     * precharge), the upper RAM's from /MREQ (its /RAS is /MREQ itself). */
     bool cyc = (disp_cpu && !u->busy) || upper_cpu;
-    bool col = u->cpu_hs >= 2;
-    bool cas_ok = u->cpu_hs >= 3 && (c.rd || c.wr);
-    bool refresh = c.mreq && c.rfsh && !c.iorq;
-    bool disp_refresh = refresh && !c.a15 && !u->busy;              /* ASSUMED: it refreshes the display RAM too */
-    bool cpu_ras = (disp_cpu && !u->busy && !c.rfsh) || disp_refresh;
+    int since = disp_cpu ? u->cras_hs : u->cpu_hs;
+    bool col = since >= 2;
+    bool cas_ok = since >= 3 && (c.rd || c.wr);
+    bool cpu_ras = cpu_ras_on(u, &c);
+    bool disp_refresh_ras = cpu_ras && c.rfsh;
+    (void)disp_refresh_ras;
+    bool disp_refresh = c.mreq && c.rfsh && !c.iorq && !c.a15 && !u->busy;
     pin_out(s, p, P_RASI, DRV_BIT(!(u->f_ras || cpu_ras)));
-    pin_out(s, p, P_CASI, DRV_BIT(!(u->f_cas || (disp_cpu && !u->busy && cas_ok && !c.rfsh))));
+    pin_out(s, p, P_CASI, DRV_BIT(!(u->f_cas || (disp_cpu && cpu_ras && cas_ok && !c.rfsh))));
     pin_out(s, p, P_CAS2, DRV_BIT(!(upper_cpu && !c.a14 && cas_ok && !c.rfsh)));
     pin_out(s, p, P_CAS3, DRV_BIT(!(upper_cpu && c.a14 && cas_ok && !c.rfsh)));
-    pin_out(s, p, P_DRAMWE, DRV_BIT(!(disp_cpu && c.wr && !c.rfsh)));
+    pin_out(s, p, P_DRAMWE, DRV_BIT(!(disp_cpu && cpu_ras && c.wr && !c.rfsh)));
     pin_out(s, p, P_MUX, DRV_BIT(cyc && col));
     /* ATR: the 8th row address bit of the upper RAM: A7 in a cycle, the refresh counter in a refresh. */
     pin_out(s, p, P_ATR, DRV_BIT(c.rfsh ? u->refresh_bit : (c.port >> 7) & 1));
     /* MA0-MA7: the display's while it fetches, a refresh address, else tri-state (U5 puts the CPU's). */
     if (u->f_ae) part_drive_bus(s, p, ma_pins, 8, u->f_addr, true);
-    else if (disp_refresh) part_drive_bus(s, p, ma_pins, 8, (c.port & 0x7F) | (unsigned)u->refresh_bit << 7, true);
+    else if (disp_refresh && cpu_ras) part_drive_bus(s, p, ma_pins, 8, (c.port & 0x7F) | (unsigned)u->refresh_bit << 7, true);
     else part_drive_bus(s, p, ma_pins, 8, 0, false);
     /* The I/O ports. */
     unsigned port = c.port;
@@ -133,7 +145,7 @@ static void scld_eval(sim_t *s, part_t *p) {
     pin_out(s, p, P_PHIC, DRV_BIT(u->ayclk));
     pin_out(s, p, P_CLK, DRV_BIT(u->cpuclk));
     pin_out(s, p, P_PHIBUF, DRV_BIT(u->cpuclk));
-    pin_out(s, p, P_INT, u->irq ? DRV_LO : DRV_Z);                    /* open drain, pulled up on the board */
+    pin_out(s, p, P_INT, u->irq ? DRV_LO : DRV_PULLUP);               /* open drain; the pull-up is not in the netlist */
     pin_out(s, p, P_SPKR, DRV_BIT(u->speaker || u->mic));
     /* Colour outputs for an RGB monitor (the colour index of the last pixel). */
     pin_out(s, p, P_BLUE, DRV_BIT(u->pix & 1));
@@ -147,7 +159,7 @@ static void scld_eval(sim_t *s, part_t *p) {
         if (port == 0xFE) {
             out = 0;                                                  /* D5, D7: "not used (set to 0)" */
             for (int i = 0; i < 5; i++) if (pin_in(s, p, kb_pins[i])) out |= (uint8_t)(1 << i);
-            if (u->ear_in || pin_in(s, p, P_TAPEIN)) out |= 0x40;
+            if (u->ear_in) out |= 0x40;
         } else if (port == 0xFF) out = u->ff;
         else if (port == 0xF4) out = u->hsr;
         else out = 0xFF;
@@ -215,7 +227,9 @@ void scld_step(sim_t *s, part_t *p) {
         unsigned A = bm, B = at;
         if (m == 1) { A = bm + 0x2000; B = at + 0x2000; }
         else if (m == 2 || m == 6) { A = bm; B = bm + 0x2000; }
-        unsigned row = A & 0xFF, colA = A >> 8, colB = B >> 8;
+        /* The 4416s have 8 row and 6 column address bits; on the board the 8th column bit (MA7) carries
+         * A7 as well (the CPU path through U10/U11 does the same), so the display must match. */
+        unsigned row = A & 0xFF, colA = ((A >> 8) & 0x3F) | (A & 0x80), colB = ((B >> 8) & 0x3F) | (B & 0x80);
         if (t < 16) {
             f_ae = true;
             f_ras = t >= 2;                       /* row at t 0..1, /RAS falls at t 2 */
@@ -225,6 +239,7 @@ void scld_step(sim_t *s, part_t *p) {
             if (t == 13) { u->data_b = (uint8_t)part_read_bus(s, p, data_pins, 8); u->line_a[k] = u->data_a; u->line_b[k] = u->data_b; }
         }
     }
+    u->gap = f_ras ? 0 : (u->gap < 8 ? (uint8_t)(u->gap + 1) : 8);
     /* Ports. */
     bool io = c.iorq && c.wr;
     if (io) {
@@ -247,7 +262,7 @@ void scld_step(sim_t *s, part_t *p) {
      * busy/idle phase wouldn't let a RAM cycle that starts at the next fall fit. */
     bool held = false;
     uint8_t cphase = u->cphase;
-    bool wants = !c.a15 && c.a14;
+    bool wants = !c.a15 && c.a14 && !c.mreq && !c.iorq;     /* only before a cycle starts: never in the middle of one */
     if (cphase == 3 && wants && on_screen_line(u)) {
         int next = cellhs + 1;                       /* the clock would fall in the next half period */
         if (next >= 0 && next < 32 * SCLD_CELL_HS) {
@@ -263,6 +278,8 @@ void scld_step(sim_t *s, part_t *p) {
     bool ayclk = u->aphase < 8;
     /* /INT: 32 T states at the start of the vertical blanking (ASSUMED). */
     bool irq = !(u->ff & 0x40) && u->v == 216 && (u->c < 64);
+    int cras_hs = cpu_ras_on(u, &c) ? (u->cras_hs < 0 ? 0 : u->cras_hs + 1) : -1;
+    if (cras_hs != u->cras_hs) { u->cras_hs = cras_hs; sim_mark_dirty(s, (int)(p - s->parts)); }
     if (cpuclk != u->cpuclk || held != u->held || f_ras != u->f_ras || f_cas != u->f_cas || f_ae != u->f_ae ||
         f_addr != u->f_addr || busy != u->busy || irq != u->irq || ayclk != u->ayclk || cpu_hs != u->cpu_hs) {
         u->cpuclk = cpuclk; u->held = held; u->f_ras = f_ras; u->f_cas = f_cas; u->f_ae = f_ae;
@@ -279,7 +296,7 @@ static void scld_reset(sim_t *s, part_t *p) {
     bool ear = u->ear_in, running = u->running;
     memset(u, 0, sizeof(*u));
     u->fb = fb; u->ear_in = ear; u->running = running;
-    u->cpuclk = true; u->cpu_hs = -1;
+    u->cpuclk = true; u->cpu_hs = -1; u->cras_hs = -1; u->gap = 8;
 }
 
 const part_type_t PT_SCLD = { "SCLD",

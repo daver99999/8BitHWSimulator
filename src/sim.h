@@ -163,8 +163,8 @@ typedef struct {
 } group_t;
 
 #define PART_GROUPS 4
-/* Pin numbers 1-64 (the 250469's Super PLA has 64 pins). */
-#define PIN_NUMBERS 65
+/* Pin numbers 1-72 (the TS2068 SCLD has 68 pins, the C64 PLA 64). */
+#define PIN_NUMBERS 72
 
 struct part {
     const char *ref;    /* "U17" */

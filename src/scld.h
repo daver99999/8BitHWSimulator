@@ -31,6 +31,8 @@ typedef struct {
     uint8_t data_a, data_b;
     /* CPU cycles. */
     int cpu_hs;                     /* half periods since /MREQ went low (-1: none) */
+    int cras_hs;                    /* half periods since the CPU's /RASI began (display RAM; -1: none) */
+    uint8_t gap;                    /* half periods since the display's /RASI last was low (precharge), up to 8 */
     bool mreq_prev;
     uint8_t refresh_bit;            /* the 8th row bit of the refresh address */
     uint8_t rfsh_prev;

@@ -27,3 +27,6 @@ N.pins('U11', {1:'MUX', 15:'GND',
                9:'A2P',  11:'A2', 10:'A10',    # YD
                12:'A7P', 14:'A7R', 13:'A7R'})  # YC: both inputs on ATR
 N.note('A7 row bit: U11 YC = ATR (SCLD pin 38) in both phases (INFERRED from the joined inputs 13/14 on the drawing).')
+
+# U21 left as a spare: inputs to +5V so nothing floats (its real wiring, with CR27/CR28 and the H/G links, was not followed)
+N.pins('U21', {p: '+5V' for p in (1,2,4,5,9,10,12,13)})

@@ -36,8 +36,8 @@ N.note('U15 DIR (pin 1) and E (pin 19) as drawn: DIR high (A to B), E low = enab
 N.chip('U16', 'ROM23128'); N.chip('U20', 'ROM2364')
 addr16 = {2:'A12',3:'A7',4:'A6',5:'A5',6:'A4',7:'A3',8:'A2',9:'A1',10:'A0',21:'A10',23:'A11',24:'A9',25:'A8',26:'A13'}
 dat16 = {11:'D0',12:'D1',13:'D2',15:'D3',16:'D4',17:'D5',18:'D6',19:'D7'}
-N.pins('U16', {**addr16, **dat16, 20:'ROMCS', 27:'ROMOE', 22:'ROMOEP'})
-N.note('U16 control pins: /CS 20 = ROMCS (SCLD 27); 22 and 27 (OE) INFERRED tied low/RD.')
+N.pins('U16', {**addr16, **dat16, 20:'ROMCS', 27:'+5V', 22:'RD'})
+N.note('U16: /CS 20 = ROMCS (SCLD 27); pin 22 (OE) = RD and pin 27 = +5V through R70 10K are INFERRED from the drawing.')
 a20 = {2:'A12',23:'A11',21:'A10',24:'A9',25:'A8',3:'A7',4:'A6',5:'A5',6:'A4',7:'A3',8:'A2',9:'A1',10:'A0'}
 N.pins('U20', {**a20, **{11+i if i < 3 else 12+i: 'D%d' % i for i in range(8)}, 20:'EXROM', 22:'MREQ', 26:'RD'})
 # ---- DRAM ----
@@ -46,15 +46,15 @@ N.pins('U20', {**a20, **{11+i if i < 3 else 12+i: 'D%d' % i for i in range(8)}, 
 # /WR straight from the CPU (schematic label "WR" on their pin 4), /RAS from /MREQ (INFERRED: RAS-only refresh by the Z80), addresses A0'-A7'.
 for ref, hi in (('U6',0),('U7',1)):
     N.chip(ref, '4416')
-    N.pins(ref, {1:'DISP_OE', 2:'D%dP' % (hi*4), 3:'D%dP' % (hi*4+1), 15:'D%dP' % (hi*4+2), 17:'D%dP' % (hi*4+3),
+    N.pins(ref, {1:'GND', 2:'D%dP' % (hi*4), 3:'D%dP' % (hi*4+1), 15:'D%dP' % (hi*4+2), 17:'D%dP' % (hi*4+3),
                  4:'DRAMWE', 5:'RASI', 16:'CASI', 14:'MA0',13:'MA1',12:'MA2',11:'MA3',8:'MA4',7:'MA5',6:'MA6',10:'MA7'})
 for ref, cas, hi in (('U12','CAS2',0),('U13','CAS2',1),('U17','CAS3',0),('U18','CAS3',1)):
     N.chip(ref, '4416')
-    N.pins(ref, {1:'DROE', 2:'D%d' % (hi*4), 3:'D%d' % (hi*4+1), 15:'D%d' % (hi*4+2), 17:'D%d' % (hi*4+3),
-                 4:'WR', 5:'RAS', 16:cas, 14:'A0P',13:'A1P',12:'A2P',11:'A3P',8:'A4P',7:'A5P',6:'A6P',10:'A7P'})
-N.note('INFERRED: /RAS of the upper RAM (net RAS) is the CPU /MREQ; the schematic shows the wire but its source was not traced. DROE and DISP_OE (the 4416 /OE pins) are tied low on the real board (the schematic shows them joined to a ground/enable node).')
+    N.pins(ref, {1:'GND', 2:'D%d' % (hi*4), 3:'D%d' % (hi*4+1), 15:'D%d' % (hi*4+2), 17:'D%d' % (hi*4+3),
+                 4:'WR', 5:'MREQ', 16:cas, 14:'A0P',13:'A1P',12:'A2P',11:'A3P',8:'A4P',7:'A5P',6:'A6P',10:'A7P'})
+N.note('INFERRED: /RAS of the upper RAM is the CPU /MREQ (the schematic shows the wire but its source was not traced); the 4416 /OE pins are tied to GND (they are joined to a node on the schematic).')
 # ---- AY-3-8912 U14 ----
 N.chip('U14', 'AY8912')
-N.pins('U14', {28:'D0',27:'D1',26:'D2',25:'D3',24:'D4',23:'D5',22:'D6',21:'D7', 19:'+5V', 17:'+5V', 20:'BC1', 18:'BDIR',
+N.pins('U14', {2:'GND', 28:'D0',27:'D1',26:'D2',25:'D3',24:'D4',23:'D5',22:'D6',21:'D7', 19:'+5V', 17:'+5V', 20:'BC1', 18:'BDIR',
                16:'RESET', 15:'PHIC', 14:'IOA0',13:'IOA1',12:'IOA2',11:'IOA3',10:'IOA4',9:'IOA5',8:'IOA6',7:'IOA7'})
 N.note('AY pin 17 on the schematic is labelled A8 and tied high; 19 is BC2 tied high. AY CLOCK = SCLD pin 19 (Table 2.1.8-1: clock C for the sound chip, 1.764 MHz).')

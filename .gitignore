@@ -28,3 +28,6 @@ sheets/
 crops/
 __pycache__/
 *.pyc
+
+# Timex ROM images are copyrighted: keep them local
+roms/ts2068/

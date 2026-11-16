@@ -11,3 +11,4 @@
 #include "m6520.h"
 #include "m6522.h"
 #include "m6545.h"
+#include "ay8912.h"

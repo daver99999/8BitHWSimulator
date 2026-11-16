@@ -25,6 +25,7 @@ PINS = {
  'LS00':  mk('1A:i 1B:i 1Y:o 2A:i 2B:i 2Y:o GND:g 3Y:o 3A:i 3B:i 4Y:o 4A:i 4B:i VCC:v'),
  'DIODE': mk('A:x K:x'), 'RES': mk('P1:x P2:x'), 'CAP': mk('P1:x P2:x'), 'XTAL': mk('P1:x P2:x'),
  'CONN':  mk(' '.join('P%d:x' % i for i in range(1, 37))),
+ 'Q3': mk('B:x C:x E:x'),
 }
 PWR = {
  'Z80': {11: '+5V', 29: 'GND'},
