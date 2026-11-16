@@ -3,8 +3,9 @@ Appendix D, page 353, "TS2068 PC board component layout", 335-850001-03).
 
 The drawing is printed rotated by a quarter turn; the positions here are pixels of the page image
 turned upright (rotated 90 degrees clockwise, 1650 x 1275). The ICs, the dock connector J4, the keyboard connector J9, the crystal, the diodes, the
-transistors and most of the resistors are placed. J5 and J6 (the joystick connectors), U21 and
-R75 are not on the drawing in a form that can be identified and go in a row below the board; the
+transistors and most of the resistors are placed. J5 and J6 (the joystick connectors) are only
+labels on the drawing and are put at the board edge by their diodes; U21 and R75 are not on the drawing
+at all and go in a row below the board; the
 small positions are good to a few mm, which doesn't matter for the pin-level netlist. ICs are drawn notch up (pin 1 top left). The board
 outline is not a rectangle (the lower right corner is cut out for the dock), the generator uses
 the bounding box.
@@ -33,6 +34,10 @@ SQUARE = {'U3': (848, 468)}
 CONN = {
     'J4': (1361, 653, 'h', 2),
     'J9': (521, 355, 'h', 1),
+    # the joystick connectors: only their labels are on the drawing (J5 above its diodes D14-D18 at the
+    # left edge, J6 beside D19-D23 at the right), so these two places are guesses
+    'J5': (125, 470, 'v', 1),
+    'J6': (1525, 470, 'v', 1),
 }
 # axial parts: centre; vertical, or horizontal with a third item
 TWO_PAD = {
