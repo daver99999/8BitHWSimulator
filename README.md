@@ -1,12 +1,12 @@
-# 8bit-hw-simulator
+# 8BitHWSimulator
 
 *Started as antirez's [c64-hw-simulator](https://github.com/antirez/c64-hw-simulator)
-(c64-hw-sim); the program is now called `8BitHWSimulator`.*
+(c64-hw-sim); this version, by David Green ([daver99999](https://github.com/daver99999/8BitHWSimulator)), is called `8BitHWSimulator`.*
 
 8BitHWSimulator simulates the motherboards of the Commodore 64 (ASSY 250407
 and 250469), of the ZX Spectrum (boards Issue 1, 2, 3B, 4B and 6A) and of
 the Commodore PET (the 8032080 universal dynamic board, as a 4032 with 40
-columns and as an 8032 with 80), pin by pin. You can lift the
+columns and as an 8032 with 80) and of the Timex Sinclair TS2068 (board 335-850001-03), pin by pin. You can lift the
 leg of a chip, short it to ground or to +5V, pull a chip out of its
 socket, or open a resistor. Then you watch what the machine does: the
 picture on the monitor, the keyboard, every signal on the board.
@@ -31,7 +31,7 @@ picture on the monitor, the keyboard, every signal on the board.
 > [8bit-hw-simulator](https://github.com/zzleezz/8bit-hw-simulator) by
 > zzleezz, which added the ZX Spectrum, the C64's 250469 board, the fault
 > atlas and the diagnosis tools. This is a modified version of both, not
-> the original: the Commodore PET was added here. The ZX Spectrum board layouts (Issues
+> the original: the Commodore PET and the Timex Sinclair TS2068 were added here. The ZX Spectrum board layouts (Issues
 > 1, 2, 3B, 4B and 6A) come from the KiCad projects of
 > [liveboxandy](https://github.com/liveboxandy), the C64 ones from
 > [bwack](https://github.com/bwack)'s.
