@@ -2,10 +2,10 @@
 Appendix D, page 353, "TS2068 PC board component layout", 335-850001-03).
 
 The drawing is printed rotated by a quarter turn; the positions here are pixels of the page image
-turned upright (rotated 90 degrees clockwise, 1650 x 1275). Only the ICs, the dock connector J4, the
-keyboard connector J9 and the crystal are placed; the resistors, capacitors, diodes and the other
-connectors go in a row below the board (the drawing's small parts are too crowded to read reliably),
-which doesn't matter for the pin-level netlist. ICs are drawn notch up (pin 1 top left). The board
+turned upright (rotated 90 degrees clockwise, 1650 x 1275). The ICs, the dock connector J4, the keyboard connector J9, the crystal, the diodes, the
+transistors and most of the resistors are placed. J5 and J6 (the joystick connectors), U21 and
+R75 are not on the drawing in a form that can be identified and go in a row below the board; the
+small positions are good to a few mm, which doesn't matter for the pin-level netlist. ICs are drawn notch up (pin 1 top left). The board
 outline is not a rectangle (the lower right corner is cut out for the dock), the generator uses
 the bounding box.
 """
@@ -34,5 +34,19 @@ CONN = {
     'J4': (1361, 653, 'h', 2),
     'J9': (521, 355, 'h', 1),
 }
-TWO_PAD = {}
-OTHER = {'Y1': (960, 420)}
+# axial parts: centre; vertical, or horizontal with a third item
+TWO_PAD = {
+    # keyboard diodes CR6-CR13 (D6-D13), a row of eight standing up next to L1
+    **{'CR%d' % (6 + k): (515 + k * 10.2, 405) for k in range(8)},
+    # joystick diodes CR14-CR18 (D14-D18) beside the left connector, lying down
+    'CR18': (195, 502, 'h'), 'CR17': (195, 513, 'h'), 'CR16': (195, 523, 'h'), 'CR15': (195, 536, 'h'), 'CR14': (195, 547, 'h'),
+    # CR19-CR23 (D19-D23) at the right edge
+    'CR22': (1487, 528, 'h'), 'CR21': (1487, 538, 'h'), 'CR20': (1487, 548, 'h'), 'CR19': (1487, 558, 'h'),
+    'CR23': (1487, 568, 'h'),
+    'R40': (500, 637, 'h'),
+    'R42': (748, 592, 'h'), 'R41': (748, 601, 'h'),
+    'R43': (383, 658, 'h'), 'R45': (383, 668, 'h'),
+    'R44': (1334, 443, 'h'),
+}
+# transistors
+OTHER = {'Y1': (960, 420), 'Q7': (1327, 462), 'Q8': (327, 668)}
