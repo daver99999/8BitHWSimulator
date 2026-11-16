@@ -10,6 +10,15 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 ## Unreleased
 
+- **Timex Sinclair TS2068.** The TS2068 PC board 335-850001-03 as a fourth machine
+  (`--machine ts2068`, TS2068 in the control panel): Z80A, home ROM and EXROM, 4416 DRAMs,
+  AY-3-8912, keyboard and joystick diodes, dock connector, and a model of the SCLD with
+  its display fetch and contended clock. Boots to the BASIC screen headless; netlist
+  from the Technical Manual schematic, placement from its layout drawing. The SCLD
+  timing is assumed. No tape, file loading or sound yet; a 03D board's patch board is not
+  modelled. Written by Claude, directed by David Green (daver99999). See `docs/TS2068.md`.
+  The ROMs are not included.
+- The program is now built as `8BitHWSimulator` (`8BitHWSimulator.exe`).
 - **Commodore PET.** The 8032080 universal dynamic board, as a 4032 (40
   columns, graphics keyboard) and an 8032 (80 columns, business keyboard), both
   in the same program: pick PET in the control panel, then the board (`--board

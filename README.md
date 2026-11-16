@@ -164,7 +164,7 @@ monitor and the scope screen look the same either way.
 
 The window shows the board, the monitor, a control panel and an
 oscilloscope. The three buttons at the top of the control panel switch
-between the Commodore 64, the ZX Spectrum 48K and the Commodore PET: the
+between the Commodore 64, the ZX Spectrum 48K, the Commodore PET and the Timex Sinclair TS2068: the
 machine that runs is switched off, the other one on. The drop-down under
 them picks the board (on the PET, the 4032 or the 8032).
 
@@ -973,6 +973,16 @@ what is missing are in [docs/PET.md](docs/PET.md). In short: no tape or disk
 units on the IEEE-488 bus, no 40/80 column switcher daughterboard, and the fault
 atlas and the screenshot diagnosis do not cover the PET.
 
+
+## Timex Sinclair TS2068
+
+The board is the TS2068 PC board 335-850001-03, from the Timex Technical Manual. Pick
+**TS2068** in the control panel. The ROMs are Timex's and not included: put the 16 KB
+home ROM and the 8 KB EXROM in `roms/ts2068/`. It boots to the BASIC screen and runs from
+the keyboard. The SCLD (the custom video/timing chip) is a model written from the
+manual's description, with assumed timing; there is no tape, file loading or sound yet. A
+03D board's undocumented bank-switching patch board is not modelled. What is simulated
+and what is missing are in [docs/TS2068.md](docs/TS2068.md).
 
 ## Command line
 
