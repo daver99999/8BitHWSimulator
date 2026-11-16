@@ -5,9 +5,9 @@ jacks and modulator at the right, keyboard connectors at the top).
 The positions are photo pixels (about 10 per mm) turned and scaled to 4 pixels per mm. They are good to a few mm.
 That board has three mods that are NOT drawn: a switching regulator (top left), a 'ZX81 FORTH' ROM adapter over IC2 and a
 32K RAM (Sony CXK58256P) wired in next to the empty stock RAM position IC4. The stock IC4 position is placed where
-its bare pads are. Within a group of resistors (R35-R42, the 470 ohm data resistors, the 1K address resistors) the
-order, and the references of the data and address resistors, are NOT read from the silkscreen: only R17, R30-R32, R43-R47,
-D9 and the group positions are."""
+its bare pads are. Within a group of resistors the order, and which of R7-R14 / R18-R26 is where, are NOT read from the
+silkscreen (the numbering comes from the component list of the ZX81 service manual: R7-R14 470 ohm, R18-R26 1K); R17, R31,
+R32, R43-R47 and D9 were seen on the board. X1 (a 6.5 MHz 3-lead ceramic filter) and TR2 are guesses."""
 ORIGIN = (0, 0)
 SCALE = 4.0
 SIZE = (630, 412)
