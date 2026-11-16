@@ -10,6 +10,9 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 ## Unreleased
 
+- **Keyboard map.** A Keyboard button in the controls opens a window with the machine's keys and the
+  PC key that types each one (`src/keymap_view.c`): the Spectrum and TS2068 (keywords, SYMBOL SHIFT
+  legends), the C64 (physical layout), the PET 4032 and 8032 (the editor ROM's key table, in scan order).
 - **Timex Sinclair TS2068.** The TS2068 PC board 335-850001-03 as a fourth machine
   (`--machine ts2068`, TS2068 in the control panel): Z80A, home ROM and EXROM, 4416 DRAMs,
   AY-3-8912, keyboard and joystick diodes, dock connector, and a model of the SCLD with

@@ -15,6 +15,7 @@
 #include "c64.h"
 #include "pet.h"
 #include "ts2068.h"
+#include "keymap_view.h"
 #include "diagnose.h"
 #include "atlas_browse.h"
 #include "thumbtex.h"
@@ -116,6 +117,7 @@ static struct {
     int diag_serial, diag_taken;
     /* The help window. */
     bool help_open;
+    bool kbd_open;              /* the keyboard map window (keymap_view.c) */
     bool want_dump;             /* F12: the interface state into ui-debug.log */
     bool want_esc;              /* Esc: close the window on top, in the next frame */
     struct nk_rect help_bounds;
@@ -2565,7 +2567,7 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
          * shorts /RESET to GND on the user port, like a reset cartridge:
          * the CPU, the CIAs and the SID reset, the VIC (no reset pin) and
          * the RAM don't. */
-        nk_layout_row_begin(ctx, NK_STATIC, 26, 3);
+        nk_layout_row_begin(ctx, NK_STATIC, 26, 4);
         nk_layout_row_push(ctx, 140);
         if (nk_widget_is_hovered(ctx))
             nk_tooltip(ctx, M()->reset_help);
@@ -2579,6 +2581,9 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
         nk_layout_row_push(ctx, 140);
         if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, "How to use the board: mouse, faults, colors, keys");
         if (nk_button_label(ctx, "Help")) U.help_open = !U.help_open;
+        nk_layout_row_push(ctx, 140);
+        if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, "The machine's keys, with the PC key that types each one");
+        if (nk_button_label(ctx, "Keyboard")) U.kbd_open = !U.kbd_open;
         nk_layout_row_end(ctx);
         if ((down || U.reset_hold) != b->reset_button) board_set_reset_button(b, down || U.reset_hold);
         /* The save state slot: one, in memory. */
@@ -3115,6 +3120,7 @@ void ui_frame(void) {
         probe_open();
     }
     help_window(ctx, bw, H);
+    keymap_window(ctx, &U.kbd_open, M(), bw, H);
     trust_window(ctx, bw, H);
     probe_action_t pa;
     probe_window(ctx, nk_rect(0, 0, bw, H), U.b, bench_machine(), &pa);
@@ -3149,7 +3155,7 @@ void ui_frame(void) {
         const char *top = NULL;
         for (struct nk_window *w = ctx->begin; w; w = w->next) {
             static const char *const closable[] = { "Menu", "Help", "Inspector", "Diagnose", "AtlasBrowse", "Probe",
-                                                    "RecordRepair", "RepairRecords", "LoadUnsigned", "LogicAnalyser" };
+                                                    "RecordRepair", "RepairRecords", "LoadUnsigned", "LogicAnalyser", "Keyboard" };
             if (w->flags & (NK_WINDOW_HIDDEN | NK_WINDOW_CLOSED)) continue;
             for (size_t i = 0; i < sizeof(closable) / sizeof(closable[0]); i++)
                 if (!strcmp(w->name_string, closable[i])) top = closable[i];
@@ -3157,6 +3163,7 @@ void ui_frame(void) {
         if (!top) {}
         else if (!strcmp(top, "Menu")) U.menu_open = false;
         else if (!strcmp(top, "Help")) U.help_open = false;
+        else if (!strcmp(top, "Keyboard")) U.kbd_open = false;
         else if (!strcmp(top, "Inspector")) inspect_open(U.b, -1);
         else if (!strcmp(top, "Diagnose")) diagnose_close();
         else if (!strcmp(top, "AtlasBrowse")) atlas_browse_close();

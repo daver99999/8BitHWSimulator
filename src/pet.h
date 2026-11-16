@@ -56,4 +56,7 @@ void pet_run_steps(board_t *b, int steps);
 /* CPU cycles run since power on, and the CPU's program counter... */
 uint32_t pet_cpu_cycles(board_t *b);
 
+/* The legend of the key at a place of the keyboard matrix as the editor ROM table has it ("Q", "RETURN", "~": no key). */
+const char *pet_key_legend(bool cols80, int row, int col);
+
 #endif

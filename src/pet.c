@@ -482,6 +482,11 @@ static const char *const pet_keys_business[10][8] = {
     { "~", "~", ":", "STOP", "9", "6", "3", "LARROW" },
 };
 
+/* The key at a place of the key matrix (row 0-9, column 0-7 as scanned), for the keyboard map window. */
+const char *pet_key_legend(bool cols80, int row, int col) {
+    return (cols80 ? pet_keys_business : pet_keys_graphics)[row][col];
+}
+
 static void pet_keys_register(pet_t *z) {
     const char *const (*t)[8] = z->cols80 ? pet_keys_business : pet_keys_graphics;
     kbd_init(&z->kbd, 2);
