@@ -67,15 +67,8 @@ static void t1_cpu_edge(board_t *b, int clk) {
 }
 
 
-/* The ROM (2364, 24 pins, 8K). */
-static const int t1r_addr_pins[13] = { 8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 19, 18, 21 };
+/* The ROM (IC2, 2364) is the shared 2364 part (PT_2364); the RAM below shares its data pins. */
 static const int t1r_data_pins[8] = { 9, 10, 11, 13, 14, 15, 16, 17 };
-static void t1_rom_eval(sim_t *s, part_t *p) {
-    rom_state_t *st = p->state;
-    bool selected = !pin_in(s, p, 20);
-    unsigned a = selected ? part_read_bus(s, p, t1r_addr_pins, 13) : 0;
-    part_drive_bus_cached(s, p, t1r_data_pins, 8, st->data ? st->data[a] : 0xFF, selected, &st->out_cache);
-}
 
 /* The RAM: 2K x 8 static (6116 pins: 18 /CS, 20 /OE, 21 /WE). */
 typedef struct { uint8_t cells[2048]; int32_t out_cache; } t1_ram_t;
@@ -105,14 +98,14 @@ static void t1_tr1_eval(sim_t *s, part_t *p) {
     bool on = pin_in(s, p, 1) && !pin_in(s, p, 3);
     pin_out(s, p, 2, on ? DRV_LO : DRV_Z);
 }
-static const part_type_t PT_T1TR1 = { "BC548", "B:m C:O E:m", t1_tr1_eval, 0, 0, 0, TECH_TTL };
+static const part_type_t PT_T1TR1 = { "ZTX313", "B:m C:O E:m", t1_tr1_eval, 0, 0, 0, TECH_TTL };
 
 static const part_def_t t1_part_defs[] = {
     { "IC1", &PT_ULA81, "ULA", ROLE_CHIP, "ULA\n2C210E", "Sinclair logic array (Ferranti ULA): clock, chip selects, video, sync, NMI generator, keyboard and tape port" },
     { "IC3", &PT_T1Z80, "CPU", ROLE_CHIP, "Z80A", "Z80A CPU, 3.25 MHz" },
     { "IC2", &PT_2364, "ROM", ROLE_ROM, "2364\n$0000-$1FFF", "ROM: BASIC and the character set, 8K" },
     { "IC4", &PT_T1RAM, "RAM", ROLE_VRAM, "2K x 8\n$4000-$47FF", "Static RAM, 2K: the program, the variables and the display file" },
-    { "TR1", &PT_T1TR1, "TR1", ROLE_GLUE, "BC548", "Makes /WAIT from /HALT and /NMI (the Z80 is held while the NMI is serviced)" },
+    { "TR1", &PT_T1TR1, "TR1", ROLE_GLUE, "ZTX313", "TR1 (ZTX313): makes /WAIT from /HALT (through R1) and /NMI (emitter); R17 pulls /WAIT up" },
 };
 
 static const conn_def_t t1_conn_defs[] = {
@@ -122,9 +115,9 @@ static const conn_def_t t1_conn_defs[] = {
                               "45=/RFSH 46=/ROMCS" },
     { "KB1", "Keyboard (columns)", "1=KBD0 2=KBD1 3=KBD2 4=KBD3 5=KBD4" },
     { "KB2", "Keyboard (half rows)", "1=A8 2=A9 3=A10 4=A11 5=A12 6=A13 7=A14 8=A15" },
-    { "MIC", "MIC jack", "1=TV/TAPE 2=GND" },
-    { "EAR", "EAR jack", "1=TAPE_IN 2=GND" },
-    { "MOD", "Modulator", "1=VIDEO 2=GND 3=+5V" },
+    { "MICJ", "MIC jack", "1=MIC 2=GND" },
+    { "EARJ", "EAR jack", "1=EAR 2=GND" },
+    { "MOD", "Modulator", "1=UK2_video 2=USA3 3=GND 4=+5V" },
     { "DC", "9V input", "1=+9V 2=GND" },
 };
 
@@ -135,10 +128,10 @@ static int t1_rail_of(const char *name) {
 }
 
 static int t1_kind_of(const char *ref) {
-    if (!strcmp(ref, "X1") || !strcmp(ref, "MIC") || !strcmp(ref, "EAR") || !strcmp(ref, "MOD") || !strcmp(ref, "DC") ||
+    if (!strcmp(ref, "X1") || !strcmp(ref, "MICJ") || !strcmp(ref, "EARJ") || !strcmp(ref, "MOD") || !strcmp(ref, "DC") ||
         !strncmp(ref, "KB", 2) || ref[0] == 'J') return PART_CONNECTOR;
     if (!strncmp(ref, "IC", 2) || !strcmp(ref, "TR1")) return PART_IC;
-    if (ref[0] == 'R' && ((ref[1] >= '0' && ref[1] <= '9') || ref[1] == 'X')) return PART_RESISTOR;
+    if (ref[0] == 'R' && (ref[1] >= '0' && ref[1] <= '9')) return PART_RESISTOR;
     return PART_OTHER;      /* the diodes and TR2 (made elements in t1_create) */
 }
 
@@ -233,7 +226,7 @@ static void t1_create(board_t *b) {
     ((ula81_state_t *)s->parts[z->p_ula].state)->fb = b->screen;
     ((ula81_state_t *)s->parts[z->p_ula].state)->running = true;     /* X1 is not simulated: it always oscillates */
     /* Resistors that do logic: the buffers (470 ohm on the data bus, 1K on the ROM address lines, 680 ohm on the chip
-     * selects) let each side drive its own half of the bus; RX1 and RX3 are base resistors, wires here. */
+     * selects) let each side drive its own half of the bus; R6 and R1 are base resistors, wires here. */
     for (int i = 7; i <= 14; i++) { char ref[8]; snprintf(ref, sizeof(ref), "R%d", i); part_t *p = t1_find(b, ref);
         if (p && p->state && ((resistor_state_t *)p->state)->nel) element_set_type(s, p, 0, EL_SERIES); }
     for (int i = 18; i <= 26; i++) { char ref[8]; snprintf(ref, sizeof(ref), "R%d", i); part_t *p = t1_find(b, ref);
@@ -241,7 +234,7 @@ static void t1_create(board_t *b) {
     static const char *const ser[] = { "R2", "R28" };
     for (int i = 0; i < 2; i++) { part_t *p = t1_find(b, ser[i]);
         if (p && p->state && ((resistor_state_t *)p->state)->nel) element_set_type(s, p, 0, EL_SERIES); }
-    static const char *const links[] = { "RX1", "RX3" };
+    static const char *const links[] = { "R6", "R1" };
     for (int i = 0; i < 2; i++) { part_t *p = t1_find(b, links[i]);
         if (p && p->state) ((resistor_state_t *)p->state)->el[0].type = EL_LINK; }
     /* The keyboard diodes: the half row (pin 1) is the anode, the address line (pin 2) the cathode. */
@@ -424,7 +417,7 @@ const machine_t machine_ts1000 = {
     .ready_cycles = 2 * T1_FREQ,
     .parts = t1_part_defs, .nparts = sizeof(t1_part_defs) / sizeof(t1_part_defs[0]),
     .conns = t1_conn_defs, .nconns = sizeof(t1_conn_defs) / sizeof(t1_conn_defs[0]),
-    .link_resistors = "RX1 RX3", .crystals = "X1",
+    .link_resistors = "R6 R1", .crystals = "X1",
     .diodes = "D", .jumpers = "", .supplies = "",
     .keys_help = "Keys: type; Left Shift = SHIFT, Enter = NEWLINE, Backspace = RUBOUT (= DELETE), arrows = cursor, Esc = BREAK",
     .reset_help = "Hold to press RESET: shorts the Z80 /RESET (IC3 pin 26) to GND",
