@@ -919,6 +919,14 @@ const part_type_t PT_41464 = { "41464",
     "/OE:m DQ1:B DQ2:B /WE:m /RAS:m A6:m A5:m A4:m VCC:P A7:m A3:m A2:m A1:m A0:m DQ3:B /CAS:m DQ4:B VSS:P",
     d41464_eval, d41464_commit, d41464_reset, sizeof(dram4_state_t), TECH_NMOS };
 
+/* TMS4416 dynamic RAM 16K x 4 (the TS2068's U6, U7, U12, U13, U17, U18):
+ * the pinout and the cycle of a 41464 (/OE, DQ1-DQ4, /WE, /RAS, /CAS, A0-A7:
+ * eight row bits, and the columns only use six of them), so it is run by
+ * the same code. */
+const part_type_t PT_4416 = { "4416",
+    "/OE:m DQ1:B DQ2:B /WE:m /RAS:m A6:m A5:m A4:m VCC:P A7:m A3:m A2:m A1:m A0:m DQ3:B /CAS:m DQ4:B GND:P",
+    d41464_eval, d41464_commit, d41464_reset, sizeof(dram4_state_t), TECH_NMOS };
+
 /* 27128 EPROM 16K x 8 (U4: BASIC and the KERNAL in one chip, 251913-01).
  * The data comes out while /CE and /OE are low; VPP and /PGM are only for
  * programming it. */

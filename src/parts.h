@@ -29,7 +29,7 @@ extern const part_type_t PT_82S100, PT_2364, PT_2332, PT_2114, PT_4164;
 extern const part_type_t PT_74LS08, PT_7406, PT_74LS139, PT_74LS257, PT_74LS258;
 extern const part_type_t PT_74LS373, PT_4066, PT_556, PT_74LS629;
 extern const part_type_t PT_74LS74, PT_74LS193, PT_MC4044;
-extern const part_type_t PT_4116, PT_4532, PT_UPD23128, PT_HN613128, PT_74LS157, PT_74LS32, PT_74LS00, PT_LM1889;
+extern const part_type_t PT_4416, PT_4116, PT_4532, PT_UPD23128, PT_HN613128, PT_74LS157, PT_74LS32, PT_74LS00, PT_LM1889;
 /* The other chips for the 4532's place (zx48.c: the upper RAM option). */
 extern const part_type_t PT_4532_4, PT_3732L, PT_3732H, PT_4164_ZX;
 /* The Issue 6A's glue: a hex inverter, and the ZX8401 (its 15
