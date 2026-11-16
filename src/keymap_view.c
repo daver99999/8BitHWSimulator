@@ -8,6 +8,7 @@
 #include "keymap_view.h"
 #include <math.h>
 #include "ts2068.h"
+#include "ts1000.h"
 #include "zx48.h"
 #include "c64.h"
 #include "pet.h"
@@ -42,6 +43,29 @@ static const skey_t row4[10] = {
     { "N", "NEXT", ",", "N", ",", 0 }, { "M", "PAUSE", ".", "M", ".", 0 },
     { "SYMBOL SHIFT", "", "", "Tab", NULL, 2 }, { "SPACE", "BREAK", "", "Space", NULL, 4 } };
 
+/* The TS1000 / ZX81: 40 keys, the K-mode keyword above, the SHIFT legend below (decoded from the ROM's key tables). */
+static const skey_t zrow1[10] = {
+    { "1", "", "EDIT", "1", "Tab", 0 }, { "2", "", "AND", "2", "-", 0 }, { "3", "", "THEN", "3", "-", 0 },
+    { "4", "", "TO", "4", "-", 0 }, { "5", "", "\xE2\x86\x90", "5", "Left", 0 }, { "6", "", "\xE2\x86\x93", "6", "Down", 0 },
+    { "7", "", "\xE2\x86\x91", "7", "Up", 0 }, { "8", "", "\xE2\x86\x92", "8", "Right", 0 },
+    { "9", "", "GRAPHICS", "9", "-", 0 }, { "0", "", "RUBOUT", "0", "Bksp", 0 } };
+static const skey_t zrow2[10] = {
+    { "Q", "PLOT", "", "Q", "-", 0 }, { "W", "UNPLOT", "OR", "W", "-", 0 }, { "E", "REM", "STEP", "E", "-", 0 },
+    { "R", "RUN", "<=", "R", "-", 0 }, { "T", "RAND", "<>", "T", "-", 0 }, { "Y", "RETURN", ">=", "Y", "-", 0 },
+    { "U", "IF", "$", "U", "$", 0 }, { "I", "INPUT", "(", "I", "(", 0 }, { "O", "POKE", ")", "O", ")", 0 },
+    { "P", "PRINT", "\"", "P", "\"", 0 } };
+static const skey_t zrow3[10] = {
+    { "A", "NEW", "STOP", "A", "-", 0 }, { "S", "SAVE", "LPRINT", "S", "-", 0 }, { "D", "DIM", "SLOW", "D", "-", 0 },
+    { "F", "FOR", "FAST", "F", "-", 0 }, { "G", "GOTO", "LLIST", "G", "-", 0 }, { "H", "GOSUB", "**", "H", "-", 0 },
+    { "J", "LOAD", "-", "J", "-", 0 }, { "K", "LIST", "+", "K", "+", 0 }, { "L", "LET", "=", "L", "=", 0 },
+    { "NEWLINE", "", "", "Enter", NULL, 3 } };
+static const skey_t zrow4[10] = {
+    { "SHIFT", "", "", "L Shift", NULL, 1 }, { "Z", "COPY", ":", "Z", ":", 0 }, { "X", "CLEAR", ";", "X", ";", 0 },
+    { "C", "CONT", "?", "C", "?", 0 }, { "V", "CLS", "/", "V", "/", 0 }, { "B", "SCROLL", "*", "B", "*", 0 },
+    { "N", "NEXT", "<", "N", "<", 0 }, { "M", "PAUSE", ">", "M", ">", 0 },
+    { ".", "", ",", ".", ",", 0 }, { "SPACE", "BREAK", "\xC2\xA3", "Space", NULL, 4 } };
+static bool zx81_mode;      /* draw_key: a SHIFT legend without a PC character is typed with Shift held */
+
 static void line(struct nk_command_buffer *cv, struct nk_context *ctx, struct nk_rect r, const char *s, struct nk_color c) {
     if (s && *s) text_centered(cv, ctx, r, s, c);
 }
@@ -50,10 +74,11 @@ static bool is_spectrum(const machine_t *m) {
     return m == &machine_ts2068 || m == &machine_zx48 || m == &machine_zx48i2 || m == &machine_zx48i1 ||
            m == &machine_zx48i4b || m == &machine_zx48i6a;
 }
+static bool is_ts1000(const machine_t *m) { return m == &machine_ts1000; }
 static bool is_c64(const machine_t *m) { return m == &machine_c64 || m == &machine_c64c; }
 static bool is_pet(const machine_t *m) { return m == &machine_pet4032 || m == &machine_pet8032; }
 
-bool keymap_supported(const machine_t *m) { return is_spectrum(m) || is_c64(m) || is_pet(m); }
+bool keymap_supported(const machine_t *m) { return is_spectrum(m) || is_ts1000(m) || is_c64(m) || is_pet(m); }
 
 /* A key of the other machines: the shifted legend (red), the key (white), the PC key (green); style: 0 normal,
  * 1 modifier, 2 no PC key. */
@@ -214,6 +239,7 @@ static void draw_key(struct nk_command_buffer *cv, struct nk_context *ctx, struc
     char pc[48];
     if (k->kind != 0) snprintf(pc, sizeof pc, "PC: %s", k->pc);
     else if (k->pcsym) snprintf(pc, sizeof pc, "%s  %s", k->pc, k->pcsym);
+    else if (zx81_mode && k->sym[0]) snprintf(pc, sizeof pc, "%s  Shift+%s", k->pc, k->pc);
     else if (k->sym[0]) snprintf(pc, sizeof pc, "%s  Tab+%s", k->pc, k->pc);
     else snprintf(pc, sizeof pc, "%s", k->pc);
     line(cv, ctx, nk_rect(b.x, b.y + b.h - fh - 1, b.w, fh), pc, nk_rgb(180, 230, 160));
@@ -256,6 +282,27 @@ void keymap_window(struct nk_context *ctx, bool *open, const machine_t *m, float
             nk_label(ctx, "On the PC: the arrow keys are the cursor keys, Backspace is DELETE (CAPS SHIFT+0),", NK_TEXT_LEFT);
             nk_label(ctx, "Esc is BREAK (CAPS SHIFT+SPACE), Left Shift is CAPS SHIFT, Tab is SYMBOL SHIFT.", NK_TEXT_LEFT);
             nk_label(ctx, "Typing a character that needs SYMBOL SHIFT (+ - = \" ; ...) presses it for you.", NK_TEXT_LEFT);
+        } else if (is_ts1000(m)) {
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(ctx, "The ZX81 / TS1000 keyboard: K-mode keyword (blue), the key (white), SHIFT legend (red),", NK_TEXT_LEFT);
+            nk_label(ctx, "and under it, green: the PC key, and the character that types the red legend.", NK_TEXT_LEFT);
+            float kh = 72;
+            nk_layout_row_dynamic(ctx, kh * 4 + 6, 1);
+            struct nk_rect a;
+            if (nk_widget(&a, ctx) != NK_WIDGET_INVALID) {
+                struct nk_command_buffer *cv = nk_window_get_canvas(ctx);
+                const skey_t *rows[4] = { zrow1, zrow2, zrow3, zrow4 };
+                float kw = a.w / 10;
+                zx81_mode = true;
+                for (int y = 0; y < 4; y++)
+                    for (int x = 0; x < 10; x++)
+                        draw_key(cv, ctx, nk_rect(a.x + x * kw, a.y + y * kh, kw, kh), &rows[y][x]);
+                zx81_mode = false;
+            }
+            nk_layout_row_dynamic(ctx, 18, 1);
+            nk_label(ctx, "RUBOUT is the same as DELETE: SHIFT+0 on the ZX81, Backspace on the PC.", NK_TEXT_LEFT);
+            nk_label(ctx, "Arrow keys are the cursors (SHIFT+5..8), Tab is EDIT (SHIFT+1), Esc is BREAK (Space), Enter is NEWLINE.", NK_TEXT_LEFT);
+            nk_label_colored(ctx, "Left Shift is SHIFT. Typing a symbol that needs SHIFT (\" ( ) $ : ; ? / + - = * < > ,) presses it for you.", NK_TEXT_LEFT, COL_DIMTEXT);
         } else if (is_c64(m)) {
             nk_layout_row_dynamic(ctx, 20, 1);
             nk_label(ctx, "Each key: the shifted legend (red), the key (white), the PC key (green).", NK_TEXT_LEFT);

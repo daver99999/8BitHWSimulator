@@ -483,6 +483,7 @@ static void ts_print_text(board_t *b) {
 const machine_t machine_ts2068 = {
     .id = "ts2068",
     .name = "Timex Sinclair TS2068",
+    .issue = "TS2068",
     .board_name = "TS2068 335-850001 rev 03 (03D has a patch board, not modeled)",
     .size = sizeof(ts2068_t),
     .data = &bd_ts2068,
