@@ -265,8 +265,10 @@ void scld_step(sim_t *s, part_t *p) {
     bool wants = !c.a15 && c.a14 && !c.mreq && !c.iorq;     /* only before a cycle starts: never in the middle of one */
     if (cphase == 3 && wants && on_screen_line(u)) {
         int next = cellhs + 1;                       /* the clock would fall in the next half period */
-        if (next >= 0 && next < 32 * SCLD_CELL_HS) {
-            unsigned t = ((unsigned)next % SCLD_CELL_HS + SCLD_CELL_HS - 4) % SCLD_CELL_HS;
+        /* The 32 half periods before the first cell count too (as if cells ran before it): a cycle that
+         * starts there would still be going when cell 0 begins to fetch. */
+        if (next >= -(int)SCLD_CELL_HS && next < 32 * SCLD_CELL_HS) {
+            unsigned t = ((unsigned)(next + (int)SCLD_CELL_HS) % SCLD_CELL_HS + SCLD_CELL_HS - 4) % SCLD_CELL_HS;
             if (t != 16) held = true;                /* the idle half starts at t = 16 */
         } else if (next >= 32 * SCLD_CELL_HS && next < 32 * SCLD_CELL_HS + 32) {
             held = false;
