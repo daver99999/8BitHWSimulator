@@ -30,50 +30,49 @@
 #include "ula81.h"
 #include <string.h>
 
-enum {
-    P_A7P = 1, P_A8P = 2, P_A2P = 3, P_A1P = 4, P_A0P = 5, P_RD = 6, P_IORQ = 7, P_WR = 8, P_MREQ = 9, P_M1 = 10,
-    P_A14 = 11, P_RAMCS = 12, P_ROMCS = 13, P_CLK = 14, P_NMI = 15, P_TV = 16, P_HALT = 17, P_A15 = 18, P_D7 = 19,
-    P_TAPE = 20, P_UKUS = 22, P_KBD4 = 25, P_KBD3 = 27, P_KBD2 = 29, P_KBD1 = 31, P_KBD0 = 33, P_OSC = 35
+/* The pins of the 40 pin ULA of the ZX81 / TS1000; other chips with the same logic (the TS1500's gate array) pass their own. */
+static const ula81_pins_t ula81_default_pins = {
+    .a7p = 1, .a8p = 2, .a2p = 3, .a1p = 4, .a0p = 5, .rd = 6, .iorq = 7, .wr = 8, .mreq = 9, .m1 = 10, .a14 = 11,
+    .ramcs = 12, .romcs = 13, .clk = 14, .nmi = 15, .tv = 16, .halt = 17, .a15 = 18, .tape = 20, .ukus = 22,
+    .data = { 32, 30, 28, 26, 24, 23, 21, 19 }, .kbd = { 33, 31, 29, 27, 25 }, .alt = { 5, 4, 3, 36, 37, 38, 39, 1, 2 },
 };
-static const int data_pins[8] = { 32, 30, 28, 26, 24, 23, 21, 19 };         /* D0-D7 */
-static const int kbd_pins[5] = { 33, 31, 29, 27, 25 };                      /* KBD0-KBD4 */
-static const int alt_pins[9] = { 5, 4, 3, 36, 37, 38, 39, 1, 2 };           /* A0'-A8' */
 
 #define WHITE 0xFFFFFFFFu
 #define BLACK 0xFF000000u
 
-static bool hsync_cycle(const ula81_state_t *u) { return !u->vsync && u->cnt >= 16 && u->cnt < 32; }
+bool ula81_hsync_cycle(const ula81_state_t *u) { return !u->vsync && u->cnt >= 16 && u->cnt < 32; }
 
-static void ula81_eval(sim_t *s, part_t *p) {
+void ula81_eval(sim_t *s, part_t *p) {
     ula81_state_t *u = p->state;
-    bool mreq = !pin_in(s, p, P_MREQ), a14 = pin_in(s, p, P_A14);
-    bool rd = !pin_in(s, p, P_RD), iorq = !pin_in(s, p, P_IORQ), m1 = !pin_in(s, p, P_M1);
-    pin_out(s, p, P_ROMCS, DRV_BIT(!(mreq && !a14)));
-    pin_out(s, p, P_RAMCS, DRV_BIT(!(mreq && a14)));
-    pin_out(s, p, P_CLK, DRV_BIT(!u->cpuclk));
-    pin_out(s, p, P_NMI, DRV_BIT(!(u->nmi_en && hsync_cycle(u))));
-    pin_out(s, p, P_TV, DRV_BIT(!(u->vsync || hsync_cycle(u)) && !u->ink));
+    const ula81_pins_t *pm = u->pm ? u->pm : &ula81_default_pins;
+    bool mreq = !pin_in(s, p, pm->mreq), a14 = pin_in(s, p, pm->a14);
+    bool rd = !pin_in(s, p, pm->rd), iorq = !pin_in(s, p, pm->iorq), m1 = !pin_in(s, p, pm->m1);
+    pin_out(s, p, pm->romcs, DRV_BIT(!(mreq && !a14)));
+    pin_out(s, p, pm->ramcs, DRV_BIT(!(mreq && a14)));
+    if (pm->clk) pin_out(s, p, pm->clk, DRV_BIT(pm->clk_true ? u->cpuclk : !u->cpuclk));
+    pin_out(s, p, pm->nmi, DRV_BIT(!(u->nmi_en && ula81_hsync_cycle(u))));
+    pin_out(s, p, pm->tv, DRV_BIT(!(u->vsync || ula81_hsync_cycle(u)) && !u->ink));
     /* The data bus: open collector outputs, they only pull low. */
     unsigned low = 0;
     bool drive = false;
     if (u->vf == 1 && m1 && rd) { low = 0xFF; drive = true; }                       /* a NOP for the CPU */
-    else if (iorq && rd && !m1 && !pin_in(s, p, P_A0P)) {                           /* IN from port FE (A0 low) */
+    else if (iorq && rd && !m1 && !pin_in(s, p, pm->a0p)) {                           /* IN from port FE (A0 low) */
         unsigned v = 0x20;
-        for (int i = 0; i < 5; i++) if (pin_in(s, p, kbd_pins[i])) v |= 1u << i;
-        if (pin_in(s, p, P_UKUS)) v |= 0x40;
-        if (pin_in(s, p, P_TAPE)) v |= 0x80;
+        for (int i = 0; i < 5; i++) if (pin_in(s, p, pm->kbd[i])) v |= 1u << i;
+        if (pm->ukus && pin_in(s, p, pm->ukus)) v |= 0x40;
+        if (pin_in(s, p, pm->tape)) v |= 0x80;
         low = ~v & 0xFF;
         drive = true;
     }
     for (int i = 0; i < 8; i++)
-        pin_out(s, p, data_pins[i], drive && ((low >> i) & 1) ? DRV_LO : DRV_Z);
+        pin_out(s, p, pm->data[i], !drive ? DRV_Z : pm->push_pull ? DRV_BIT(!((low >> i) & 1)) : ((low >> i) & 1) ? DRV_LO : DRV_Z);
     /* The alternate address lines, driven during the refresh of a video fetch. */
     unsigned alt = (unsigned)(u->line & 7) | (unsigned)(u->code & 0x3F) << 3;
     for (int i = 0; i < 9; i++)
-        pin_out(s, p, alt_pins[i], u->vf == 2 ? DRV_BIT((alt >> i) & 1) : DRV_Z);
+        pin_out(s, p, pm->alt[i], u->vf == 2 ? DRV_BIT((alt >> i) & 1) : DRV_Z);
 }
 
-static void put_pixel(ula81_state_t *u, bool lit) {
+static void ula81_put_pixel(ula81_state_t *u, bool lit) {
     u->ink = lit;
     /* the picture is shifted so that the 256 pixel display sits in the middle of the 414 wide frame */
     int x = ((int)u->cnt * 2 + (u->phase >> 1) + ULA81_PIXELS_PER_LINE - 66) % ULA81_PIXELS_PER_LINE;
@@ -83,14 +82,15 @@ static void put_pixel(ula81_state_t *u, bool lit) {
 
 void ula81_step(sim_t *s, part_t *p) {
     ula81_state_t *u = p->state;
+    const ula81_pins_t *pm = u->pm ? u->pm : &ula81_default_pins;
     if (p->dead || !u->running) return;
     uint8_t old_vf = u->vf;
-    bool old_nmi = u->nmi_en && hsync_cycle(u), old_ink = u->ink, old_clk = u->cpuclk;
+    bool old_nmi = u->nmi_en && ula81_hsync_cycle(u), old_ink = u->ink, old_clk = u->cpuclk;
     u->phase = (u->phase + 1) & 3;
     u->cpuclk = u->phase < 2;
-    bool m1 = !pin_in(s, p, P_M1), mreq = !pin_in(s, p, P_MREQ), rd = !pin_in(s, p, P_RD);
-    bool wr = !pin_in(s, p, P_WR), iorq = !pin_in(s, p, P_IORQ), a15 = pin_in(s, p, P_A15);
-    bool halted = !pin_in(s, p, P_HALT);
+    bool m1 = !pin_in(s, p, pm->m1), mreq = !pin_in(s, p, pm->mreq), rd = !pin_in(s, p, pm->rd);
+    bool wr = !pin_in(s, p, pm->wr), iorq = !pin_in(s, p, pm->iorq), a15 = pin_in(s, p, pm->a15);
+    bool halted = !pin_in(s, p, pm->halt);
 
     /* The line counter and the horizontal sync, once per CPU clock cycle. */
     if (u->phase == 0) {
@@ -112,7 +112,7 @@ void ula81_step(sim_t *s, part_t *p) {
     u->ack_prev = ack;
 
     /* Ports. */
-    bool a0 = pin_in(s, p, P_A0P), a1 = pin_in(s, p, P_A1P);
+    bool a0 = pin_in(s, p, pm->a0p), a1 = pin_in(s, p, pm->a1p);
     if (iorq && !m1 && rd && !a0 && !u->nmi_en && !u->vsync) {          /* IN with A0 low: the vertical sync starts */
         u->vsync = true;
         u->cnt = 0;
@@ -130,14 +130,14 @@ void ula81_step(sim_t *s, part_t *p) {
     /* The video fetch. */
     if (m1 && !u->m1_prev) { u->fetched = false; u->vf = 0; }
     u->m1_prev = m1;
-    if (m1 && mreq && rd && !iorq && a15 && !halted && !u->fetched) {
+    if (m1 && mreq && rd && !iorq && a15 && !halted && !u->fetched && !u->hold_fetch) {
         u->fetched = true;
-        unsigned code = part_read_bus(s, p, data_pins, 8);
+        unsigned code = part_read_bus(s, p, pm->data, 8);
         if (!(code & 0x40)) { u->vf = 1; u->code = (uint8_t)(code & 0xBF); }
     } else if (u->vf == 1 && !(m1 && rd)) {
         u->vf = 2;                                                      /* refresh: the ROM address goes out */
     } else if (u->vf == 2 && u->phase == 0) {
-        u->shift = (uint8_t)part_read_bus(s, p, data_pins, 8);          /* the bitmap row */
+        u->shift = pm->bitmap ? pm->bitmap(s) : (uint8_t)part_read_bus(s, p, pm->data, 8);   /* the bitmap row */
         u->inverse = (u->code & 0x80) != 0;
         u->shift_n = 8;
         u->half_pix = 0;
@@ -150,12 +150,12 @@ void ula81_step(sim_t *s, part_t *p) {
         bool lit = ((u->shift & 0x80) != 0) != u->inverse;
         u->shift <<= 1;
         u->shift_n--;
-        put_pixel(u, lit);
+        ula81_put_pixel(u, lit);
     } else if (!u->shift_n) {
         u->ink = false;
     }
 
-    bool nmi = u->nmi_en && hsync_cycle(u);
+    bool nmi = u->nmi_en && ula81_hsync_cycle(u);
     if (old_vf != u->vf || nmi != old_nmi || old_ink != u->ink || old_clk != u->cpuclk || u->phase == 0)
         sim_mark_dirty(s, (int)(p - s->parts));
 }
@@ -165,8 +165,9 @@ static void ula81_reset(sim_t *s, part_t *p) {
     ula81_state_t *u = p->state;
     uint32_t *fb = u->fb;
     bool running = u->running;
+    const ula81_pins_t *pm = u->pm;
     memset(u, 0, sizeof(*u));
-    u->fb = fb; u->running = running;
+    u->fb = fb; u->running = running; u->pm = pm;
     u->cpuclk = true;
     u->fy = -1;
 }

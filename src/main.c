@@ -1,7 +1,7 @@
 /* main.c - c64-hw-sim entry point.
  *
  *   c64-hw-sim [program.prg | cartridge.crt | image.rom | image.bin] [--harness]
- *       [--fault SPEC]... [--machine c64|c64c|zx48|zx48i2|zx48i1|zx48i4b|zx48i6a|pet4032|pet8032|ts2068|ts1000]
+ *       [--fault SPEC]... [--machine c64|c64c|zx48|zx48i2|zx48i1|zx48i4b|zx48i6a|pet4032|pet8032|ts2068|ts1000|ts1500]
  *       [--rom UD6=FILE]... (the PET's ROMs: UD6 $F000 ... UD12 $9000, UA3 the character ROM)
  *       [--board 250407|250469|issue3b|issue4b|issue6a|issue2|issue1]
  *       [--option ID=VALUE]... [--bank N] [--socket u4|port]
@@ -268,7 +268,7 @@ static board_t *board;
 /* The machines, for --machine. */
 static const machine_t *const machines[] = { &machine_c64, &machine_c64c, &machine_zx48, &machine_zx48i2,
                                              &machine_zx48i1, &machine_zx48i4b, &machine_zx48i6a,
-                                             &machine_pet4032, &machine_pet8032, &machine_ts2068, &machine_ts1000 };
+                                             &machine_pet4032, &machine_pet8032, &machine_ts2068, &machine_ts1000, &machine_ts1500 };
 
 static const machine_t *machine_named(const char *id) {
     for (size_t k = 0; k < sizeof(machines) / sizeof(machines[0]); k++)

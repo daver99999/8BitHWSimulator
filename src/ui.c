@@ -16,6 +16,7 @@
 #include "pet.h"
 #include "ts2068.h"
 #include "ts1000.h"
+#include "ts1500.h"
 #include "keymap_view.h"
 #include "diagnose.h"
 #include "atlas_browse.h"
@@ -2500,7 +2501,7 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
     const machine_t *m = b->m;
     if (!m->issue) return;
     static const machine_t *const pet_boards[] = { &machine_pet4032, &machine_pet8032 };
-    static const machine_t *const ts_boards[] = { &machine_ts2068, &machine_ts1000 };
+    static const machine_t *const ts_boards[] = { &machine_ts2068, &machine_ts1000, &machine_ts1500 };
     int fam = board_family(b);
     bool zx = fam == 1;
     const machine_t *const *boards = fam == 1 ? zx_boards : fam == 2 ? pet_boards : fam == 3 ? ts_boards : c64_boards;
@@ -2518,7 +2519,7 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
         if (boards[i] == m) cur = i;
     }
     int pick = combo_tip(ctx, issues, nb, cur, 20, nk_vec2(140, 20.0f * nb + 20),
-                         fam == 3 ? "Which Timex is on the bench: the TS2068 or the TS1000 (the American ZX81, Issue 3)" :
+                         fam == 3 ? "Which Timex is on the bench: the TS2068, the TS1000 (the American ZX81, Issue 3) or the TS1500" :
                          fam == 2 ? "Which PET is on the bench: the 4032 (40 columns, graphics keyboard) or the 8032 (80 columns, business keyboard)" :
                          zx ? "Which issue of the board is on the bench" :
                               "Which board is on the bench: the 250407 (breadbin) or the 250469 (C64C, Super PLA)");
@@ -3388,7 +3389,7 @@ static void handle_event(const sapp_event *ev) {
 
 /* The machine family of a board: 0 C64, 1 Spectrum, 2 PET, 3 TS2068. */
 static int board_family(const board_t *b) {
-    return board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : (b->m == &machine_ts2068 || b->m == &machine_ts1000) ? 3 : 0;
+    return board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : (b->m == &machine_ts2068 || b->m == &machine_ts1000 || b->m == &machine_ts1500) ? 3 : 0;
 }
 
 /* Everything of the interface that depends on the board: at start, and

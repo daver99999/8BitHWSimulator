@@ -9,6 +9,7 @@
 #include <math.h>
 #include "ts2068.h"
 #include "ts1000.h"
+#include "ts1500.h"
 #include "zx48.h"
 #include "c64.h"
 #include "pet.h"
@@ -74,7 +75,7 @@ static bool is_spectrum(const machine_t *m) {
     return m == &machine_ts2068 || m == &machine_zx48 || m == &machine_zx48i2 || m == &machine_zx48i1 ||
            m == &machine_zx48i4b || m == &machine_zx48i6a;
 }
-static bool is_ts1000(const machine_t *m) { return m == &machine_ts1000; }
+static bool is_ts1000(const machine_t *m) { return m == &machine_ts1000 || m == &machine_ts1500; }   /* the TS1500 has the same 40 key keyboard */
 static bool is_c64(const machine_t *m) { return m == &machine_c64 || m == &machine_c64c; }
 static bool is_pet(const machine_t *m) { return m == &machine_pet4032 || m == &machine_pet8032; }
 

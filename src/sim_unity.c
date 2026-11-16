@@ -54,4 +54,5 @@
 #include "ts2068.c"
 #include "ula81.c"
 #include "ts1000.c"
+#include "ts1500.c"
 #include "png.c"
