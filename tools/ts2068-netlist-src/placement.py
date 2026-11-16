@@ -5,7 +5,7 @@ The drawing is printed rotated by a quarter turn; the positions here are pixels 
 turned upright (rotated 90 degrees clockwise, 1650 x 1275). The ICs, the dock connector J4, the keyboard connector J9, the crystal, the diodes, the
 transistors and most of the resistors are placed. J5 and J6 (the joystick connectors) are only
 labels on the drawing and are put at the board edge by their diodes; U21 and R75 are not on the drawing
-at all and go in a row below the board; the
+at all, and U5 is on the 03D's patch daughterboard instead of the board: all go in a row below the board; the
 small positions are good to a few mm, which doesn't matter for the pin-level netlist. ICs are drawn notch up (pin 1 top left). The board
 outline is not a rectangle (the lower right corner is cut out for the dock), the generator uses
 the bounding box.
@@ -17,7 +17,7 @@ SIZE = (1445, 587)     # bounding box of the board, pixels (about 361 x 147 mm)
 IC = {
     'U1': (262, 598),
     'U4': (329, 358),
-    'U5': (996, 422),
+    # U5 (74LS244) is not placed: on the 03D it is on the bank switching daughterboard
     'U6': (648, 735), 'U7': (722, 735), 'U12': (786, 735), 'U17': (883, 735), 'U13': (975, 735),
     'U18': (1117, 735),
     'U9': (547, 733),
