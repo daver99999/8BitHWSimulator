@@ -218,10 +218,30 @@ static const pkey_t pet_biz[] = {      /* from a photo of an 8032's keyboard */
     PK(17.4f, 2, "K1"), PK(18.4f, 2, "K2"), PK(19.4f, 2, "K3"),
     { 17.4f, 3, 3, "K0" } };
 
+/* The chiclet keyboard of the PET 2001 (from a photo): the same matrix as the graphics keyboard, other places. RETURN is two rows tall. */
+#define CK(x, y, tok) { x, y, 1, tok }
+static const pkey_t pet_chic[] = {
+    CK(0.55f, 0, "!"), CK(1.53f, 0, "\""), CK(2.51f, 0, "#"), CK(3.49f, 0, "$"), CK(4.47f, 0, "%"), CK(5.45f, 0, "'"),
+    CK(6.43f, 0, "&"), CK(7.41f, 0, "\\"), CK(8.39f, 0, "("), CK(9.37f, 0, ")"), CK(10.35f, 0, "LARROW"),
+    CK(0.40f, 1, "Q"), CK(1.38f, 1, "W"), CK(2.36f, 1, "E"), CK(3.34f, 1, "R"), CK(4.32f, 1, "T"), CK(5.30f, 1, "Y"),
+    CK(6.28f, 1, "U"), CK(7.26f, 1, "I"), CK(8.24f, 1, "O"), CK(9.22f, 1, "P"), CK(10.20f, 1, "UP"),
+    CK(0.25f, 2, "A"), CK(1.23f, 2, "S"), CK(2.21f, 2, "D"), CK(3.19f, 2, "F"), CK(4.17f, 2, "G"), CK(5.15f, 2, "H"),
+    CK(6.13f, 2, "J"), CK(7.11f, 2, "K"), CK(8.09f, 2, "L"), CK(9.07f, 2, ":"), CK(10.05f, 2, "RETURN"),
+    CK(0.10f, 3, "Z"), CK(1.08f, 3, "X"), CK(2.06f, 3, "C"), CK(3.04f, 3, "V"), CK(4.02f, 3, "B"), CK(5.00f, 3, "N"),
+    CK(5.98f, 3, "M"), CK(6.96f, 3, ","), CK(7.94f, 3, ";"), CK(8.92f, 3, "?"),
+    CK(0, 4, "LSHIFT"), CK(1.0f, 4, "RVS"), CK(2.0f, 4, "@"), CK(3.0f, 4, "["), CK(4.0f, 4, "]"), { 5.0f, 4, 2.0f, "SPACE" },
+    CK(7.05f, 4, "<"), CK(8.05f, 4, ">"), CK(9.05f, 4, "STOP"), CK(10.05f, 4, "RSHIFT"),
+    PK(12.0f, 0, "HOME"), PK(13.0f, 0, "DOWN"), PK(14.0f, 0, "RIGHT"), PK(15.0f, 0, "DEL"),
+    PK(12.0f, 1, "7"), PK(13.0f, 1, "8"), PK(14.0f, 1, "9"), PK(15.0f, 1, "/"),
+    PK(12.0f, 2, "4"), PK(13.0f, 2, "5"), PK(14.0f, 2, "6"), PK(15.0f, 2, "*"),
+    PK(12.0f, 3, "1"), PK(13.0f, 3, "2"), PK(14.0f, 3, "3"), PK(15.0f, 3, "+"),
+    PK(12.0f, 4, "0"), PK(13.0f, 4, "."), PK(14.0f, 4, "-"), PK(15.0f, 4, "=") };
+
 static void draw_pet(struct nk_command_buffer *cv, struct nk_context *ctx, struct nk_rect a, bool cols80) {
-    const pkey_t *keys = cols80 ? pet_biz : pet_gfx;
-    int n = cols80 ? (int)(sizeof pet_biz / sizeof pet_biz[0]) : (int)(sizeof pet_gfx / sizeof pet_gfx[0]);
-    float u = a.w / (cols80 ? 20.6f : 19.4f), kh = 46;
+    bool chic = !cols80 && pet_chiclet;
+    const pkey_t *keys = chic ? pet_chic : cols80 ? pet_biz : pet_gfx;
+    int n = chic ? (int)(sizeof pet_chic / sizeof pet_chic[0]) : cols80 ? (int)(sizeof pet_biz / sizeof pet_biz[0]) : (int)(sizeof pet_gfx / sizeof pet_gfx[0]);
+    float u = a.w / (chic ? 16.2f : cols80 ? 20.6f : 19.4f), kh = 46;
     for (int i = 0; i < n; i++) {
         const char *t = keys[i].tok;
         char pc[40], top[8], label[16];
@@ -239,7 +259,7 @@ static void draw_pet(struct nk_command_buffer *cv, struct nk_context *ctx, struc
         else if (!strcmp(t, "DEL")) snprintf(top, sizeof top, "INST");
         else if (t[0] == 'K' && t[1] >= '0' && t[1] <= '9' && !t[2]) snprintf(label, sizeof label, "%c", t[1]);
         bool mod = !strcmp(t, "LSHIFT") || !strcmp(t, "RSHIFT");
-        draw_gkey(cv, ctx, nk_rect(a.x + keys[i].x * u, a.y + keys[i].y * kh, keys[i].w * u, kh), top, label, pc,
+        draw_gkey(cv, ctx, nk_rect(a.x + keys[i].x * u, a.y + keys[i].y * kh, keys[i].w * u, (chic && !strcmp(t, "RETURN")) ? 2 * kh : kh), top, label, pc,
                   mod ? 1 : (pc[0] == '-' && !pc[1] ? 2 : 0));
     }
 }
@@ -344,6 +364,7 @@ void keymap_window(struct nk_context *ctx, bool *open, const machine_t *m, float
             bool c80 = m == &machine_pet8032;
             nk_layout_row_dynamic(ctx, 20, 1);
             nk_label(ctx, c80 ? "The 8032's business keyboard (typewriter layout, numeric keypad on the right)." :
+                               pet_chiclet ? "The PET's chiclet keyboard (the graphics keyboard's matrix; numeric keypad on the right)." :
                                "The 4032's graphics keyboard (typewriter layout, numeric keypad on the right).", NK_TEXT_LEFT);
             nk_label(ctx, "Each key: the shifted legend (red), the key (white), the PC key (green); - : no PC key.", NK_TEXT_LEFT);
             nk_layout_row_dynamic(ctx, 46 * 5 + 6, 1);

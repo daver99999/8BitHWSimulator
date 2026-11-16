@@ -249,6 +249,7 @@ static void pet_create(board_t *b) {
     pet_t *z = PET(b);
     sim_t *s = &b->sim;
     z->cols80 = b->m == &machine_pet8032;
+    z->chiclet = !z->cols80 && pet_chiclet;
     z->p_cpu = sim_find_part(s, "UB14");
     z->p_pia1 = sim_find_part(s, "UB12");
     z->p_pia2 = sim_find_part(s, "UB16");
@@ -728,6 +729,22 @@ static void pet_print_text(board_t *b) {
     .cpu_regs = pet_cpu_regs, \
     .print_text = pet_print_text
 
+/* Option (4032): which keyboard is fitted. The chiclet keyboard of the 2001 has the graphics keyboard's matrix: only the
+ * keys' places and legends differ (the Keyboard window). */
+bool pet_chiclet;
+static const char *const pet_kbd_values[] = { "Graphics", "Chiclet" };
+static const char *const pet_kbd_ids[] = { "graphics", "chiclet" };
+static const machine_option_t pet_options[] = {
+    { "keyboard", "Keyboard", "The 4032's graphics keyboard, or the chiclet keyboard (same matrix, different key places and legends)",
+      pet_kbd_values, pet_kbd_ids, 2 },
+};
+static int pet_get_option(board_t *b, int option) { (void)option; return PET(b)->chiclet; }
+static void pet_set_option(board_t *b, int option, int value) {
+    (void)option;
+    PET(b)->chiclet = value != 0;
+    pet_chiclet = PET(b)->chiclet;
+}
+
 const machine_t machine_pet4032 = {
     PET_MACHINE,
     .id = "pet4032",
@@ -735,6 +752,9 @@ const machine_t machine_pet4032 = {
     .name = "Commodore PET 4032",
     .board_name = "PET 8032080-03, 40 columns",
     .data = &bd_pet4032,
+    .options = pet_options, .noptions = 1,
+    .get_option = pet_get_option,
+    .set_option = pet_set_option,
 };
 
 const machine_t machine_pet8032 = {

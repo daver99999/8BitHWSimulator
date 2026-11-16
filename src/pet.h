@@ -18,6 +18,7 @@ typedef struct pet {
     board_t board;              /* first: a pet_t is a board_t */
     int p_cpu, p_pia1, p_pia2, p_via, p_crtc, p_xtal, p_char;
     int pin_12v, pin_m5v, pin_9v;
+    bool chiclet;               /* option "keyboard" (4032): the chiclet keyboard (same matrix as the graphics one) */
     bool cols80;                /* the 80 column board (odd display RAM fitted) */
     /* The ROM sockets UD6 ($F000) to UD12 ($9000) and the character ROM. */
     uint8_t rom[7][4096];
@@ -38,6 +39,7 @@ typedef struct pet {
 
 static inline pet_t *PET(board_t *b) { return (pet_t *)b; }
 extern const machine_t machine_pet4032, machine_pet8032;
+extern bool pet_chiclet;    /* the 4032's chiclet keyboard is selected (for the Keyboard window) */
 static inline bool board_is_pet(const board_t *b) { return b->m == &machine_pet4032 || b->m == &machine_pet8032; }
 
 /* Put a ROM image in a socket by reference (UD6..UD12: 4K each, UA3: the

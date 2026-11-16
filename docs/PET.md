@@ -202,3 +202,10 @@ check keys and nets; they need your ROMs and print their own usage.
 - [Zimmers.net](https://www.zimmers.net/anonftp/pub/cbm/firmware/computers/pet/index.html): the archive the PET ROM images come from.
 - Claude (Anthropic): the PET netlist, the 6520, 6522 and 6545 cores, the board
   models, video, keyboards, power section, loading, layout, tests and this text.
+
+## Chiclet keyboard (option)
+
+The 4032 can show the 2001's chiclet keyboard instead of the graphics one: `--option keyboard=chiclet` (or the Keyboard choice in the
+control panel). It has the same matrix as the graphics keyboard (as confirmed by the board's owner), so only the Keyboard window
+changes: the key places and legends come from a photo of a chiclet keyboard (a Japanese one: it has katakana legends, which are not
+drawn). The 8032 keeps its business keyboard.
