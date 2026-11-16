@@ -17,16 +17,16 @@ N.chip('U3', 'SCLD')
 scld = {49:'KB0',50:'KB1',51:'KB2',52:'KB3',53:'KB4', 13:'OSC_OUT',14:'OSC_IN',15:'TAPE_IN',
         12:'BE',11:'EXROM',10:'PHI_N',32:'ROSCS',16:'SPKR_TAPE_OUT',19:'PHIC',18:'BDIR',17:'BC1',41:'CASI',
         37:'DRAMWE',34:'U',35:'V',33:'Y',36:'RASI',46:'BLUE',47:'GREEN',48:'RED',42:'CPUCLK',
-        67:'INT',64:'IORQ',66:'MREQ',65:'WR',63:'RD',54:'RD',68:'RFSH',38:'A7R',45:'A15',44:'A14',9:'A13',
+        67:'INT',64:'IORQ',66:'MREQ',65:'WR',63:'RD',54:'RDDIR',68:'RFSH',38:'A7R',45:'A15',44:'A14',9:'A13',
         8:'A7',7:'A6',6:'A5',5:'A4',4:'A3',3:'A2',2:'A1',1:'A0',
         22:'MA7',30:'MA5',28:'MA6',24:'MA4',23:'MA3',25:'MA2',29:'MA1',31:'MA0',
         20:'TS',21:'MUX',27:'ROMCS',39:'CAS3',40:'CAS2',43:'+5V',26:'GND',
         57:'D0P',55:'D1P',56:'D2P',58:'D3P',61:'D4P',59:'D5P',60:'D6P',62:'D7P'}
-N.note('SCLD pins 63/54 are both /RD and 54 is the second /RD pin as drawn; pin 38 A7R; 10 is the phi pin (PIB-9) - verify names on the real chip pinout.')
+N.note('SCLD pin functions are from Technical Manual Table 2.1.8-1: 54 = RD* (read direction output to U9 DIR), 63 = RD (input from the CPU), 38 = ATR (refresh and the 8th row address bit of the 32K), 19 = clock C for the AY (1.764 MHz), 10 = buffered CPU clock to the rear connector, 20 = TS (tri-state control of the address and display data buffers).')
 N.pins('U3', scld)
 # ---- 74LS245 U9: CPU data bus <-> primed (RAM side) data bus ----
 N.chip('U9', 'LS245')
-N.pins('U9', {1:'RD', 19:'TS', **{2+i: 'D%d' % i for i in range(8)}, **{18-i: 'D%dP' % i for i in range(8)}})
+N.pins('U9', {1:'RDDIR', 19:'TS', **{2+i: 'D%d' % i for i in range(8)}, **{18-i: 'D%dP' % i for i in range(8)}})
 # ---- 74LS245 U15: CPU control to the dock ----
 N.chip('U15', 'LS245')
 N.pins('U15', {1:'+5V', 19:'GND', 2:'RFSH',3:'MREQ',4:'IORQ',5:'WR',6:'RD',7:'A13',8:'A14',9:'A15',
@@ -50,5 +50,5 @@ N.note('4416 pins 2,3,15,17 are D1..D4 (data in AND out share 3-state); /OE tied
 # ---- AY-3-8912 U14 ----
 N.chip('U14', 'AY8912')
 N.pins('U14', {28:'D0',27:'D1',26:'D2',25:'D3',24:'D4',23:'D5',22:'D6',21:'D7', 19:'+5V', 17:'+5V', 20:'BC1', 18:'BDIR',
-               16:'RESET', 15:'AYCLK', 14:'IOA0',13:'IOA1',12:'IOA2',11:'IOA3',10:'IOA4',9:'IOA5',8:'IOA6',7:'IOA7'})
-N.note('AY pin 17 on the schematic is labelled A8 and tied high; 19 is BC2 tied high. AYCLK = SCLD phiC (pin 19)? INFERRED.')
+               16:'RESET', 15:'PHIC', 14:'IOA0',13:'IOA1',12:'IOA2',11:'IOA3',10:'IOA4',9:'IOA5',8:'IOA6',7:'IOA7'})
+N.note('AY pin 17 on the schematic is labelled A8 and tied high; 19 is BC2 tied high. AY CLOCK = SCLD pin 19 (Table 2.1.8-1: clock C for the sound chip, 1.764 MHz).')
