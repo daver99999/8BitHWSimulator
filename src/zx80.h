@@ -22,6 +22,7 @@ typedef struct zx80 {
     int32_t cache_addr, cache_data;
     uint8_t rom80[4096], rom81[8192];
     bool have80, have81;
+    bool kbd81;                 /* option "keyboard": 1 = the ZX81's keys */
     int rom_sel;                /* option "rom": 0 = the ZX80's own 4K ROM, 1 = the ZX81's 8K ROM */
     kbd_t kbd;
     uint16_t key_matrix[5];
@@ -34,6 +35,7 @@ typedef struct zx80 {
 
 static inline zx80_t *Z8(board_t *b) { return (zx80_t *)b; }
 extern const machine_t machine_zx80;
+extern bool zx80_kbd81;     /* the ZX81 keyboard is selected (for the Keyboard window) */
 static inline bool board_is_zx80(const board_t *b) { return b->m == &machine_zx80; }
 
 /* The byte at a RAM address ($4000-$7FFF, 1K mirrored) (for tests). */

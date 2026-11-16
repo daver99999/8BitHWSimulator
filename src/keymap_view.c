@@ -307,7 +307,7 @@ void keymap_window(struct nk_context *ctx, bool *open, const machine_t *m, float
             nk_label(ctx, "Typing a character that needs SYMBOL SHIFT (+ - = \" ; ...) presses it for you.", NK_TEXT_LEFT);
         } else if (is_ts1000(m)) {
             nk_layout_row_dynamic(ctx, 20, 1);
-            bool zx80 = m == &machine_zx80;
+            bool zx80 = m == &machine_zx80 && !zx80_kbd81;
             nk_label(ctx, zx80 ? "The ZX80 keyboard: keyword (blue), the key (white), SHIFT legend (red)," :
                                  "The ZX81 / TS1000 keyboard: K-mode keyword (blue), the key (white), SHIFT legend (red),", NK_TEXT_LEFT);
             nk_label(ctx, "and under it, green: the PC key, and the character that types the red legend.", NK_TEXT_LEFT);

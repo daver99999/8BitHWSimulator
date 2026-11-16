@@ -1005,7 +1005,7 @@ Pick **Timex** in the control panel, then the machine in the drop-down. None of 
   `roms/ts1500/`. The board's green buck regulator and the wires on it are mods and are not modeled.
   [docs/TS1500.md](docs/TS1500.md).
 - **ZX80**: Z80A and discrete TTL (no ULA), 1K RAM. ROM: the 4K ZX80 ROM in `roms/zx80/`, or the ZX81's 8K ROM in
-  `roms/ts1000/`; choose with the ROM button or `--option rom=zx80|zx81` (the ZX81 ROM runs in FAST mode only).
+  `roms/ts1000/`; choose with the ROM button or `--option rom=zx80|zx81` (the ZX81 ROM runs in FAST mode only); `--option keyboard=zx80|zx81` picks which keyboard layout is fitted.
   [docs/ZX80.md](docs/ZX80.md).
 
 All three boot to the BASIC prompt and take the keyboard. No tape, file loading or sound yet; the power supplies, the

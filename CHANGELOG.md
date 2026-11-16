@@ -17,7 +17,7 @@ PET, by David Green, github.com/daver99999). It started as antirez's
   diagram (netlist read from the vector PDF, `tools/zx80-extract/`). Two ROMs: the ZX80's own 4K (`roms/zx80/`) or the ZX81's 8K
   (`roms/ts1000/`), chosen with `--option rom=zx80|zx81` or the ROM button (the ZX81 ROM runs in FAST mode: no NMI generator).
   Parts placed from a scan of an Issue 3 board (resistor groups in order, not read from the silkscreen).
-  Its keyboard is the ZX80's own (same matrix as the ZX81, different shifted keys: NOT AND THEN TO, HOME, EDIT on SHIFT+NEWLINE, " $ ( ) * on SHIFT+Y U I O P), also in the Keyboard window.
+  Its keyboard is the ZX80's own (same matrix as the ZX81, different shifted keys: NOT AND THEN TO, HOME, EDIT on SHIFT+NEWLINE, " $ ( ) * on SHIFT+Y U I O P), also in the Keyboard window; `--option keyboard=zx81` (or the control panel) switches to the ZX81's keys.
 - **Timex Sinclair 1500.** A sixth machine (`--machine ts1500`, Timex in the control panel): Z80A, the 68 pin gate array U5
   (the ZX81 ULA's logic, reused from `src/ula81.c`, plus its own DRAM timing), 8K ROM, eight 4116 DRAMs (16K), the
   74LS244/245 buffers, keyboard diodes and edge connector. Boots to the K cursor headless and runs `PRINT 1`. The netlist

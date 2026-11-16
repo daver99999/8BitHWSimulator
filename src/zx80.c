@@ -135,6 +135,8 @@ static void z8_make_element(board_t *b, const char *ref, int pin_a, int pin_b, i
     element_set_type(&b->sim, p, 0, type);
 }
 
+bool zx80_kbd81;     /* option "keyboard": the ZX81's keyboard on this board (the Keyboard window follows it) */
+
 static void z8_init_keymap(zx80_t *z) {
     /* The ZX80's matrix is the ZX81's (column = address line A8+n, line = KBD0..KBD4) but its shifted keys are not: SHIFT+Y is ",
      * +U $, +I (, +O ), +P *, +H ** (^), +J -, +K +, +L =, +Z :, +X ;, +C ?, +V /, +M >, +N <, +. ,; SHIFT+1..4 are the keywords
@@ -145,6 +147,10 @@ static void z8_init_keymap(zx80_t *z) {
         " zxcv" "asdfg" "qwert" "12345" "09876" "poiuy" " lkjh" " .mnb"
         " ZXCV" "ASDFG" "QWERT" "     " "     " "POIUY" " LKJH" " .MNB"
         " :;?/" "     " "     " "     " "     " "*)($\"" " =+-^" " ,><  ";
+    if (z->kbd81)      /* the ZX81's: SHIFT+P is ", Y has none, B is *, H has none */
+        keymap = " zxcv" "asdfg" "qwert" "12345" "09876" "poiuy" " lkjh" " .mnb"
+                 " ZXCV" "ASDFG" "QWERT" "     " "     " "POIUY" " LKJH" " .MNB"
+                 " :;?/" "     " "     " "     " "     " "\")($ " " =+- " " ,><*";
     for (int layer = 0; layer < 3; layer++)
         for (int column = 0; column < 8; column++)
             for (int line = 0; line < 5; line++) {
@@ -160,8 +166,12 @@ static void z8_init_keymap(zx80_t *z) {
     kbd_register_key(&z->kbd, 0x0A, 4, 4, 1);    /* down: shift + 6 */
     kbd_register_key(&z->kbd, 0x0B, 4, 3, 1);    /* up: shift + 7 */
     kbd_register_key(&z->kbd, 0x09, 4, 2, 1);    /* right: shift + 8 */
-    kbd_register_key(&z->kbd, 0x05, 4, 1, 1);    /* home: shift + 9 */
-    kbd_register_key(&z->kbd, 0x07, 6, 0, 1);    /* edit: shift + newline */
+    if (z->kbd81) {
+        kbd_register_key(&z->kbd, 0x07, 3, 0, 1);    /* edit: shift + 1 */
+    } else {
+        kbd_register_key(&z->kbd, 0x05, 4, 1, 1);    /* home: shift + 9 */
+        kbd_register_key(&z->kbd, 0x07, 6, 0, 1);    /* edit: shift + newline */
+    }
 }
 
 /* The ROM images: a 4096 byte one is the ZX80's, an 8192 byte one the ZX81's; in roms/zx80, roms/ts1000, roms or . */
@@ -231,6 +241,7 @@ static void z8_create(board_t *b) {
     for (int i = 3; i <= 11; i++) { char ref[8]; snprintf(ref, sizeof(ref), "D%d", i); z8_make_element(b, ref, 1, 2, EL_DIODE); }
     for (int c = 0; c < 8; c++) z->pin_row[c] = z8_pin_of(b, "KB2", 1 + c);
     for (int l = 0; l < 5; l++) z->pin_kb[l] = z8_pin_of(b, "KB1", 1 + l);
+    z->kbd81 = zx80_kbd81;
     z8_init_keymap(z);
     memset(z->key_matrix, 0, sizeof(z->key_matrix));
     z->pin_reset_net = z8_pin_of(b, "IC1", 26);          /* /RESET: held low at power on (R21, C10 pull it up and make the delay) */
@@ -439,14 +450,25 @@ static void z8_print_text(board_t *b) {
 /* Option: which ROM is fitted. */
 static const char *const z8_rom_values[] = { "ZX80 4K", "ZX81 8K" };
 static const char *const z8_rom_ids[] = { "zx80", "zx81" };
+static const char *const z8_kbd_values[] = { "ZX80", "ZX81" };
+static const char *const z8_kbd_ids[] = { "zx80", "zx81" };
 static const machine_option_t z8_options[] = {
     { "rom", "ROM", "The ZX80's own 4K ROM (8332), or the ZX81's 8K ROM (2364) in its place (FAST mode only: there is no NMI generator)",
       z8_rom_values, z8_rom_ids, 2 },
+    { "keyboard", "Keyboard", "The ZX80's keyboard (same matrix as the ZX81's, different shifted keys and legends) or the ZX81's",
+      z8_kbd_values, z8_kbd_ids, 2 },
 };
-static int z8_get_option(board_t *b, int option) { (void)option; return Z8(b)->rom_sel; }
+static int z8_get_option(board_t *b, int option) { return option == 0 ? Z8(b)->rom_sel : Z8(b)->kbd81; }
 static void z8_set_option(board_t *b, int option, int value) {
-    (void)option;
     zx80_t *z = Z8(b);
+    if (option == 1) {
+        z->kbd81 = value != 0;
+        zx80_kbd81 = z->kbd81;
+        z8_init_keymap(z);
+        memset(z->key_matrix, 0, sizeof(z->key_matrix));
+        board_rebuild(b);
+        return;
+    }
     if (value == 1 && !z->have81) return;
     if (value == 0 && !z->have80) return;
     z->rom_sel = value;
@@ -491,7 +513,7 @@ const machine_t machine_zx80 = {
     .cpu_status = z8_cpu_status,
     .cpu_regs = z8_cpu_regs,
     .print_text = z8_print_text,
-    .options = z8_options, .noptions = 1,
+    .options = z8_options, .noptions = 2,
     .get_option = z8_get_option,
     .set_option = z8_set_option,
 };
