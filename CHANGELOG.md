@@ -15,7 +15,7 @@ PET, by David Green, github.com/daver99999). It started as antirez's
   keyboard diodes and the edge connector. Boots to the K cursor headless and runs `PRINT 1`. The netlist is
   transcribed from the schematic SRC 049 (re-drawn by Ron Reuter); what the schematic doesn't say (the order of the
   R35-R47 pull-ups, the keyboard and modulator connector pins) is marked INFERRED in `tools/ts1000-netlist-src/sheet01.py`.
-  Placement is from a photo of an Issue 3 board. The 8K ROM is not shipped: put it in `roms/ts1000`.
+  Placement is from a scan of an Issue 3 board. The 8K ROM is not shipped: put it in `roms/ts1000`.
   The Keyboard window has the ZX81 keys (RUBOUT is the same as DELETE).
 - **Keyboard map.** A Keyboard button in the controls opens a window with the machine's keys and the
   PC key that types each one (`src/keymap_view.c`): the Spectrum and TS2068 (keywords, SYMBOL SHIFT
