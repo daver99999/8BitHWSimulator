@@ -113,7 +113,7 @@ static void pet_pc(const char *n, bool cols80, char *out, size_t sz, char *top, 
     static const struct { const char *n, *pc; } named[] = {
         { "RETURN", "Enter" }, { "DEL", "Bksp" }, { "UP", "Up" }, { "DOWN", "Down" }, { "RIGHT", "Rt/Lt" },
         { "HOME", "Home/Del" }, { "STOP", "Esc" }, { "RVS", "End" }, { "TAB", "Tab" }, { "RSHIFT", "R Shift" },
-        { "LSHIFT", "Shift" }, { "SPACE", "Space" }, { "LARROW", "-" }, { "ESC", "-" }, { "RPT", "-" } };
+        { "LSHIFT", "Shift" }, { "SPACE", "Space" }, { "LARROW", "-" }, { "ESC", "-" }, { "RPT", "-" }, { "SLOCK", "-" } };
     for (size_t i = 0; i < sizeof named / sizeof named[0]; i++)
         if (!strcmp(n, named[i].n)) { snprintf(out, sz, "%s", named[i].pc); return; }
     if (n[0] == 'K' && n[1] >= '0' && n[1] <= '9' && !n[2]) { snprintf(out, sz, "-"); return; }   /* the keypad: no PC key */
@@ -135,22 +135,23 @@ static void pet_pc(const char *n, bool cols80, char *out, size_t sz, char *top, 
  * [ ] @ < > keys. */
 typedef struct { float x, y, w; const char *tok; } pkey_t;
 #define PK(x, y, tok) { x, y, 1, tok }
-static const pkey_t pet_gfx[] = {
-    PK(0, 0, "!"), PK(1, 0, "\""), PK(2, 0, "#"), PK(3, 0, "$"), PK(4, 0, "%"), PK(5, 0, "'"), PK(6, 0, "&"), PK(7, 0, "\\"),
-    PK(8, 0, "("), PK(9, 0, ")"), PK(10, 0, "LARROW"),
-    PK(0, 1, "Q"), PK(1, 1, "W"), PK(2, 1, "E"), PK(3, 1, "R"), PK(4, 1, "T"), PK(5, 1, "Y"), PK(6, 1, "U"), PK(7, 1, "I"),
-    PK(8, 1, "O"), PK(9, 1, "P"), PK(10, 1, "UP"),
-    PK(0, 2, "A"), PK(1, 2, "S"), PK(2, 2, "D"), PK(3, 2, "F"), PK(4, 2, "G"), PK(5, 2, "H"), PK(6, 2, "J"), PK(7, 2, "K"),
-    PK(8, 2, "L"), PK(9, 2, ":"), { 10, 2, 1.5f, "RETURN" },
-    { 0, 3, 1.5f, "LSHIFT" }, PK(1.5f, 3, "Z"), PK(2.5f, 3, "X"), PK(3.5f, 3, "C"), PK(4.5f, 3, "V"), PK(5.5f, 3, "B"),
-    PK(6.5f, 3, "N"), PK(7.5f, 3, "M"), PK(8.5f, 3, ","), PK(9.5f, 3, ";"), PK(10.5f, 3, "?"), { 11.5f, 3, 1.5f, "RSHIFT" },
-    PK(0, 4, "RVS"), PK(1, 4, "["), { 2, 4, 5, "SPACE" }, PK(7, 4, "]"), PK(8, 4, "@"), PK(9, 4, "<"), PK(10, 4, ">"),
-    { 11, 4, 1.5f, "STOP" },
-    PK(14, 0, "HOME"), PK(15, 0, "DEL"), PK(16, 0, "DOWN"), PK(17, 0, "RIGHT"),
-    PK(14, 1, "7"), PK(15, 1, "8"), PK(16, 1, "9"), PK(17, 1, "/"),
-    PK(14, 2, "4"), PK(15, 2, "5"), PK(16, 2, "6"), PK(17, 2, "*"),
-    PK(14, 3, "1"), PK(15, 3, "2"), PK(16, 3, "3"), PK(17, 3, "+"),
-    PK(14, 4, "0"), PK(15, 4, "."), PK(16, 4, "-"), PK(17, 4, "=") };
+static const pkey_t pet_gfx[] = {      /* from a photo of a 4032's keyboard */
+    PK(0, 0, "@"), PK(1, 0, "!"), PK(2, 0, "\""), PK(3, 0, "#"), PK(4, 0, "$"), PK(5, 0, "%"), PK(6, 0, "'"), PK(7, 0, "&"),
+    PK(8, 0, "\\"), PK(9, 0, "("), PK(10, 0, ")"), PK(11, 0, "LARROW"), PK(12, 0, "["), PK(13, 0, "]"),
+    { 0, 1, 1.5f, "RVS" }, PK(1.5f, 1, "Q"), PK(2.5f, 1, "W"), PK(3.5f, 1, "E"), PK(4.5f, 1, "R"), PK(5.5f, 1, "T"),
+    PK(6.5f, 1, "Y"), PK(7.5f, 1, "U"), PK(8.5f, 1, "I"), PK(9.5f, 1, "O"), PK(10.5f, 1, "P"), PK(11.5f, 1, "UP"),
+    PK(12.5f, 1, "<"), PK(13.5f, 1, ">"),
+    { 0, 2, 1.5f, "SLOCK" }, PK(1.5f, 2, "A"), PK(2.5f, 2, "S"), PK(3.5f, 2, "D"), PK(4.5f, 2, "F"), PK(5.5f, 2, "G"),
+    PK(6.5f, 2, "H"), PK(7.5f, 2, "J"), PK(8.5f, 2, "K"), PK(9.5f, 2, "L"), PK(10.5f, 2, ":"), PK(11.5f, 2, "STOP"),
+    { 12.5f, 2, 1.9f, "RETURN" },
+    { 0, 3, 1.7f, "LSHIFT" }, PK(1.7f, 3, "Z"), PK(2.7f, 3, "X"), PK(3.7f, 3, "C"), PK(4.7f, 3, "V"), PK(5.7f, 3, "B"),
+    PK(6.7f, 3, "N"), PK(7.7f, 3, "M"), PK(8.7f, 3, ","), PK(9.7f, 3, ";"), PK(10.7f, 3, "?"), { 11.7f, 3, 2.7f, "RSHIFT" },
+    { 2.3f, 4, 9.3f, "SPACE" },
+    PK(15.3f, 0, "HOME"), PK(16.3f, 0, "DOWN"), PK(17.3f, 0, "RIGHT"), PK(18.3f, 0, "DEL"),
+    PK(15.3f, 1, "7"), PK(16.3f, 1, "8"), PK(17.3f, 1, "9"), PK(18.3f, 1, "/"),
+    PK(15.3f, 2, "4"), PK(16.3f, 2, "5"), PK(17.3f, 2, "6"), PK(18.3f, 2, "*"),
+    PK(15.3f, 3, "1"), PK(16.3f, 3, "2"), PK(17.3f, 3, "3"), PK(18.3f, 3, "+"),
+    PK(15.3f, 4, "0"), PK(16.3f, 4, "."), PK(17.3f, 4, "-"), PK(18.3f, 4, "=") };
 static const pkey_t pet_biz[] = {
     PK(0, 0, "1"), PK(1, 0, "2"), PK(2, 0, "3"), PK(3, 0, "4"), PK(4, 0, "5"), PK(5, 0, "6"), PK(6, 0, "7"), PK(7, 0, "8"),
     PK(8, 0, "9"), PK(9, 0, "0"), PK(10, 0, "-"), PK(11, 0, ":"), PK(12, 0, "LARROW"), PK(13, 0, "DEL"),
@@ -172,7 +173,7 @@ static const pkey_t pet_biz[] = {
 static void draw_pet(struct nk_command_buffer *cv, struct nk_context *ctx, struct nk_rect a, bool cols80) {
     const pkey_t *keys = cols80 ? pet_biz : pet_gfx;
     int n = cols80 ? (int)(sizeof pet_biz / sizeof pet_biz[0]) : (int)(sizeof pet_gfx / sizeof pet_gfx[0]);
-    float u = a.w / (cols80 ? 20.2f : 18.2f), kh = 46;
+    float u = a.w / (cols80 ? 20.2f : 19.4f), kh = 46;
     for (int i = 0; i < n; i++) {
         const char *t = keys[i].tok;
         char pc[40], top[8], label[16];
@@ -183,6 +184,10 @@ static void draw_pet(struct nk_command_buffer *cv, struct nk_context *ctx, struc
         else if (!strcmp(t, "RIGHT")) { snprintf(label, sizeof label, "CRSR\xE2\x86\x92"); if (!cols80) snprintf(top, sizeof top, "\xE2\x86\x90"); }
         else if (!strcmp(t, "DOWN")) { snprintf(label, sizeof label, "CRSR\xE2\x86\x93"); if (!cols80) snprintf(top, sizeof top, "\xE2\x86\x91"); }
         else if (!strcmp(t, "HOME") && !cols80) snprintf(top, sizeof top, "CLR");
+        else if (!strcmp(t, "STOP") && !cols80) snprintf(top, sizeof top, "RUN");
+        else if (!strcmp(t, "RVS") && !cols80) snprintf(top, sizeof top, "OFF");
+        else if (!strcmp(t, "SLOCK")) { snprintf(top, sizeof top, "SHIFT"); snprintf(label, sizeof label, "LOCK"); }
+        else if (!strcmp(t, "LSHIFT") || !strcmp(t, "RSHIFT")) snprintf(label, sizeof label, "SHIFT");
         else if (!strcmp(t, "DEL") && !cols80) snprintf(top, sizeof top, "INST");
         else if (t[0] == 'K' && t[1] >= '0' && t[1] <= '9' && !t[2]) snprintf(label, sizeof label, "%c", t[1]);
         bool mod = !strcmp(t, "LSHIFT") || !strcmp(t, "RSHIFT");
@@ -273,7 +278,7 @@ void keymap_window(struct nk_context *ctx, bool *open, const machine_t *m, float
             nk_layout_row_dynamic(ctx, 18, 1);
             nk_label_colored(ctx, "Rt/Lt: the Right arrow is CRSR right, the Left arrow is it shifted. Home/Del: Home is HOME, Del is CLR.", NK_TEXT_LEFT, COL_DIMTEXT);
             nk_label_colored(ctx, "Shift is the PC Shift key. Letters are capitals without Shift, as on the PET. Keys with no PC key: -.", NK_TEXT_LEFT, COL_DIMTEXT);
-            nk_label_colored(ctx, "The place of a few keys ([ ] @ < > on the graphics keyboard; the cursor block, [ ] @ \\ on the business one) is from the key matrix, not a photo.", NK_TEXT_LEFT, COL_FAULT);
+            if (c80) nk_label_colored(ctx, "The business keyboard's layout is from the key matrix, not a photo: the cursor block and [ ] @ \\ may be elsewhere.", NK_TEXT_LEFT, COL_FAULT);
         }
     } else {
         *open = false;
