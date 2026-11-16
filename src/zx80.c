@@ -136,14 +136,15 @@ static void z8_make_element(board_t *b, const char *ref, int pin_a, int pin_b, i
 }
 
 static void z8_init_keymap(zx80_t *z) {
-    /* The ZX80's matrix is the ZX81's: column = address line A8+n, line = KBD0..KBD4. The shifted symbols
-     * are those of the ZX81 (the ZX80's differ on a few keys). */
+    /* The ZX80's matrix is the ZX81's (column = address line A8+n, line = KBD0..KBD4) but its shifted keys are not: SHIFT+Y is ",
+     * +U $, +I (, +O ), +P *, +H ** (^), +J -, +K +, +L =, +Z :, +X ;, +C ?, +V /, +M >, +N <, +. ,; SHIFT+1..4 are the keywords
+     * NOT AND THEN TO, +5..8 the cursors, +9 HOME, +0 RUBOUT, +NEWLINE is EDIT. */
     kbd_init(&z->kbd, 1);
     kbd_register_modifier(&z->kbd, 0, 0, 0);     /* shift */
     const char *keymap =
         " zxcv" "asdfg" "qwert" "12345" "09876" "poiuy" " lkjh" " .mnb"
         " ZXCV" "ASDFG" "QWERT" "     " "     " "POIUY" " LKJH" " .MNB"
-        " :;?/" "     " "     " "     " "     " "\")($ " " =+- " " ,><*";
+        " :;?/" "     " "     " "     " "     " "*)($\"" " =+-^" " ,><  ";
     for (int layer = 0; layer < 3; layer++)
         for (int column = 0; column < 8; column++)
             for (int line = 0; line < 5; line++) {
@@ -159,7 +160,8 @@ static void z8_init_keymap(zx80_t *z) {
     kbd_register_key(&z->kbd, 0x0A, 4, 4, 1);    /* down: shift + 6 */
     kbd_register_key(&z->kbd, 0x0B, 4, 3, 1);    /* up: shift + 7 */
     kbd_register_key(&z->kbd, 0x09, 4, 2, 1);    /* right: shift + 8 */
-    kbd_register_key(&z->kbd, 0x07, 3, 0, 1);    /* edit: shift + 1 */
+    kbd_register_key(&z->kbd, 0x05, 4, 1, 1);    /* home: shift + 9 */
+    kbd_register_key(&z->kbd, 0x07, 6, 0, 1);    /* edit: shift + newline */
 }
 
 /* The ROM images: a 4096 byte one is the ZX80's, an 8192 byte one the ZX81's; in roms/zx80, roms/ts1000, roms or . */

@@ -66,6 +66,27 @@ static const skey_t zrow4[10] = {
     { "C", "CONT", "?", "C", "?", 0 }, { "V", "CLS", "/", "V", "/", 0 }, { "B", "SCROLL", "*", "B", "*", 0 },
     { "N", "NEXT", "<", "N", "<", 0 }, { "M", "PAUSE", ">", "M", ">", 0 },
     { ".", "", ",", ".", ",", 0 }, { "SPACE", "BREAK", "\xC2\xA3", "Space", NULL, 4 } };
+/* The ZX80's keyboard (from a photo): the keyword above the key, the key, the shifted legend. */
+static const skey_t yrow1[10] = {
+    { "1", "NOT", "", "1", "-", 0 }, { "2", "AND", "", "2", "-", 0 }, { "3", "THEN", "", "3", "-", 0 },
+    { "4", "TO", "", "4", "-", 0 }, { "5", "", "\xE2\x86\x90", "5", "Left", 0 }, { "6", "", "\xE2\x86\x93", "6", "Down", 0 },
+    { "7", "", "\xE2\x86\x91", "7", "Up", 0 }, { "8", "", "\xE2\x86\x92", "8", "Right", 0 },
+    { "9", "HOME", "", "9", "-", 0 }, { "0", "RUBOUT", "", "0", "Bksp", 0 } };
+static const skey_t yrow2[10] = {
+    { "Q", "NEW", "", "Q", "-", 0 }, { "W", "LOAD", "", "W", "-", 0 }, { "E", "SAVE", "", "E", "-", 0 },
+    { "R", "RUN", "", "R", "-", 0 }, { "T", "CONT", "", "T", "-", 0 }, { "Y", "REM", "\"", "Y", "\"", 0 },
+    { "U", "IF", "$", "U", "$", 0 }, { "I", "INPUT", "(", "I", "(", 0 }, { "O", "PRINT", ")", "O", ")", 0 },
+    { "P", "", "*", "P", "*", 0 } };
+static const skey_t yrow3[10] = {
+    { "A", "LIST", "", "A", "-", 0 }, { "S", "STOP", "", "S", "-", 0 }, { "D", "DIM", "", "D", "-", 0 },
+    { "F", "FOR", "", "F", "-", 0 }, { "G", "GOTO", "", "G", "-", 0 }, { "H", "POKE", "**", "H", "^", 0 },
+    { "J", "RAND", "-", "J", "-", 0 }, { "K", "LET", "+", "K", "+", 0 }, { "L", "", "=", "L", "=", 0 },
+    { "NEWLINE", "EDIT", "", "Enter", NULL, 3 } };
+static const skey_t yrow4[10] = {
+    { "SHIFT", "", "", "L Shift", NULL, 1 }, { "Z", "", ":", "Z", ":", 0 }, { "X", "CLEAR", ";", "X", ";", 0 },
+    { "C", "CLS", "?", "C", "?", 0 }, { "V", "GOSUB", "/", "V", "/", 0 }, { "B", "RET", "OR", "B", "-", 0 },
+    { "N", "NEXT", "<", "N", "<", 0 }, { "M", "", ">", "M", ">", 0 },
+    { ".", "", ",", ".", ",", 0 }, { "SPACE", "BREAK", "\xC2\xA3", "Space", NULL, 4 } };
 static bool zx81_mode;      /* draw_key: a SHIFT legend without a PC character is typed with Shift held */
 
 static void line(struct nk_command_buffer *cv, struct nk_context *ctx, struct nk_rect r, const char *s, struct nk_color c) {
@@ -286,7 +307,9 @@ void keymap_window(struct nk_context *ctx, bool *open, const machine_t *m, float
             nk_label(ctx, "Typing a character that needs SYMBOL SHIFT (+ - = \" ; ...) presses it for you.", NK_TEXT_LEFT);
         } else if (is_ts1000(m)) {
             nk_layout_row_dynamic(ctx, 20, 1);
-            nk_label(ctx, "The ZX81 / TS1000 keyboard: K-mode keyword (blue), the key (white), SHIFT legend (red),", NK_TEXT_LEFT);
+            bool zx80 = m == &machine_zx80;
+            nk_label(ctx, zx80 ? "The ZX80 keyboard: keyword (blue), the key (white), SHIFT legend (red)," :
+                                 "The ZX81 / TS1000 keyboard: K-mode keyword (blue), the key (white), SHIFT legend (red),", NK_TEXT_LEFT);
             nk_label(ctx, "and under it, green: the PC key, and the character that types the red legend.", NK_TEXT_LEFT);
             float kh = 72;
             nk_layout_row_dynamic(ctx, kh * 4 + 6, 1);
@@ -294,6 +317,7 @@ void keymap_window(struct nk_context *ctx, bool *open, const machine_t *m, float
             if (nk_widget(&a, ctx) != NK_WIDGET_INVALID) {
                 struct nk_command_buffer *cv = nk_window_get_canvas(ctx);
                 const skey_t *rows[4] = { zrow1, zrow2, zrow3, zrow4 };
+                if (zx80) { rows[0] = yrow1; rows[1] = yrow2; rows[2] = yrow3; rows[3] = yrow4; }
                 float kw = a.w / 10;
                 zx81_mode = true;
                 for (int y = 0; y < 4; y++)
@@ -303,7 +327,8 @@ void keymap_window(struct nk_context *ctx, bool *open, const machine_t *m, float
             }
             nk_layout_row_dynamic(ctx, 18, 1);
             nk_label(ctx, "RUBOUT is the same as DELETE: SHIFT+0 on the ZX81, Backspace on the PC.", NK_TEXT_LEFT);
-            nk_label(ctx, "Arrow keys are the cursors (SHIFT+5..8), Tab is EDIT (SHIFT+1), Esc is BREAK (Space), Enter is NEWLINE.", NK_TEXT_LEFT);
+            nk_label(ctx, zx80 ? "Arrow keys are the cursors (SHIFT+5..8), Tab is EDIT (SHIFT+NEWLINE), Esc is BREAK (Space), Enter is NEWLINE." :
+                                 "Arrow keys are the cursors (SHIFT+5..8), Tab is EDIT (SHIFT+1), Esc is BREAK (Space), Enter is NEWLINE.", NK_TEXT_LEFT);
             nk_label_colored(ctx, "Left Shift is SHIFT. Typing a symbol that needs SHIFT (\" ( ) $ : ; ? / + - = * < > ,) presses it for you.", NK_TEXT_LEFT, COL_DIMTEXT);
         } else if (is_c64(m)) {
             nk_layout_row_dynamic(ctx, 20, 1);
