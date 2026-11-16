@@ -47,6 +47,7 @@ extern const part_type_t PT_41464, PT_27128, PT_74LS14, PT_8701, PT_8500, PT_856
  * power-up reset (pet_parts.c). */
 extern const part_type_t PT_74LS02, PT_74LS10, PT_74LS20, PT_7425, PT_74LS86, PT_74S04, PT_74S04_OSC, PT_7417;
 extern const part_type_t PT_74LS138, PT_74LS145, PT_74154, PT_74LS244, PT_MC3446;
+extern const part_type_t PT_ZX_LS93, PT_ZX_LS165, PT_ZX_LS365, PT_ZX_ROM, PT_ZX_OSC86, PT_ZX_DIFF;   /* zx80_parts.c */
 extern const part_type_t PT_74LS74R, PT_74S74, PT_74177, PT_74LS164, PT_74166;
 extern const part_type_t PT_2316, PT_XTAL16, PT_LM555, PT_2114_PET;
 /* pet_chips.c: the PET's 6502, 6520 (x2), 6522 and 6545 around the cores in chips/ */

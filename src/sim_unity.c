@@ -55,4 +55,6 @@
 #include "ula81.c"
 #include "ts1000.c"
 #include "ts1500.c"
+#include "zx80_parts.c"
+#include "zx80.c"
 #include "png.c"
