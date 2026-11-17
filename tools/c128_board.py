@@ -100,7 +100,7 @@ def sheet_cpu():
         net(D[i], 'U6.%d' % (38 - i))
     net('2MHZ', 'U6.1')
     net('RDY', 'U6.2', 'U61.8')                 # U61C output
-    net('GAEC', 'U6.5')
+    net('AEC8502', 'U6.5')
     net('8502R/W', 'U6.39', 'U8.4')
     net('/RES', 'U6.40')
     net('/IRQ', 'U6.3')
@@ -152,7 +152,9 @@ def sheet_cpu():
         d_, q_ = zl[i + 1]
         net(D[i], 'U12.' + d_)
         net('ZD%d' % i, 'U12.' + q_)
-    net('D_1MHZ', 'U12.11', 'U56.3')
+    net('D_1MHZ', 'U12.11', 'U16.1')
+    net('D_1MHZ_N', 'U16.2', 'U56.3')      # the write flip-flop is clocked at the end of phase 2
+    power('U16', 14, 7)
     power('U12', 20, 10)
     for i, (a_, y_) in enumerate(((17, 3), (15, 5), (13, 7), (11, 9))):      # 2A -> 2Y: ZD0..3 -> D0..3
         net('ZD%d' % i, 'U13.%d' % a_)
@@ -164,16 +166,17 @@ def sheet_cpu():
     power('U13', 20, 10)
     # write timing: U56A (the Z80's /WR clocked by the 1 MHz), U31 gates
     net('+5V', 'U56.2', 'U56.4')
-    net('OLD_WR', 'U56.5', 'U31.12')
-    net('OLD_RD', 'U56.6', 'U31.4')
-    net('GAEC', 'U31.13', 'U61.3')
+    net('OLD_WR', 'U56.5')
+    net('OLD_RD', 'U56.6', 'U31.4', 'U31.12')
+    net('AEC', 'U31.13')
+    net('AEC8502', 'U61.3')
     net('GWR', 'U31.3')
     net('U31B', 'U31.6', 'U31.2')
     net(VCC, 'U31.5')
     power('U56', 14, 7)
     power('U31', 14, 7)
     # bus request / acknowledge, halting the 8502
-    gate('U61', 1, 'DMA', 'AEC', 'GAEC')
+    gate('U61', 1, '/Z80EN', 'AEC', 'AEC8502')     # the 8502 is off the bus in Z80 mode
     net('BA', 'U61.4')
     net('/Z80EN', 'U61.5')
     net('/HALT8502', 'U61.6', 'U61.9')
@@ -206,7 +209,7 @@ def sheet_cpu():
     net('I/O_SEL', 'U7.13', 'U11.16')
     net('ROMBANKHI', 'U7.14', 'U11.17')
     net('ROMBANKLO', 'U7.15', 'U11.18')
-    net('GAEC', 'U7.16')
+    net('AEC', 'U7.16')
     net('MUX', 'U7.17')
     for i in range(4):
         net(A[i], 'U7.%d' % (18 + i))
@@ -234,25 +237,22 @@ def sheet_cpu():
     # PLA (U11)
     for i, p_ in enumerate((6, 5, 4, 3, 2, 1)):
         net(A[10 + i], 'U11.%d' % p_)
-    net('VICFIX', 'U11.7', 'J2.1')
-    net(GND, 'J2.2', 'U11.8')
+    net(GND, 'U11.8')                     # DMAACK; J2 (VICFIX) open
     net('AEC', 'U11.9')
     net('R/W', 'U11.10')
     net('GAME', 'U11.11')
     net('EXROM', 'U11.12')
-    net('BUSACK', 'U11.13')
+    net('/Z80EN', 'U11.13')
     net('/Z80_IO', 'U11.14')
-    net('VMA4', 'U11.19')
-    net('VMA5', 'U11.20')
+    net('MA4', 'U11.19')
+    net('MA5', 'U11.20')
     net('BA', 'U11.21')
     net('LORAM', 'U11.22')
     net('HIRAM', 'U11.23')
     net(GND, 'U11.24')
     net('CHAREN', 'U11.25')
-    net('VA14', 'U11.26')
-    net('128/256', 'U11.27', 'J3.1', 'R33.2')
-    net(GND, 'J3.2')
-    pullup('R33', '10K', '128/256')
+    net('VA14_N', 'U11.26')
+    net(VCC, 'U11.27')                    # J3 open: separate ROM chips (the 256K ROM terms are off)
     net('ROML', 'U11.30')
     net('ROMH', 'U11.31')
     net('CLRBNK', 'U11.32')
@@ -289,7 +289,7 @@ def sheet_cpu():
             net(ca, '%s.%d' % (ref, pb))
             net(ma + 'X', '%s.%d' % (ref, py))
         net('MUX', ref + '.1')
-        net('AEC', ref + '.15')
+        net('/AEC', ref + '.15')
         power(ref, 16, 8)
     decouple('C14'); decouple('C15')
     # SID (U5)
@@ -304,8 +304,8 @@ def sheet_cpu():
     net('1MHZ', 'U5.6')
     net('/RES', 'U5.5')
     net('/SID', 'U5.8', 'U3.15')
-    net('+9V/+12V', 'U5.25')
-    net(VCC, 'U5.28')
+    net('+9V/+12V', 'U5.28')
+    net(VCC, 'U5.25')
     net(GND, 'U5.14')
     net('SID_C1A', 'U5.1', 'C83.1')
     net('SID_C1B', 'U5.2', 'C83.2')
@@ -331,8 +331,6 @@ def sheet_cpu():
     net('NC_U3_12', 'U3.12')
     power('U3', 16, 8)
     decouple('C3')
-    part('J2', 'N.C.', 'Jumper_2', 2)
-    part('J3', 'open = 128K ROM', 'Jumper_2', 2)
 
 
 def sheet_mem():
@@ -377,15 +375,9 @@ def sheet_mem():
     net('A13/A14', 'U32.26', 'U8.11')
     net('A13', 'U8.12', 'U33.26', 'U34.26', 'U35.26', 'U36.26')
     net('TA14', 'U8.13')
-    net('U32_A14', 'U32.27', 'J6.1')
-    net('128/64', 'J6.2')
-    net('U34_A14', 'U34.27', 'J4.1', 'R36.2')
-    net('A14', 'J4.2', 'U36.27')
-    net(VCC, 'U33.27', 'U35.27')
-    part('J4', 'A14', 'Jumper_2', 2)
-    part('J6', '128/64', 'Jumper_2', 2)
-    pullup('R36', '10K', 'U34_A14')
-    pullup('R38', '10K', 'U32_A14')
+    net('128/64', 'U32.27')              # J6 closed
+    net(VCC, 'U33.27', 'U34.27', 'U35.27')   # J4 open: pulled high by R36
+    net('A14', 'U36.27')
     for i in range(5):
         decouple('C%d' % (32 + i))
     # address bus pull-ups (RP9: A0-A7, RP10: A8-A15) and on the DRAM address lines (RP6)
@@ -399,7 +391,8 @@ def sheet_mem():
                            ('TA11', 'A11', 11, 9), ('TA10', 'A10', 13, 7), ('TA9', 'A9', 15, 5), ('TA8', 'A8', 17, 3)):
         net(ta, 'U62.%d' % pa)
         net(a_, 'U62.%d' % py)
-    net('/DMA', 'U62.1', 'U62.19')
+    net('DMA', 'U62.1', 'U62.19')
+    pullup('R_DMA', '3.3K', 'DMA')
     power('U62', 20, 10)
 
 
@@ -410,18 +403,18 @@ def sheet_video():
     for i, (pa, pb) in enumerate(((3, 17), (5, 15), (7, 13), (9, 11), (8, 12), (6, 14), (4, 16), (2, 18))):
         net(A[i], 'U55.%d' % pa)
         net('SA%d' % i, 'U55.%d' % pb)
-    net('/DMA', 'U55.1')
+    net('DMA', 'U55.1')
     net('/AEC', 'U55.19')
     power('U55', 20, 10)
     # U17 (74ALS373): the VIC's address VMA0-5, VA6, VA7 latched onto SA0-SA7 while it owns the bus
     din = [3, 4, 7, 8, 13, 14, 17, 18]
     qout = [2, 5, 6, 9, 12, 15, 16, 19]
-    src = ['VMA0', 'VMA1', 'VMA2', 'VMA3', 'VMA4', 'VMA5', 'VA6', 'VA7']
+    src = ['MA0', 'MA1', 'MA2', 'MA3', 'MA4', 'MA5', 'VA6', 'VA7']
     for i in range(8):
         net(src[i], 'U17.%d' % din[i])
         net('SA%d' % i, 'U17.%d' % qout[i])
     net('AEC', 'U17.1')
-    net('U17_E', 'U17.11')
+    net('RAS', 'U17.11')
     power('U17', 20, 10)
     # U19 (2016): the colour RAM, 2K x 8, addressed SA0-SA7, TA8, TA9 and CLRBNK
     sa = {0: 8, 1: 7, 2: 6, 3: 5, 4: 4, 5: 3, 6: 2, 7: 1}
@@ -435,15 +428,26 @@ def sheet_video():
     for pn, rp in ((14, 'RP7_V2'), (15, 'RP7_V3'), (16, 'RP7_V4'), (17, 'RP7_V5')):
         pullup(rp, '3.3K', 'U19_%d' % pn)
         net('U19_%d' % pn, 'U19.%d' % pn)
-    net('U19_CS', 'U19.18', 'U19.20')
-    net('U56B_Q', 'U19.21')
+    net('COLORAM', 'U19.18', 'U19.20')
+    net('GWE', 'U19.21')
     power('U19', 24, 12)
     # U20 (4066): colour RAM low nibble between the VIC's D8-D11 and the system D0-D3
     for i, (pa, pb) in enumerate(((1, 2), (4, 3), (8, 9), (11, 10))):
         net('D%d_VIC' % (8 + i), 'U20.%d' % pa)
         net(D[i], 'U20.%d' % pb)
-    net('U20_EN', 'U20.13', 'U20.5', 'U20.6', 'U20.12')
+    net('AEC', 'U20.13', 'U20.5', 'U20.6', 'U20.12')
     power('U20', 14, 7)
+    # U18 (character ROM): A0-A7 = SA0-SA7, A8-A11 = TA8-TA11, A12 = 128/64 (jumper), /CS = CHAROM
+    for i, pn in enumerate((8, 7, 6, 5, 4, 3, 2, 1)):
+        net('SA%d' % i, 'U18.%d' % pn)
+    for pn, ta in ((23, 'TA8'), (22, 'TA9'), (19, 'TA10'), (18, 'TA11')):
+        net(ta, 'U18.%d' % pn)
+    net('128/64', 'U18.21')
+    net('CHAROM', 'U18.20')
+    for i, pn in enumerate((9, 10, 11, 13, 14, 15, 16, 17)):
+        net(D[i], 'U18.%d' % pn)
+    power('U18', 24, 12)
+    decouple('C18')
     # U56B (second half of the 74LS74): colour RAM write strobe
     net('+5V', 'U56.10', 'U56.13')
     net('U56B_D', 'U56.12')
@@ -456,7 +460,7 @@ def sheet_vic():
     """Sheet 3: the 8564 VIC-IIe, its address multiplexer U26 and the VDC's data pins (U22, U23, U25)."""
     v = 'U21'
     for i, pn in enumerate((7, 6, 5, 4, 3, 2, 1, 47)):
-        net('SD%d' % i, '%s.%d' % (v, pn))
+        net('D%d' % i, '%s.%d' % (v, pn))
     for i, pn in enumerate((46, 45, 44, 43)):
         net('D%d_VIC' % (8 + i), '%s.%d' % (v, pn))
     net('R/W', v + '.14')
@@ -465,7 +469,7 @@ def sheet_vic():
     for ta, pn in (('TA11', 31), ('TA10', 42), ('TA9', 41), ('TA8', 40)):
         net(ta, '%s.%d' % (v, pn))
     for i, pn in enumerate((32, 33, 34, 35, 36, 37)):
-        net('VMA%d' % i, '%s.%d' % (v, pn))
+        net('MA%d' % i, '%s.%d' % (v, pn))
     net('MUX', v + '.21')
     net('AEC', v + '.12')
     net('CAS', v + '.20')
@@ -488,7 +492,7 @@ def sheet_vic():
     net('/IRQ', v + '.8')
     power(v, 48, 24)
     # U26 (74LS257): VA14/VA15 and VA6/VA7 onto VMA6/VMA7 (MUX selects); enabled while AEC is low
-    for pa, pb, py, a_, b_, y_ in ((2, 3, 4, 'VA14', 'VA6', 'VMA6'), (5, 6, 7, 'VA15', 'VA7', 'VMA7')):
+    for pa, pb, py, a_, b_, y_ in ((2, 3, 4, 'VA14', 'VA6', 'MA6'), (5, 6, 7, 'VA15', 'VA7', 'MA7')):
         net(a_, 'U26.%d' % pa)
         net(b_, 'U26.%d' % pb)
         net(y_, 'U26.%d' % py)
@@ -500,30 +504,44 @@ def sheet_vic():
         net('U26_UNUSED', 'U26.%d' % pn)
     power('U26', 16, 8)
     # U29F: inverted MUX (680 ohm pull-up R41). Where its output goes is not resolved yet.
-    net('MUX', 'U29.13')
-    net('/MUX', 'U29.12')
-    pullup('R41', '680', '/MUX')
-    # the VDC (U22) and its two 4416 video RAMs: data pins as read; address/control lines still to do
+    net('AEC', 'U29.13')
+    net('/AEC', 'U29.12')
+    pullup('R41', '680', '/AEC')
+    # the VDC (U22, 48 pins) and its two 4416 video RAMs (U23: DD0-3, U25: DD4-7)
     for i, pn in enumerate((18, 17, 16, 15, 14, 13, 11, 10)):
         net(D[i], 'U22.%d' % pn)
     for i, pn in enumerate((34, 35, 36, 38, 39, 40, 41, 42)):
         net('DD%d' % i, 'U22.%d' % pn)
-    net('2MHZ', 'U22.4')  # VDC clock pin; 16 MHz crystal circuit still to type
+    for i, pn in enumerate(range(26, 34)):
+        net('DA%d' % i, 'U22.%d' % pn)
+    net('2MHZ', 'U22.4')
     net('A0', 'U22.8')
     net('CS8563', 'U22.7')
-    net('+5V', 'U22.37')
-    for ref, pins in (('U25', {17: 'DD7', 15: 'DD6', 3: 'DD5', 2: 'DD4'}),):
-        for pn, nm in pins.items():
-            net(nm, '%s.%d' % (ref, pn))
-    for pn, nm in {10: 'DA7', 6: 'DA6', 7: 'DA5', 8: 'DA4', 11: 'DA3', 12: 'DA2', 13: 'DA1', 14: 'DA0'}.items():
-        net(nm, 'U25.%d' % pn)
-    net('VDC_CAS', 'U25.16')
-    net('VDC_RAS', 'U25.5')
-    net('VDC_RW', 'U25.4')
-    net(VCC, 'U25.9')
-    net(GND, 'U25.18')
-    net(GND, 'U25.1')
-    decouple('C125')
+    net('R/W', 'U22.9')
+    net('/RES', 'U22.23')
+    net('/LP', 'U22.25')
+    net('VDC_DCLK', 'U22.2', 'Y1.8')
+    net('VDC_HSYN', 'U22.3')
+    net('VDC_VSYN', 'U22.20')
+    for pn, nm in ((46, 'VDC_R'), (45, 'VDC_G'), (44, 'VDC_B'), (43, 'VDC_I')):
+        net(nm, 'U22.%d' % pn)
+    net('VDC_CAS', 'U22.48', 'U23.16', 'U25.16')
+    net('VDC_RAS', 'U22.47', 'U23.5', 'U25.5')
+    net('VDC_RW', 'U22.21', 'U23.4', 'U25.4')
+    net(VCC, 'U22.37')
+    net(GND, 'U22.12', 'U22.22')
+    part('Y1', '16MHz module', 'Oscillator_DIP-14', ['7', '8', '14'])
+    net(VCC, 'Y1.14')
+    net(GND, 'Y1.7')
+    for ref, dd in (('U23', (2, 3, 15, 17)), ('U25', (2, 3, 15, 17))):
+        base = 0 if ref == 'U23' else 4
+        for k, pn in enumerate(dd):
+            net('DD%d' % (base + k), '%s.%d' % (ref, pn))
+        for k, pn in enumerate((14, 13, 12, 11, 8, 7, 6, 10)):
+            net('DA%d' % k, '%s.%d' % (ref, pn))
+        net(VCC, ref + '.9')
+        net(GND, ref + '.18', ref + '.1')
+    decouple('C125'); decouple('C23'); decouple('C22')
 
 
 def sheet_clock():
@@ -539,9 +557,6 @@ def sheet_clock():
     part('Y2', '14.31818MHz NTSC', 'Crystal_HC49-U_Vertical', 2)
     part('C20', '4-40pF', 'C_Trimmer', 2)
     net(GND, 'C20.2')
-    net('NTSC_PAL', 'U28.7', 'J1.1')
-    net(GND, 'J1.2')
-    part('J1', 'open=NTSC closed=PAL', 'Jumper_2', 2)
     net('+5V', 'U28.15', 'U28.12')
     net(GND, 'U28.2', 'U28.9', 'U28.4')
     decouple('C62'); decouple('C118'); decouple('C28')
@@ -594,11 +609,14 @@ def sheet_io():
     net('COL6', 'U2.6', 'U2.12')
     net('COL7', 'U2.13', 'U2.5')
     net('CAPLK_SENSE', 'CN5.25')
+    pullup('RP8_10', '3.3K', 'CAPLK_SENSE')
+    pullup('RP8_9', '3.3K', '40/80')
+    pullup('R_RES', '4.7K', '/RES')
     net('40/80', 'CN5.24')
     net('K0', 'CN5.21')
     net('K1', 'CN5.22')
     net('K2', 'CN5.23')
-    net('RSTR', 'CN5.3')
+    net('/NMI', 'CN5.3')
     net(GND, 'CN5.1', 'CN5.2')
     net(VCC, 'CN5.4')
     net('CNT1', 'U1.40')

@@ -41,6 +41,7 @@ extern const board_data_t bd_zx80;     /* zx80_board_data.c (schematic) */
 extern const board_data_t bd_ts2068;   /* ts2068_board_data.c (335-850001 rev 03) */
 extern const board_data_t bd_vic20a;   /* vic20a_board_data.c (the early board, schematic 324001, photo 25HB) */
 extern const board_data_t bd_plus4;   /* plus4_board_data.c (schematic 310164, typed from the sheets) */
+extern const board_data_t bd_c128;    /* c128_board_data.c (schematic 310378 rev 7A, typed from the sheets) */
 extern const board_data_t bd_c16;     /* c16_board_data.c (ASSY 250443, schematic 251788, typed from the sheets) */
 extern const board_data_t bd_vic20b;   /* vic20b_board_data.c (ASSY 250403, from jimbro1000's KiCad project) */
 extern const board_data_t bd_pet8032;   /* pet8032_board_data.c (8032080-03, 80 columns) */

@@ -99,6 +99,7 @@ static void pla8721_calc(const pla8721_in_t *in, pla8721_out_t *o, int *dwe_d, i
     int p67 = !ms2 & !z80en & aec & !a10 & !a11 & a12 & !a13 & !a14 & !a15;
     int p68 = !ms2 & !z80en & !rw & aec & !a10 & !a11 & a12 & !a13 & !a14 & !a15;
     int p69 = !charen & !vma5 & vma4 & ms3 & aec & dmaack;
+    int p87 = va14 & !vma5 & vma4 & ms3 & game & !aec & !charen;
     int p70 = !rom_256 & !ms0 & !ms1 & ms3 & rw & aec & a14 & !a15;
     int p71 = !rom_256 & !ms0 & !ms1 & ms3 & rw & aec & !a12 & !a13 & a14 & a15;
     int p72 = !rom_256 & !ms0 & !ms1 & z80io & !z80en & rw & aec & !a12 & !a13 & !a14 & !a15;
@@ -130,9 +131,9 @@ static void pla8721_calc(const pla8721_in_t *in, pla8721_out_t *o, int *dwe_d, i
     o->ioacc = p0 | p1 | p2 | p3 | p4 | p5 | p6 | p7 | p8 | p9 | p10 | p11 | p12 | p13 | p14 | p15 | p16 | p17 | p18 | p19 | p20 | p21 | p22 | p61 | p62;
     o->gwe = p37 | p68;
     o->colram = p24 | p25 | p26 | p27 | p28 | p29 | p30 | p31 | p32 | p33 | p34 | p35 | p36 | p63 | p67;
-    o->charom = p39 | p40 | p41 | p42 | p43 | p44 | p69;
+    o->charom = p39 | p40 | p41 | p42 | p43 | p44 | p69 | p87;
     int casenb_latch = clk | p74;
-    int casenb_int = p0 | p1 | p2 | p3 | p4 | p5 | p6 | p7 | p8 | p9 | p10 | p11 | p12 | p13 | p14 | p15 | p16 | p17 | p18 | p19 | p20 | p21 | p22 | p23 | p39 | p40 | p41 | p42 | p43 | p44 | p45 | p46 | p47 | p48 | p49 | p50 | p51 | p52 | p53 | p54 | p55 | p56 | p57 | p58 | p59 | p60 | p61 | p62 | p63 | p67 | p69 | p70 | p71 | p72 | p75 | p76 | p77 | p78 | p79 | p80 | p81 | p82 | p83 | p84;
+    int casenb_int = p0 | p1 | p2 | p3 | p4 | p5 | p6 | p7 | p8 | p9 | p10 | p11 | p12 | p13 | p14 | p15 | p16 | p17 | p18 | p19 | p20 | p21 | p22 | p23 | p39 | p40 | p41 | p42 | p43 | p44 | p45 | p46 | p47 | p48 | p49 | p50 | p51 | p52 | p53 | p54 | p55 | p56 | p57 | p58 | p59 | p60 | p61 | p62 | p63 | p67 | p69 | p87 | p70 | p71 | p72 | p75 | p76 | p77 | p78 | p79 | p80 | p81 | p82 | p83 | p84;
     *dwe_d = p64;
     *casenb_d = casenb_int;
     *casenb_latch_o = casenb_latch;

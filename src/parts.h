@@ -60,6 +60,15 @@ uint8_t pet_crtc_reg_of(const part_t *p, int r);
  * 14.31818 MHz crystal, the character ROM and the 6116 RAM of the 250403. */
 /* The Commodore 16 (c16_chips.c): the TED, the 7501, the 6529B, the 7700 PLA and the small chips. */
 extern const part_type_t PT_7360, PT_7501, PT_6529B, PT_7700, PT_74LS175, PT_74LS125, PT_C16ROM, PT_74LS27, PT_6551, PT_8721, PT_8722;
+extern const part_type_t PT_74LS74_128, PT_7407, PT_C128ROM, PT_C128CHR, PT_8502, PT_Z80A, PT_6526_128, PT_6581_128, PT_8563, PT_8564;
+void c128_rom_set(part_t *p, const uint8_t *data, unsigned size);
+void c128_vic_set_screen(part_t *p, uint32_t *fb, int w, int h);
+bool c128_vic_fast(const part_t *p);
+uint8_t c128_vic_reg_of(const part_t *p, int r);
+uint32_t c128_cpu_cycles_of(const part_t *p);
+void c128_cpu_regs_of(const part_t *p, char *buf, int len);
+int c128_cpu_sync_of(const part_t *p, unsigned *addr);
+void c128_z80_regs_of(const part_t *p, char *buf, int len);
 void ted_set_screen(part_t *p, uint32_t *screen);
 uint8_t ted_reg_of(const part_t *p, int r);
 uint32_t ted_frame_of(const part_t *p);

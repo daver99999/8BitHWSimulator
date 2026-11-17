@@ -55,6 +55,7 @@
 #include "c16_chips.c"
 #include "c128_chips.c"
 #include "c16.c"
+#include "c128.c"
 #include "plus4.c"
 #include "scld.c"
 #include "ts2068.c"
