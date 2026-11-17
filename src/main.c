@@ -1,9 +1,9 @@
 /* main.c - c64-hw-sim entry point.
  *
  *   c64-hw-sim [program.prg | cartridge.crt | image.rom | image.bin] [--harness]
- *       [--fault SPEC]... [--machine c64|c64c|zx48|zx48i2|zx48i1|zx48i4b|zx48i6a|pet4032|pet8032|ts2068|ts1000|ts1500|zx80]
+ *       [--fault SPEC]... [--machine c64|c64b|c64c|zx48|zx48i2|zx48i1|zx48i4b|zx48i6a|pet4032|pet8032|ts2068|ts1000|ts1500|zx80]
  *       [--rom UD6=FILE]... (the PET's ROMs: UD6 $F000 ... UD12 $9000, UA3 the character ROM)
- *       [--board 250407|250469|issue3b|issue4b|issue6a|issue2|issue1]
+ *       [--board 250407|250425|250469|issue3b|issue4b|issue6a|issue2|issue1]
  *       [--option ID=VALUE]... [--bank N] [--socket u4|port]
  *       Graphical simulator. The optional .prg is loaded and RUN after boot;
  *       a .crt cartridge or a raw .rom/.bin ROM image is plugged into the
@@ -12,7 +12,7 @@
  *       sets the switch of a ROM of several banks (DesTestSwitch), --socket
  *       puts an 8K C64 image in the KERNAL socket U4 or the expansion port
  *       (default: U4 for a KERNAL, the port for anything else).
- *       --board picks the C64's board (c64 is the ASSY 250407, c64c the
+ *       --board picks the C64's board (c64 is the ASSY 250407, c64b the 250425 with the 8701, c64c the
  *       250469, with the Super PLA) or the Spectrum's (zx48 is the Issue 3B,
  *       zx48i2 the Issue 2, zx48i1 the Issue 1, a 16K machine, zx48i4b the
  *       Issue 4B, zx48i6a the Issue 6A);
@@ -266,7 +266,7 @@ static struct {
 static board_t *board;
 
 /* The machines, for --machine. */
-static const machine_t *const machines[] = { &machine_c64, &machine_c64c, &machine_zx48, &machine_zx48i2,
+static const machine_t *const machines[] = { &machine_c64, &machine_c64b, &machine_c64c, &machine_zx48, &machine_zx48i2,
                                              &machine_zx48i1, &machine_zx48i4b, &machine_zx48i6a,
                                              &machine_pet4032, &machine_pet8032, &machine_ts2068, &machine_ts1000, &machine_ts1500, &machine_zx80 };
 
@@ -666,13 +666,13 @@ int main(int argc, char **argv) {
         }
         else if (!strcmp(argv[i], "--board") && i + 1 < argc) {
             const char *id = argv[++i];
-            args.machine = !strcmp(id, "250407") ? &machine_c64 : !strcmp(id, "250469") ? &machine_c64c :
+            args.machine = !strcmp(id, "250407") ? &machine_c64 : !strcmp(id, "250425") ? &machine_c64b : !strcmp(id, "250469") ? &machine_c64c :
                            !strcasecmp(id, "issue2") ? &machine_zx48i2 : !strcasecmp(id, "issue3b") ? &machine_zx48 :
                            !strcasecmp(id, "issue1") ? &machine_zx48i1 : !strcasecmp(id, "issue4b") ? &machine_zx48i4b :
                            !strcasecmp(id, "issue6a") ? &machine_zx48i6a :
                            !strcmp(id, "8032080-40") ? &machine_pet4032 : !strcmp(id, "8032080-80") ? &machine_pet8032 : NULL;
             if (!args.machine) {
-                fprintf(stderr, "unknown board %s (250407, 250469, issue3b, issue4b, issue6a, issue2, issue1, 8032080-40, 8032080-80)\n", id);
+                fprintf(stderr, "unknown board %s (250407, 250425, 250469, issue3b, issue4b, issue6a, issue2, issue1, 8032080-40, 8032080-80)\n", id);
                 return 1;
             }
         }

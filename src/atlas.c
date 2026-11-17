@@ -48,6 +48,7 @@ const machine_t *atlas_machine(int machine) { return atlas_machines[machine]; }
 bool atlas_same_refs(int a, int b) { return a == b || (atlas_family(a) == ATLAS_ZX48 && atlas_family(b) == ATLAS_ZX48); }
 
 int atlas_machine_of(const machine_t *m) {
+    if (m == &machine_c64b) return ATLAS_C64;      /* the 250407 with another clock: same references, same faults */
     for (int i = 0; i < ATLAS_NMACHINES; i++)
         if (atlas_machines[i] == m) return i;
     return -1;

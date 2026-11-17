@@ -1006,7 +1006,7 @@ Each milestone has an exit criterion. Nothing moves on until it passes.
   (differential tests).
 
 **M9: More boards and variants.**
-- 250425 (8701 clock), NTSC 6567 + NTSC clock preload.
+- 250425 (8701 clock; done, see the README), NTSC 6567 + NTSC clock preload.
 - Then the C64C family: 250466 (old chipset, 4464 DRAM); 250469 (251715
   SuperPLA, 8565/8580, 2× 41464 DRAM — the netlist is also in bwack's work).
 - 1541 on IEC, datasette.

@@ -638,6 +638,45 @@ static const part_def_t c64_part_defs[] = {
     { "U32", &PT_MC4044, "PLL", ROLE_CLOCK, "MC4044", "MC4044 phase detector, part of the clock PLL (not simulated)" },
 };
 
+/* The 250425's: the 250407's chips, the clock PLL (U29-U32) replaced by the 8701 at U31. */
+static const part_def_t c64b_part_defs[] = {
+    { "U21", &PT_4164, "RAM1", ROLE_RAM, "4164\nbit D0\n$0000-$FFFF", "4164 DRAM, holds data bit D0 of every byte, $0000-$FFFF" },
+    { "U9",  &PT_4164, "RAM2", ROLE_RAM, "4164\nbit D1\n$0000-$FFFF", "4164 DRAM, holds data bit D1 of every byte, $0000-$FFFF" },
+    { "U22", &PT_4164, "RAM3", ROLE_RAM, "4164\nbit D2\n$0000-$FFFF", "4164 DRAM, holds data bit D2 of every byte, $0000-$FFFF" },
+    { "U10", &PT_4164, "RAM4", ROLE_RAM, "4164\nbit D3\n$0000-$FFFF", "4164 DRAM, holds data bit D3 of every byte, $0000-$FFFF" },
+    { "U23", &PT_4164, "RAM5", ROLE_RAM, "4164\nbit D4\n$0000-$FFFF", "4164 DRAM, holds data bit D4 of every byte, $0000-$FFFF" },
+    { "U11", &PT_4164, "RAM6", ROLE_RAM, "4164\nbit D5\n$0000-$FFFF", "4164 DRAM, holds data bit D5 of every byte, $0000-$FFFF" },
+    { "U24", &PT_4164, "RAM7", ROLE_RAM, "4164\nbit D6\n$0000-$FFFF", "4164 DRAM, holds data bit D6 of every byte, $0000-$FFFF" },
+    { "U12", &PT_4164, "RAM8", ROLE_RAM, "4164\nbit D7\n$0000-$FFFF", "4164 DRAM, holds data bit D7 of every byte, $0000-$FFFF" },
+    { "U6",  &PT_2114, "VRAM", ROLE_VRAM, "2114\ncolor RAM\n$D800-$DBFF",
+      "2114 color RAM (video), $D800-$DBFF, 4 bits, read by the VIC every character" },
+    { "U3",  &PT_2364, "BASIC", ROLE_ROM, "2364 ROM\n$A000-$BFFF", "2364 BASIC ROM, $A000-$BFFF" },
+    { "U4",  &PT_2364, "KERNAL", ROLE_ROM, "2364 ROM\n$E000-$FFFF", "2364 KERNAL ROM, $E000-$FFFF" },
+    { "U5",  &PT_2332, "CHAR", ROLE_ROM, "2332 ROM\n$D000-$DFFF",
+      "2332 character ROM, $D000-$DFFF (the VIC sees it at $1000 and $9000)" },
+    { "U17", &PT_82S100, "PLA", ROLE_PLA, "906114-01\nmemory map",
+      "906114-01 PLA (82S100): the memory map, decodes all the chip selects" },
+    { "U7",  &PT_6510, "CPU", ROLE_CHIP, "6510", "6510 CPU" },
+    { "U19", &PT_6569, "VIC", ROLE_CHIP, "6569 VIC-II\n$D000-$D3FF",
+      "6569 VIC-II video chip, $D000-$D3FF (PAL); also makes the system clock" },
+    { "U18", &PT_6581, "SID", ROLE_CHIP, "6581\n$D400-$D7FF", "6581 SID sound chip, $D400-$D7FF" },
+    { "U1",  &PT_6526, "CIA1", ROLE_CHIP, "6526\n$DC00-$DCFF", "6526 CIA #1, $DC00-$DCFF: keyboard, joysticks, IRQ" },
+    { "U2",  &PT_6526, "CIA2", ROLE_CHIP, "6526\n$DD00-$DDFF",
+      "6526 CIA #2, $DD00-$DDFF: serial bus, user port, VIC bank, NMI" },
+    { "U25", &PT_74LS257, "MUX", ROLE_GLUE, "74LS257", "74LS257 DRAM address mux: CPU A0-A3 (row), A8-A11 (column)" },
+    { "U13", &PT_74LS257, "MUX", ROLE_GLUE, "74LS257", "74LS257 DRAM address mux: CPU A4-A7 (row), A12-A15 (column)" },
+    { "U14", &PT_74LS258, "MUX", ROLE_GLUE, "74LS258", "74LS258 VIC address mux: VIC A6-A7 (row), bank bits VA14-VA15 (column)" },
+    { "U26", &PT_74LS373, "LATCH", ROLE_GLUE, "74LS373", "74LS373 latch: puts the VIC address on A0-A7" },
+    { "U15", &PT_74LS139, "I/O", ROLE_GLUE, "74LS139",
+      "74LS139 I/O decoder: VIC, SID, color RAM, CIA1, CIA2, I/O1, I/O2" },
+    { "U27", &PT_74LS08, "AND", ROLE_GLUE, "74LS08", "74LS08 AND gates: CPU AEC, RDY, color RAM select, TOD clock" },
+    { "U8",  &PT_7406, "INV", ROLE_GLUE, "7406", "7406 open collector inverters: /AEC, /RESET, /NMI, serial bus" },
+    { "U16", &PT_4066, "SW", ROLE_GLUE, "4066", "4066 switch: connects the color RAM to D0-D3 in CPU cycles" },
+    { "U28", &PT_4066, "SW", ROLE_GLUE, "4066", "4066 switch: selects the paddles read by the SID" },
+    { "U20", &PT_556, "RST", ROLE_GLUE, "556", "556 timer: power-on reset, RESTORE key NMI" },
+    { "U31", &PT_8701, "OSC", ROLE_CLOCK, "8701", "8701 clock generator: dot clock and color clock, with the crystal Y1" },
+};
+
 /* The 250469's. The two 41464s split each byte in two: RAM1 holds the low
  * nibble of every byte, RAM2 the high one. */
 static const part_def_t c64c_part_defs[] = {
@@ -1308,6 +1347,13 @@ static const c64_variant_t c64_250407 = {
     .mains_r1 = "R5", .mains_r2 = "R100", .mains_pad = "2", .motor = "Q3", .motor_pad = "3", .gnd = "Earth",
 };
 
+/* The 250425: the 250407's, with the 8701 for a clock. */
+static const c64_variant_t c64_250425 = {
+    .cpu = "U7", .vic = "U19", .cia1 = "U1", .cia2 = "U2", .sid = "U18", .osc = "U31", .pla = "U17",
+    .paddles = "U28", .vram = "U6", .basic = "U3", .kernal = "U4", .chr = "U5", .timer = "U20",
+    .mains_r1 = "R5", .mains_r2 = "R100", .mains_pad = "2", .motor = "Q3", .motor_pad = "3", .gnd = "Earth",
+};
+
 /* The 250469: no 556 (C43 and the 74LS14 make the power-on reset, see
  * por_tick; the RESTORE key reaches the Super PLA through the 74LS14), the
  * mains through R16, the motor driven by Q1. */
@@ -1379,6 +1425,20 @@ const machine_t machine_c64 = {
     .data = &bd_c64,
     .sim = { .rail_of = c64_rail_of, .kind_of = c64_kind_of, .cycles_per_us = 1.0 },
     .parts = c64_part_defs, .nparts = sizeof(c64_part_defs) / sizeof(c64_part_defs[0]),
+    .link_resistors = "RP1 RP2 R42",
+    .supplies = "9VAC 9VAC~ '9VAC~ +9V_UNREG",
+    C64_MACHINE_COMMON,
+};
+
+const machine_t machine_c64b = {
+    .id = "c64b",
+    .name = "Commodore 64",
+    .board_name = "C64 ASSY 250425",
+    .issue = "250425",
+    .variant = &c64_250425,
+    .data = &bd_c64b,
+    .sim = { .rail_of = c64_rail_of, .kind_of = c64_kind_of, .cycles_per_us = 1.0 },
+    .parts = c64b_part_defs, .nparts = sizeof(c64b_part_defs) / sizeof(c64b_part_defs[0]),
     .link_resistors = "RP1 RP2 R42",
     .supplies = "9VAC 9VAC~ '9VAC~ +9V_UNREG",
     C64_MACHINE_COMMON,

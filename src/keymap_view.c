@@ -98,7 +98,7 @@ static bool is_spectrum(const machine_t *m) {
            m == &machine_zx48i4b || m == &machine_zx48i6a;
 }
 static bool is_ts1000(const machine_t *m) { return m == &machine_ts1000 || m == &machine_ts1500 || m == &machine_zx80; }   /* the TS1500 has the same 40 key keyboard */
-static bool is_c64(const machine_t *m) { return m == &machine_c64 || m == &machine_c64c; }
+static bool is_c64(const machine_t *m) { return m == &machine_c64 || m == &machine_c64b || m == &machine_c64c; }
 static bool is_pet(const machine_t *m) { return m == &machine_pet4032 || m == &machine_pet8032; }
 
 bool keymap_supported(const machine_t *m) { return is_spectrum(m) || is_ts1000(m) || is_c64(m) || is_pet(m); }

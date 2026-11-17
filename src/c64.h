@@ -106,7 +106,7 @@ typedef struct c64 {
 static inline c64_t *C64(board_t *b) { return (c64_t *)b; }
 /* A C64 board, of either assembly? The 250469 (the C64C's, with the Super
  * PLA) is the other one. */
-static inline bool board_is_c64(const board_t *b) { return b->m == &machine_c64 || b->m == &machine_c64c; }
+static inline bool board_is_c64(const board_t *b) { return b->m == &machine_c64 || b->m == &machine_c64c || b->m == &machine_c64b; }
 static inline bool board_is_250469(const board_t *b) { return b->m == &machine_c64c; }
 
 /* Load a .prg straight into the DRAM chips (a "backdoor", like a freezer

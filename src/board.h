@@ -148,7 +148,7 @@ typedef struct machine {
     const part_def_t *(*part_def)(board_t *b, int part);
 } machine_t;
 
-extern const machine_t machine_c64, machine_c64c, machine_zx48, machine_zx48i2, machine_zx48i1, machine_zx48i4b, machine_zx48i6a;
+extern const machine_t machine_c64, machine_c64c, machine_c64b, machine_zx48, machine_zx48i2, machine_zx48i1, machine_zx48i4b, machine_zx48i6a;
 extern const machine_t machine_pet4032, machine_pet8032, machine_ts2068, machine_ts1000, machine_ts1500, machine_zx80;
 
 struct board {

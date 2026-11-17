@@ -2498,7 +2498,7 @@ static void help_window(struct nk_context *ctx, float bw, float h) {
 static void board_choice(struct nk_context *ctx, board_t *b) {
     static const machine_t *const zx_boards[] = { &machine_zx48i1, &machine_zx48i2, &machine_zx48,
                                                   &machine_zx48i4b, &machine_zx48i6a };
-    static const machine_t *const c64_boards[] = { &machine_c64, &machine_c64c };
+    static const machine_t *const c64_boards[] = { &machine_c64, &machine_c64b, &machine_c64c };
     const machine_t *m = b->m;
     if (!m->issue) return;
     static const machine_t *const pet_boards[] = { &machine_pet4032, &machine_pet8032 };

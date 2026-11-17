@@ -3,8 +3,8 @@
 *Started as antirez's [c64-hw-simulator](https://github.com/antirez/c64-hw-simulator)
 (c64-hw-sim); this version, by David Green ([daver99999](https://github.com/daver99999/8BitHWSimulator)), is called `8BitHWSimulator`.*
 
-8BitHWSimulator simulates the motherboards of the Commodore 64 (ASSY 250407
-and 250469), of the ZX Spectrum (boards Issue 1, 2, 3B, 4B and 6A) and of
+8BitHWSimulator simulates the motherboards of the Commodore 64 (ASSY 250407,
+250425 and 250469), of the ZX Spectrum (boards Issue 1, 2, 3B, 4B and 6A) and of
 the Commodore PET (the 8032080 universal dynamic board, as a 4032 with 40
 columns and as an 8032 with 80) and of the Timex Sinclair TS2068 (board 335-850001-03), TS1000 (ZX81, Issue 3), TS1500 and the Sinclair ZX80, pin by pin. You can lift the
 leg of a chip, short it to ground or to +5V, pull a chip out of its
@@ -637,10 +637,27 @@ shows where Commodore's manual says it should. Both cartridges are in
 Type on your keyboard as usual. ESC is RUN/STOP, PgUp is RESTORE, TAB is
 CTRL, and left ALT is C=.
 
+### The 250425 board
+
+The ASSY 250425 (`--board 250425`, `--machine c64b`, or the drop-down) is the
+250407 with the clock PLL (U29 74LS74, U30 74LS193, U32 MC4044, the 74LS629 U31
+and the loop's transistor, pot and capacitors) replaced by the 8701 clock
+generator at U31, as in schematic 251469 of the service manual: the crystal Y1
+across pins 14 and 13, +5V from the clock supply on pins 12 and 15, ground on
+2, 4 and 9, DOT CLOCK on pin 6, COLOR CLOCK on pin 8 and the PAL/NTSC jumper
+(E2/E3) on pin 7. Everything else is the 250407, with the same references.
+The 8701 stops both clocks if the crystal is bad (the 250407's dot clock came
+from the VCO, not the crystal). **Not known:** the 250425's own copper. The
+layout is the 250407's with the 8701 in U31's place and the PLL parts left
+out (`tools/c64_250425_from_250407.py`); the 8701's pin 7 jumper and the
+crystal's series capacitor C70 are the 250407's, not read from a 250425. It
+boots to READY like the 250407; I have not compared the two boards' nets
+beyond the clock.
+
 ### The 250469 board
 
-The C64 has two boards: the ASSY 250407 (the breadbin's, the default)
-and the ASSY 250469 (Rev. 4: the C64C's, also fitted in late breadbins).
+The C64 has three boards: the ASSY 250407 (the breadbin's, the default),
+the ASSY 250425 (above) and the ASSY 250469 (Rev. 4: the C64C's, also fitted in late breadbins).
 Pick one with the drop-down under the machine buttons, or `--board
 250469` (`--machine c64c`). Its layout and netlist are bwack's replica.
 
@@ -1059,6 +1076,7 @@ Other options:
   was saved (with or without a window).
 - `--healthy-sheet DIR` writes the healthy board sheet of every board
   to DIR (`c64-healthy.html`, `zx48-healthy.html`...).
+- `--board 250425` (or `--machine c64b`) runs the C64's 250425 board (the 250407 with the 8701 clock).
 - `--board 250469` (or `--machine c64c`) runs the C64's 250469 board
   instead of the 250407; fault specs use its references (`U8:removed` is
   the Super PLA, `U10.2:gnd` a RAM data pin).
