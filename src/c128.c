@@ -299,6 +299,7 @@ static int c128_host_key(int keycode) {
     case SAPP_KEYCODE_ESCAPE: return K_STOP;
     case SAPP_KEYCODE_INSERT: return K_ESC;
     case SAPP_KEYCODE_PAGE_UP: return K_RESTORE;
+    case SAPP_KEYCODE_PAGE_DOWN: return K_TAB;
     case SAPP_KEYCODE_TAB: return K_CTRL;
     case SAPP_KEYCODE_LEFT_ALT: return K_CBM;
     case SAPP_KEYCODE_RIGHT_ALT: return K_ALT;

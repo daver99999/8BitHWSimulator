@@ -103,9 +103,10 @@ static bool is_c64(const machine_t *m) { return m == &machine_c64 || m == &machi
 /* The VIC-20 keyboard has the C64's layout (and the same PC keys). */
 static bool is_vic20(const machine_t *m) { return m == &machine_vic20a || m == &machine_vic20b; }
 static bool is_c16(const machine_t *m) { return m == &machine_c16 || m == &machine_plus4; }  /* the Plus/4 has the same keyboard */
+static bool is_c128(const machine_t *m) { return m == &machine_c128; }
 static bool is_pet(const machine_t *m) { return m == &machine_pet4032 || m == &machine_pet8032; }
 
-bool keymap_supported(const machine_t *m) { return is_spectrum(m) || is_ts1000(m) || is_c64(m) || is_vic20(m) || is_c16(m) || is_pet(m); }
+bool keymap_supported(const machine_t *m) { return is_spectrum(m) || is_ts1000(m) || is_c64(m) || is_vic20(m) || is_c16(m) || is_c128(m) || is_pet(m); }
 
 /* A key of the other machines: the shifted legend (red), the key (white), the PC key (green); style: 0 normal,
  * 1 modifier, 2 no PC key. */
@@ -189,6 +190,65 @@ static void draw_c16(struct nk_command_buffer *cv, struct nk_context *ctx, struc
     static const char *const fk[4][3] = { { "", "F1", "F1" }, { "", "F2", "F2" }, { "", "F3", "F3" }, { "", "HELP", "F4" } };
     for (int i = 0; i < 4; i++)
         draw_gkey(cv, ctx, nk_rect(a.x + 16.2f * u, a.y + i * kh, 1.0f * u, kh), fk[i][0], fk[i][1], fk[i][2], 0);
+}
+
+/* The C128's keyboard: the C64's typewriter block plus the top row (ESC TAB ALT CAPS and HELP LF 40/80 NO SCROLL), the
+ * cursor cluster and the numeric keypad (c128.c's matrix: the extra keys are on the VIC's K0-K2 lines). */
+static void draw_c128(struct nk_command_buffer *cv, struct nk_context *ctx, struct nk_rect a) {
+    static const c64key_t r0[] = { { 0, 1, "", "\xE2\x86\x90", "-", 2 }, K1("!", "1", "1  !"), K1("\"", "2", "2  \""), K1("#", "3", "3  #"),
+        K1("$", "4", "4  $"), K1("%", "5", "5  %"), K1("&", "6", "6  &"), K1("'", "7", "7  '"), K1("(", "8", "8  ("),
+        K1(")", "9", "9  )"), K1("", "0", "0"), K1("", "+", "+"), K1("", "-", "-"), K1("", "\xC2\xA3", "~"),
+        { 0, 1, "CLR", "HOME", "Home", 0 }, { 0, 1, "INST", "DEL", "Bksp", 0 } };
+    static const c64key_t r1[] = { { 0, 1.5f, "", "CTRL", "Tab", 1 }, K1("", "Q", "Q"), K1("", "W", "W"), K1("", "E", "E"),
+        K1("", "R", "R"), K1("", "T", "T"), K1("", "Y", "Y"), K1("", "U", "U"), K1("", "I", "I"), K1("", "O", "O"),
+        K1("", "P", "P"), K1("", "@", "@"), K1("", "*", "*"), { 0, 1, "", "\xE2\x86\x91", "-", 2 },
+        { 0, 1.5f, "", "RESTORE", "PgUp", 1 } };
+    static const c64key_t r2[] = { { 0, 1, "RUN", "STOP", "Esc", 1 }, { 0, 1, "SHIFT", "LOCK", "-", 2 }, K1("", "A", "A"),
+        K1("", "S", "S"), K1("", "D", "D"), K1("", "F", "F"), K1("", "G", "G"), K1("", "H", "H"), K1("", "J", "J"),
+        K1("", "K", "K"), K1("", "L", "L"), K1("[", ":", ":  ["), K1("]", ";", ";  ]"), K1("", "=", "="),
+        { 0, 2, "", "RETURN", "Enter", 1 } };
+    static const c64key_t r3[] = { { 0, 1, "", "C=", "L Alt", 1 }, { 0, 1, "", "SHIFT", "Shift", 1 }, K1("", "Z", "Z"),
+        K1("", "X", "X"), K1("", "C", "C"), K1("", "V", "V"), K1("", "B", "B"), K1("", "N", "N"), K1("", "M", "M"),
+        K1("<", ",", ",  <"), K1(">", ".", ".  >"), K1("?", "/", "/  ?"), { 0, 2, "", "SHIFT", "Shift", 1 },
+        { 0, 1, "", "CRSR", "-", 2 }, { 0, 1, "", "CRSR", "-", 2 } };
+    static const struct { const c64key_t *k; int n; } rows[4] = { { r0, 16 }, { r1, 15 }, { r2, 15 }, { r3, 15 } };
+    float u = a.w / 25.0f, kh = 46, y0 = kh + 6;          /* y0: below the top row */
+    static const struct { const char *top, *main, *pc; int style; } toprow[4] = {
+        { "", "ESC", "Ins", 1 }, { "", "TAB", "PgDn", 1 }, { "", "ALT", "R Alt", 1 }, { "", "CAPS", "F12", 1 } };
+    for (int i = 0; i < 4; i++)
+        draw_gkey(cv, ctx, nk_rect(a.x + i * u, a.y, u, kh), toprow[i].top, toprow[i].main, toprow[i].pc, toprow[i].style);
+    for (int y = 0; y < 4; y++) {
+        float x = 0;
+        for (int i = 0; i < rows[y].n; i++) {
+            const c64key_t *k = &rows[y].k[i];
+            draw_gkey(cv, ctx, nk_rect(a.x + x * u, a.y + y0 + y * kh, k->w * u, kh), k->top, k->main, k->pc, k->style);
+            x += k->w;
+        }
+    }
+    draw_gkey(cv, ctx, nk_rect(a.x + 3.5f * u, a.y + y0 + 4 * kh, 8 * u, kh), "", "SPACE", "Space", 0);
+    static const char *const fk[4][3] = { { "f2", "f1", "F1" }, { "f4", "f3", "F3" }, { "f6", "f5", "F5" }, { "f8", "f7", "F7" } };
+    for (int i = 0; i < 4; i++)
+        draw_gkey(cv, ctx, nk_rect(a.x + 16.4f * u, a.y + y0 + i * kh, 1.0f * u, kh), fk[i][0], fk[i][1], fk[i][2], 0);
+    /* the top row of the right hand block */
+    static const char *const hk[4][3] = { { "", "HELP", "F9" }, { "", "LINE FEED", "F10" }, { "", "40/80", "F11" }, { "", "NO SCROLL", "ScrLk" } };
+    for (int i = 0; i < 4; i++)
+        draw_gkey(cv, ctx, nk_rect(a.x + (18.2f + i) * u, a.y, u, kh), hk[i][0], hk[i][1], hk[i][2], i == 2 ? 1 : 0);
+    /* the cursor cluster (an inverted T) and the keypad */
+    static const char *const cur[4][2] = { { "UP", "Up" }, { "LEFT", "Left" }, { "DOWN", "Down" }, { "RIGHT", "Right" } };
+    draw_gkey(cv, ctx, nk_rect(a.x + 18.2f * u, a.y + y0 + 2 * kh, u, kh), "", cur[0][0], cur[0][1], 0);
+    draw_gkey(cv, ctx, nk_rect(a.x + 17.2f * u, a.y + y0 + 3 * kh, u, kh), "", cur[1][0], cur[1][1], 0);
+    draw_gkey(cv, ctx, nk_rect(a.x + 18.2f * u, a.y + y0 + 3 * kh, u, kh), "", cur[2][0], cur[2][1], 0);
+    draw_gkey(cv, ctx, nk_rect(a.x + 19.2f * u, a.y + y0 + 3 * kh, u, kh), "", cur[3][0], cur[3][1], 0);
+    static const char *const kp[4][4] = { { "7", "8", "9", "+" }, { "4", "5", "6", "-" }, { "1", "2", "3", "ENTER" }, { "0", "0", ".", "" } };
+    for (int y = 0; y < 4; y++)
+        for (int x = 0; x < 4; x++) {
+            const char *l = kp[y][x];
+            if (!*l || (y == 3 && x == 1)) continue;
+            char pc[16];
+            snprintf(pc, sizeof(pc), strcmp(l, "ENTER") ? "Num %s" : "Num Ent", l);
+            float w = (y == 3 && x == 0) ? 2.0f : 1.0f, h = strcmp(l, "ENTER") ? 1.0f : 2.0f;
+            draw_gkey(cv, ctx, nk_rect(a.x + (21.2f + x) * u, a.y + y0 + y * kh, w * u, h * kh), "", l, pc, 0);
+        }
 }
 
 /* The PET's key matrix (pet.c's table), as the 10 rows the keyboard is scanned in. */
@@ -396,6 +456,15 @@ void keymap_window(struct nk_context *ctx, bool *open, const machine_t *m, float
             if (nk_widget(&a, ctx) != NK_WIDGET_INVALID) draw_c16(nk_window_get_canvas(ctx), ctx, a);
             nk_layout_row_dynamic(ctx, 18, 1);
             nk_label_colored(ctx, "Shift is the PC Shift key; a shifted character typed on the PC presses it for you. Letters are capitals without Shift.", NK_TEXT_LEFT, COL_DIMTEXT);
+        } else if (is_c128(m)) {
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(ctx, "The C128 keyboard: the C64's matrix plus three more lines (the VIC's K0-K2) for the top row, cursors and keypad.", NK_TEXT_LEFT);
+            nk_label(ctx, "Each key: the shifted legend (red), the key (white), the PC key (green); - : no PC key.", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(ctx, 46 * 6 + 12, 1);
+            struct nk_rect a;
+            if (nk_widget(&a, ctx) != NK_WIDGET_INVALID) draw_c128(nk_window_get_canvas(ctx), ctx, a);
+            nk_layout_row_dynamic(ctx, 18, 1);
+            nk_label_colored(ctx, "CAPS (F12) and 40/80 (F11) are toggles that stay down. Right Ctrl is joystick 2 fire. Shift is the PC Shift key.", NK_TEXT_LEFT, COL_DIMTEXT);
         } else if (is_c64(m) || is_vic20(m)) {
             nk_layout_row_dynamic(ctx, 20, 1);
             if (is_vic20(m)) nk_label(ctx, "The VIC-20's keyboard: the C64's layout, scanned as an 8 x 8 matrix by the second 6522.", NK_TEXT_LEFT);

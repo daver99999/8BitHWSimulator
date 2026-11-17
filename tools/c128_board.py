@@ -237,7 +237,8 @@ def sheet_cpu():
     # PLA (U11)
     for i, p_ in enumerate((6, 5, 4, 3, 2, 1)):
         net(A[10 + i], 'U11.%d' % p_)
-    net(GND, 'U11.8')                     # DMAACK; J2 (VICFIX) open
+    net(GND, 'U11.8')                     # DMAACK
+    net(VCC, 'U11.7')                     # VICFIX (J2 open: pulled high; the chip dump needs it high for the VIC's character fetch)
     net('AEC', 'U11.9')
     net('R/W', 'U11.10')
     net('GAME', 'U11.11')
@@ -704,31 +705,47 @@ def check():
     return bad
 
 
-OUTLINE = (0.0, 0.0, 420.0, 250.0)
+OUTLINE = (0.0, 0.0, 345.0, 275.0)
 ICS = {}
 FIXED = {}
 
 
 def autoplace():
-    """Chips in rows, in schematic order; the connectors along the bottom edge. (The real board layout is not
-    reproduced; only the relative order is kept.)"""
-    x, y, rowh = 8.0, 8.0, 0.0
-    order = [r for r in parts if parts[r][1].startswith('DIP-') and not r.startswith('U38') and
-             not (r[0] == 'U' and 38 <= int(r[1:]) <= 53)]
-    order += ['U%d' % i for i in range(38, 54)]
-    for ref in order:
-        n = len(parts[ref][2])
-        w = n // 2 * 2.54 + 4
-        h = float(parts[ref][1].split('_W')[1][:-2]) + 6
-        if x + w > OUTLINE[2] - 6:
-            x, y, rowh = 8.0, y + rowh + 2, 0.0
-        ICS[ref] = (x + w / 2, y + h / 2, 'h')
-        x += w + 2
-        rowh = max(rowh, h)
+    """Chips grouped by function in rows, roughly as on the board: the DRAM banks across the top, the processors and
+    the MMU, PLA and VIC in the middle, the ROMs, then the CIAs, SID and the VDC with its video RAM, the glue chips
+    last and the connectors along the bottom edge. (Only the grouping is meant to follow the real board; the
+    exact positions are approximate.)"""
+    rows = [
+        ['U%d' % i for i in range(38, 46)],                              # DRAM bank 0
+        ['U%d' % i for i in range(46, 54)],                              # DRAM bank 1
+        ['U6', 'U10', 'U7', 'U11', 'U21'],                               # 8502, Z80, MMU, PLA, VIC-IIe
+        ['U32', 'U33', 'U34', 'U35', 'U36', 'U18', 'U19'],               # the ROMs, character ROM, colour RAM
+        ['U1', 'U4', 'U5', 'U22', 'U23', 'U25'],                         # CIAs, SID, VDC and its two video RAMs
+        ['U12', 'U13', 'U17', 'U55', 'U62', 'U24', 'U14', 'U15', 'U26'],   # latches, buffers, multiplexers
+        ['U2', 'U3', 'U8', 'U9', 'U16', 'U20', 'U27', 'U28', 'U29', 'U30', 'U31', 'U37'],
+        ['U54', 'U56', 'U57', 'U58', 'U60', 'U61', 'U63'],
+    ]
+    placed = set(r for row in rows for r in row)
+    rows[-1] += [r for r in parts if parts[r][1].startswith('DIP-') and r not in placed]
+    y = 8.0
+    for row in rows:
+        x, rowh = 8.0, 0.0
+        for ref in row:
+            if ref not in parts:
+                continue
+            n = len(parts[ref][2])
+            w = n // 2 * 2.54 + 4
+            h = float(parts[ref][1].split('_W')[1][:-2]) + 6
+            if x + w > OUTLINE[2] - 6:                                     # a row that is too long wraps
+                x, y, rowh = 8.0, y + rowh + 2, 0.0
+            ICS[ref] = (x + w / 2, y + h / 2, 'h')
+            x += w + 6
+            rowh = max(rowh, h)
+        y += rowh + 12
     cx = 25.0
     for ref in ('CN1', 'CN2', 'CN3', 'CN4', 'CN5', 'CN6', 'CN9', 'Y2'):
         if ref in parts:
-            FIXED[ref] = (cx, 232.0)
+            FIXED[ref] = (cx, 258.0)
             cx += 45.0
 
 

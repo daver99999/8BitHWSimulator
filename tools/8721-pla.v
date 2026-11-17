@@ -1,3 +1,8 @@
+// NOTE: checked against the raw chip dump (8721W.BIN/8721B.BIN by Nicolas Welte) with 6 million random input
+// combinations. Fixed here: p69 (the VIC's character fetch in 128 mode: !aec and VICFIX high), a14 in p31/p33/p35/p37
+// (colour RAM is $D800, not $9800) and a12 in p61. With the C128's normal state (GAME, EXROM, 128/256 and VICFIX
+// high, 128 mode, the 8502 running) every output matches except /ROML (an expansion port pin, nothing there is
+// simulated). Still different from the chip: the Z80's memory cycles at $D000-$DFFF and the C64 mode cartridge states.
 module pla_8721(
     input rom_256,
     input va14,
@@ -116,7 +121,6 @@ wire p66;
 wire p67;
 wire p68;
 wire p69;
-wire p87;
 wire p70;
 wire p71;
 wire p72;
@@ -134,7 +138,6 @@ wire p83;
 wire p84;
 wire p85;
 wire p86;
-wire p87;
 wire p88;
 wire p89;
 
@@ -183,16 +186,16 @@ assign p27 = charen & loram &      !ms3 & game & !rw & aec & !a10 & a11 & a12 & 
 assign p28 = charen & hiram & ba & !ms3 & !exrom & !game &  rw & aec & !a10 & a11 & a12 & !a13 & a14 & a15;
 assign p29 = charen & hiram &      !ms3 & !exrom & !game & !rw & aec & !a10 & a11 & a12 & !a13 & a14 & a15;
 assign p30 = charen & loram & ba & !ms3 & !exrom & !game &  rw & aec & !a10 & a11 & a12 & !a13 & a14 & a15;
-assign p31 = charen & loram &      !ms3 & !exrom & !game & !rw & aec & !a10 & a11 & a12 & !a13       & a15;
+assign p31 = charen & loram &      !ms3 & !exrom & !game & !rw & aec & !a10 & a11 & a12 & !a13       & a15 & a14;  // a14 added: checked against the chip dump (the writes at $9800 are not colour RAM)
 
 assign p32 = ba & !ms3 & exrom & !game & rw & aec & !a10 & a11 & a12 & !a13 & a14 & a15;
-assign p33 =      !ms3 & exrom & !game & rw & aec & !a10 & a11 & a12 & !a13       & a15;
+assign p33 =      !ms3 & exrom & !game & rw & aec & !a10 & a11 & a12 & !a13       & a15 & a14;  // a14 added: checked against the chip dump (the writes at $9800 are not colour RAM)
 
 assign p34 = ba & !ms2 & ms3 &  rw & aec & !a10 & a11 & a12 & !a13 & a14 & a15;
-assign p35 =      !ms2 & ms3 & !rw & aec & !a10 & a11 & a12 & !a13       & a15;
+assign p35 =      !ms2 & ms3 & !rw & aec & !a10 & a11 & a12 & !a13       & a15 & a14;  // a14 added: checked against the chip dump (the writes at $9800 are not colour RAM)
 
 assign p36 = !aec;
-assign p37 = !rw & aec & !a10 & a11 & a12 & !a13 & a15;
+assign p37 = !rw & aec & !a10 & a11 & a12 & !a13 & a15 & a14;  // a14 added: checked against the chip dump (the writes at $9800 are not colour RAM)
 
 assign p39 = !charen & hiram & !ms3 &           game & rw & aec & a12 & !a13 & a14 & a15;
 assign p40 = !charen & loram & !ms3 &           game & rw & aec & a12 & !a13 & a14 & a15;
@@ -224,7 +227,7 @@ assign p58 = hiram         & !ms3          &  game & rw & aec & a13 &  a14 & a15
 assign p59 = hiram         & !ms3 & !exrom & !game & rw & aec & a13 &  a14 & a15;
 assign p60 = hiram & loram & !ms3          &  game & rw & aec & a13 & !a14 & a15;
 
-assign p61 = !z80io & !z80en & aec & !a10 & !a11        & !a13 & a14 & a15;
+assign p61 = !z80io & !z80en & aec & !a10 & !a11        & !a13 & a14 & a15 & a12;  // a12 added: checked against the chip dump
 assign p62 = !z80io & !z80en & aec               &  a12 & !a13 & a14 & a15;
 assign p63 = !z80io & !z80en & aec & !a10 &  a11 &  a12 & !a13 & a14 & a15;
 
@@ -235,11 +238,7 @@ assign p66 = !aec;
 assign p67 = !ms2 & !z80en       & aec & !a10 & !a11 & a12 & !a13 & !a14 & !a15;
 assign p68 = !ms2 & !z80en & !rw & aec & !a10 & !a11 & a12 & !a13 & !a14 & !a15;
 
-assign p69 = !charen & !vma5 & vma4 & ms3 & aec & dmaack; // dmaack missing from original code
-
-// p87 is NOT in the read-out: the VIC's character fetch in 128 mode (a VIC cycle, VA14 as in p42, the address $1xxx).
-// The read-out only selects the character ROM for the VIC in 64 mode (p42/p43), so the board model adds it here.
-assign p87 = va14 & !vma5 & vma4 & ms3 & game & !aec & !charen;
+assign p69 = !charen & !vma5 & vma4 & ms3 & !aec & vicfix;   // checked against the chip dump (Nicolas Welte): a VIC cycle
 
 assign p70 = !rom_256 & !ms0 & !ms1 & ms3 & rw & aec               & a14 & !a15;
 assign p71 = !rom_256 & !ms0 & !ms1 & ms3 & rw & aec & !a12 & !a13 & a14 &  a15;
@@ -281,7 +280,7 @@ assign ioacc = p0 || p1 || p2 || p3 || p4 || p5 || p6 || p7 || p8 || p9 || p10 |
                p12 || p13 || p14 || p15 || p16 || p17 || p18 || p19 || p20 || p21 || p22 || p61 || p62;
 assign gwe = p37 || p68; // p68 missing from original code
 assign colram = p24 || p25 || p26 || p27 || p28 || p29 || p30 || p31 || p32 || p33 || p34 || p35 || p36 || p63 || p67;
-assign charom = p39 || p40 || p41 || p42 || p43 || p44 || p69 || p87;
+assign charom = p39 || p40 || p41 || p42 || p43 || p44 || p69;
 
 assign casenb_latch = clk || p74;
 
@@ -290,7 +289,7 @@ assign casenb_int = p0 || p1 || p2 || p3 || p4 || p5 || p6 || p7 || p8 || p9
                 || p20 || p21 || p22 || p23 || p39 || p40 || p41 || p42 || p43 || p44
                 || p45 || p46 || p47 || p48 || p49 || p50 || p51 || p52 || p53 || p54
                 || p55 || p56 || p57 || p58 || p59 || p60 || p61 || p62 || p63 || p67
-                || p69 || p87 || p70 || p71 || p72 || p75 || p76 || p77 || p78 || p79 || p80
+                || p69 || p70 || p71 || p72 || p75 || p76 || p77 || p78 || p79 || p80
                 || p81 || p82 || p83 || p84;
 
 /* Latched outputs */
