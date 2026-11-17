@@ -61,12 +61,44 @@
  * edge connector: open.
  * What differs between the boards is in zx_variant_t. */
 #include "zx48.h"
-#include "zx48-rom.h"
 #include "sokol/sokol_app.h"   /* key codes */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <dirent.h>
+
+/* The 48K ROM (the image of IC5, 16K) is not part of the program: it is read from roms/zx48 (or roms, or the
+ * current folder) at the first use. In roms/zx48 any 16K .rom or .bin will do; elsewhere the name must have
+ * "zx48", "48k" or "spectrum" in it. Without it the ROM reads as $FF and the status line says so. */
+static uint8_t zx48_rom[16384];
+static bool zx48_rom_loaded, zx48_rom_searched;
+
+static void zx48_find_rom(void) {
+    static const char *const dirs[] = { "roms/zx48", "roms", "." };
+    if (zx48_rom_searched) return;
+    zx48_rom_searched = true;
+    memset(zx48_rom, 0xFF, sizeof(zx48_rom));
+    for (size_t d = 0; d < sizeof(dirs) / sizeof(dirs[0]) && !zx48_rom_loaded; d++) {
+        DIR *dir = opendir(dirs[d]);
+        if (!dir) continue;
+        struct dirent *e;
+        while ((e = readdir(dir)) && !zx48_rom_loaded) {
+            size_t l = strlen(e->d_name);
+            if (l < 5 || (strcasecmp(e->d_name + l - 4, ".bin") && strcasecmp(e->d_name + l - 4, ".rom"))) continue;
+            if (d > 0 && !strcasestr(e->d_name, "zx48") && !strcasestr(e->d_name, "48k") &&
+                !strcasestr(e->d_name, "spectrum")) continue;
+            char path[1024];
+            snprintf(path, sizeof(path), "%s/%s", dirs[d], e->d_name);
+            FILE *f = fopen(path, "rb");
+            uint8_t buf[16385];
+            size_t n = f ? fread(buf, 1, sizeof(buf), f) : 0;
+            if (f) fclose(f);
+            if (n == 16384) { memcpy(zx48_rom, buf, 16384); zx48_rom_loaded = true; }
+        }
+        closedir(dir);
+    }
+}
 
 /* Z80 pins (the address pins A0..A15, the data pins D0..D7). */
 static const int z80_addr_pins[16] = { 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 1, 2, 3, 4, 5 };
@@ -646,6 +678,7 @@ static void zx_create(board_t *b) {
     z->p_ula = sim_find_part(s, "IC1");
     z->p_rom = sim_find_part(s, "IC5");
     z->pin_clk = part_pin(&s->parts[z->p_cpu], Z_CLK);
+    zx48_find_rom();
     ((rom_state_t *)s->parts[z->p_rom].state)->data = zx48_rom;
     ((ula_state_t *)s->parts[z->p_ula].state)->fb = b->screen;
     ((ula_state_t *)s->parts[z->p_ula].state)->logging = ula_log_file != NULL;
@@ -1370,6 +1403,7 @@ static void zx_destroy(board_t *b) {
 
 static const char *zx_cpu_status(board_t *b) {
     zx48_t *z = ZX(b);
+    if (!zx48_rom_loaded) return "no ROM (put the 48K ROM, 16K, in roms/zx48)";
     return !z->cpu_running ? "stopped (no clock)" : z->in_reset ? "in reset" : "running";
 }
 
@@ -1380,7 +1414,7 @@ static void zx_cpu_regs(board_t *b, char *buf, int len) {
              !z->cpu_running ? "(no clock)" : z->in_reset ? "(in reset)" : "");
 }
 
-const uint8_t *zx48_rom_image(void) { return zx48_rom; }
+const uint8_t *zx48_rom_image(void) { zx48_find_rom(); return zx48_rom; }
 
 /* The text on the picture, matched against the ROM's character set (at
  * 0x3D00, characters 32-127), cell by cell like a person reading it. */

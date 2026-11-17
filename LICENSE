@@ -27,9 +27,9 @@ Parts of this repository come from others and keep their own licenses:
 - The Commodore ROM images (C64, VIC-20, PET) are not part of this
   repository: you supply your own, in roms/ (see the README). They belong
   to their copyright holders.
-- chips/zx48-rom.h: the ZX Spectrum 48K ROM, copyright Amstrad plc.
-  Amstrad have kindly given their permission for the redistribution of
-  their copyrighted material but retain that copyright.
+- The ZX Spectrum 48K ROM (copyright Amstrad plc, who have kindly given
+  their permission for its redistribution) is no longer in the repository:
+  the program reads it from roms/zx48.
 - carts/: Commodore's diagnostic cartridges (Dead Test, Diagnostic
   586220), which belong to their copyright holders, and the ZX Spectrum
   diagnostic ROM (LGPL 3). They are not covered by this license, see
