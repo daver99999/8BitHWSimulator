@@ -50,3 +50,13 @@ Release plan (user's choice): release 1 = C128 mode, 40-column VIC-IIe screen, Z
  20 /CAS  19 /RAS  11 /DMARQST  15 /DMAACK (NC)  25 Z80 PHI  26 K0  27 K1  28 K2  18 1MHz  23 2MHz  8? /IRQ  10 BA
  17 SYNC/LUM  16 CHROMA  21 MUX  12 AEC  29 PHI-COLOR  30 PHI-IN (dot clock)  48 VCC  24 GND
  Clock: Y2 14.31818 MHz -> U28 8701 (pin 8 = colour clock, pin 6 = dot clock; J1 NTSC/PAL).
+
+## Keyboard (user's 128keybd.gif; extra-key matrix from commodore-128.org "THREE-KEY ROLLOVER" table)
+The 8x8 matrix is the C64's (CIA1 port A = columns driven, port B = rows read). The extra keys are three more
+columns, selected by VIC register $D02F bits 0-2 (K0, K1, K2 low), read on CIA1 port B (bit 7 .. bit 0):
+  K0: 1(kp) 7(kp) 4(kp) 2(kp) TAB   5(kp) 8(kp) HELP
+  K1: 3(kp) 9(kp) 6(kp) ENTER(kp) LINE FEED  -(kp) +(kp) ESC
+  K2: NO SCROLL  CURSOR-RIGHT  CURSOR-LEFT  CURSOR-DOWN  CURSOR-UP  .(kp) 0(kp) ALT
+CAPS LOCK is a switch on the 8502's P6 (CAPLK SENSE, pin 24); 40/80 DISPLAY is a switch on the MMU's pin 48
+(CN5 pins: K0 21, K1 22, K2 23, 40/80 24, CAPLK SENSE 25). The top row of the keyboard (ESC TAB ALT CAPS LOCK,
+HELP LINE FEED 40/80 NO SCROLL, four cursor keys, F1 F3 F5 F7) and the keypad are the extra keys.
