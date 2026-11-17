@@ -2510,8 +2510,8 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
            : tab == 2 ? (int)(sizeof(ts_boards) / sizeof(ts_boards[0]))
                       : (int)(sizeof(cbm_boards) / sizeof(cbm_boards[0]));
     nk_layout_row_dynamic(ctx, 24, 1 + m->noptions < 3 ? 1 + m->noptions : 3);   /* more go on a row below */
-    char names[8][32];
-    const char *issues[8];
+    char names[16][32];
+    const char *issues[16];
     int cur = 0;
     for (int i = 0; i < nb; i++) {
         if (tab == 0) snprintf(names[i], sizeof(names[i]), "%s %s", (boards[i] == &machine_pet4032 || boards[i] == &machine_pet8032) ? "PET" : (boards[i] == &machine_vic20a || boards[i] == &machine_vic20b) ? "VIC-20" : boards[i] == &machine_c16 ? "C16" : boards[i] == &machine_plus4 ? "Plus/4" : "C64", boards[i]->issue);
