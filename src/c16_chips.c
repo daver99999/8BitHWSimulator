@@ -44,7 +44,7 @@
 typedef struct { uint8_t q[4], clk; } ls175_t;
 static void ls175_eval(sim_t *s, part_t *p) {
     const ls175_t *t = p->state;
-    static const int q[4] = { 2, 7, 10, 14 }, nq[4] = { 3, 6, 11, 15 };
+    static const int q[4] = { 2, 7, 10, 15 }, nq[4] = { 3, 6, 11, 14 };      /* the real chip: Q4 is pin 15, /Q4 pin 14 */
     for (int i = 0; i < 4; i++) {
         pin_out(s, p, q[i], DRV_BIT(t->q[i]));
         pin_out(s, p, nq[i], DRV_BIT(!t->q[i]));
@@ -64,7 +64,7 @@ static void ls175_commit(sim_t *s, part_t *p) {
 }
 static void ls175_reset(sim_t *s, part_t *p) { (void)s; memset(p->state, 0, sizeof(ls175_t)); }
 const part_type_t PT_74LS175 = { "74LS175",
-    "/CLR:m Q1:O /Q1:O D1:m D2:m /Q2:O Q2:O GND:P CLK:m Q3:O /Q3:O D3:m D4:m Q4:O /Q4:O VCC:P",
+    "/CLR:m Q1:O /Q1:O D1:m D2:m /Q2:O Q2:O GND:P CLK:m Q3:O /Q3:O D3:m D4:m /Q4:O Q4:O VCC:P",
     ls175_eval, ls175_commit, ls175_reset, sizeof(ls175_t), TECH_TTL };
 
 /* 74LS125: four buffers with a low active enable. */
@@ -75,6 +75,62 @@ static void ls125_eval(sim_t *s, part_t *p) {
 }
 const part_type_t PT_74LS125 = { "74LS125",
     "/1G:T 1A:T 1Y:O /2G:T 2A:T 2Y:O GND:P 3Y:O 3A:T /3G:T 4Y:O 4A:T /4G:T VCC:P", ls125_eval, 0, 0, 0, TECH_TTL };
+
+
+/* ------------------------------------------------------------------------ */
+/* 74LS27: three 3-input NOR gates                                           */
+/* ------------------------------------------------------------------------ */
+
+static void ls27_eval(sim_t *s, part_t *p) {
+    static const int g[3][4] = { { 1, 2, 13, 12 }, { 3, 4, 5, 6 }, { 9, 10, 11, 8 } };
+    for (int i = 0; i < 3; i++)
+        pin_out(s, p, g[i][3], DRV_BIT(!(pin_in(s, p, g[i][0]) || pin_in(s, p, g[i][1]) || pin_in(s, p, g[i][2]))));
+}
+const part_type_t PT_74LS27 = { "74LS27",
+    "1A:T 1B:T 2A:T 2B:T 2C:T 2Y:O GND:P 3Y:O 3A:T 3B:T 3C:T 1Y:O 1C:T VCC:P", ls27_eval, 0, 0, 0, TECH_TTL };
+
+/* ------------------------------------------------------------------------ */
+/* 6551A ACIA at $FD00-$FD03 (the Plus/4's user port)                         */
+/* ------------------------------------------------------------------------ */
+
+/* Only the registers are modelled: the data register, the status (the transmitter is always empty, DCD and
+ * DSR show their pins), the command register (it drives /DTR and /RTS) and the control register. Nothing is
+ * sent or received: TxD stays high and RxD is ignored. The Plus/4 wires D0-D7 to pins 18-25. */
+static const int acia_d[8] = { 18, 19, 20, 21, 22, 23, 24, 25 };
+typedef struct { uint8_t cmd, ctl, data; int32_t cache_d; } acia_t;
+static bool acia_selected(sim_t *s, part_t *p) { return pin_in(s, p, 2) && !pin_in(s, p, 3) && pin_in(s, p, 27); }
+static void acia_eval(sim_t *s, part_t *p) {
+    acia_t *t = p->state;
+    int rs = pin_in(s, p, 13) | (pin_in(s, p, 14) << 1);
+    bool rd = acia_selected(s, p) && pin_in(s, p, 28);
+    uint8_t v = rs == 0 ? 0 : rs == 1 ? (uint8_t)(0x10 | (pin_in(s, p, 17) << 6) | (pin_in(s, p, 16) << 5)) : rs == 2 ? t->cmd : t->ctl;
+    part_drive_bus_cached(s, p, acia_d, 8, rd ? v : 0, rd, &t->cache_d);
+    pin_out(s, p, 10, DRV_HI);                                  /* TxD idles high */
+    pin_out(s, p, 11, (t->cmd & 1) ? DRV_LO : DRV_HI);         /* /DTR */
+    pin_out(s, p, 8, (t->cmd & 0x0C) ? DRV_LO : DRV_HI);       /* /RTS */
+    pin_out(s, p, 26, DRV_Z);                                   /* /IRQ: open drain, never asserted */
+    pin_out(s, p, 5, DRV_Z);
+    pin_out(s, p, 7, DRV_Z);
+}
+static void acia_commit(sim_t *s, part_t *p) {
+    acia_t *t = p->state;
+    uint8_t cmd = t->cmd, ctl = t->ctl;
+    if (!pin_in(s, p, 4)) { cmd = 0; ctl = 0; }
+    else if (acia_selected(s, p) && !pin_in(s, p, 28)) {
+        int rs = pin_in(s, p, 13) | (pin_in(s, p, 14) << 1);
+        uint8_t v = (uint8_t)part_read_bus(s, p, acia_d, 8);
+        if (rs == 0) t->data = v;
+        else if (rs == 1) cmd &= 0xE0;                          /* a write to the status register is a programmed reset */
+        else if (rs == 2) cmd = v;
+        else ctl = v;
+    }
+    if (cmd != t->cmd || ctl != t->ctl) { t->cmd = cmd; t->ctl = ctl; sim_mark_dirty(s, (int)(p - s->parts)); }
+}
+static void acia_reset(sim_t *s, part_t *p) { (void)s; memset(p->state, 0, sizeof(acia_t)); }
+const part_type_t PT_6551 = { "6551A",
+    "GND:P CS0:M /CS1:M /RES:M RxC:O XTAL1:m XTAL2:O /RTS:O /CTS:M TxD:O /DTR:O RxD:M RS0:M RS1:M VCC:P /DCD:M /DSR:M "
+    "D0:B D1:B D2:B D3:B D4:B D5:B D6:B D7:B /IRQ:O PHI2:M R/W:M",
+    acia_eval, acia_commit, acia_reset, sizeof(acia_t), TECH_NMOS };
 
 /* ------------------------------------------------------------------------ */
 /* 23128 ROM (the C16's: /CS1 low, CS2 and CS3 high)                         */
@@ -409,10 +465,10 @@ static void ted_write_reg(sim_t *s, part_t *p, ted_t *t, int r, uint8_t v) {
 
 /* Is the CPU's read of this address answered by a ROM? 1: /CS0 (BASIC side), 2: /CS1 (KERNAL side). */
 static int ted_rom_of(const ted_t *t, unsigned a) {
-    if (a >= 0xFC00 && a < 0xFD00) return 2;            /* the KERNAL's tail is always there */
     if (a >= 0xFD00 && a < 0xFF00) return 0;            /* I/O */
     if (a >= 0xFF00 && a < 0xFF20) return 0;            /* the TED */
-    if (!t->rom_on) return 0;
+    if (!t->rom_on) return 0;                           /* ROM off: all RAM, $FC00-$FCFF too (BASIC keeps its strings there) */
+    if (a >= 0xFC00 && a < 0xFD00) return 2;            /* the KERNAL's tail: the PLA's KERN output keeps the KERNAL, not a function ROM, on it */
     if (a >= 0x8000 && a < 0xC000) return 1;
     if (a >= 0xC000) return 2;
     return 0;

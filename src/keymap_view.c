@@ -102,7 +102,7 @@ static bool is_ts1000(const machine_t *m) { return m == &machine_ts1000 || m == 
 static bool is_c64(const machine_t *m) { return m == &machine_c64 || m == &machine_c64b || m == &machine_c64c; }
 /* The VIC-20 keyboard has the C64's layout (and the same PC keys). */
 static bool is_vic20(const machine_t *m) { return m == &machine_vic20a || m == &machine_vic20b; }
-static bool is_c16(const machine_t *m) { return m == &machine_c16; }
+static bool is_c16(const machine_t *m) { return m == &machine_c16 || m == &machine_plus4; }  /* the Plus/4 has the same keyboard */
 static bool is_pet(const machine_t *m) { return m == &machine_pet4032 || m == &machine_pet8032; }
 
 bool keymap_supported(const machine_t *m) { return is_spectrum(m) || is_ts1000(m) || is_c64(m) || is_vic20(m) || is_c16(m) || is_pet(m); }
@@ -389,7 +389,7 @@ void keymap_window(struct nk_context *ctx, bool *open, const machine_t *m, float
             nk_label_colored(ctx, "Left Shift is SHIFT. Typing a symbol that needs SHIFT (\" ( ) $ : ; ? / + - = * < > ,) presses it for you.", NK_TEXT_LEFT, COL_DIMTEXT);
         } else if (is_c16(m)) {
             nk_layout_row_dynamic(ctx, 20, 1);
-            nk_label(ctx, "The C16's keyboard: an 8 x 8 matrix between the 6529B ($FD30, the rows) and the TED's K lines.", NK_TEXT_LEFT);
+            nk_label(ctx, "The C16 / Plus/4 keyboard: an 8 x 8 matrix between the 6529B ($FD30, the rows) and the TED's K lines.", NK_TEXT_LEFT);
             nk_label(ctx, "Each key: the shifted legend (red), the key (white), the PC key (green).", NK_TEXT_LEFT);
             nk_layout_row_dynamic(ctx, 56 * 5 + 6, 1);
             struct nk_rect a;

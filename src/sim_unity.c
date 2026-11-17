@@ -54,6 +54,7 @@
 #include "vic20.c"
 #include "c16_chips.c"
 #include "c16.c"
+#include "plus4.c"
 #include "scld.c"
 #include "ts2068.c"
 #include "ula81.c"
