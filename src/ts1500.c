@@ -115,7 +115,7 @@ enum {
 static const int t5_ga_a0p[9] = { 46, 51, 19, 24, 28, 32, 36, 40, 48 };            /* A0'..A7' (to U3's outputs / the ROM), A8 */
 static const int t5_ga_ahi[7] = { 49, 22, 26, 30, 34, 38, 42 };                    /* A9..A15 */
 static const int t5_ga_ra[8] = { 44, 50, 23, 27, 31, 35, 39, 43 };                 /* RA0..RA7 */
-static const int t5_ga_d[8] = { 25, 29, 33, 37, 41, 47, 20, 17 };                  /* D0..D7 */
+static const int t5_ga_d[8] __attribute__((unused)) = { 25, 29, 33, 37, 41, 47, 20, 17 };                  /* D0..D7 */
 static const int t5_ga_kbd[5] = { 1, 68, 67, 66, 65 };                             /* KBD0..KBD4 */
 static uint8_t t5_rom_bitmap(sim_t *s);
 static const ula81_pins_t t5_ga_pins = {
