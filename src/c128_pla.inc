@@ -30,6 +30,7 @@ static void pla8721_calc(const pla8721_in_t *in, pla8721_out_t *o, int *dwe_d, i
     a14 = in->a14;
     a15 = in->a15;
     clk = in->clk;
+    (void)dmaack;                   /* an input of the chip that no output depends on */
     int p0 = charen & hiram & ba & (!ms3) & game & rw & aec & a12 & (!a13) & a14 & a15;
     int p1 = charen & hiram & (!ms3) & game & (!rw) & aec & a12 & (!a13) & a14 & a15;
     int p2 = charen & loram & ba & (!ms3) & game & rw & aec & a12 & (!a13) & a14 & a15;

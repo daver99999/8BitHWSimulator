@@ -28,6 +28,7 @@ print('static void pla8721_calc(const pla8721_in_t *in, pla8721_out_t *o, int *d
 print('    int ' + ', '.join(ins) + ';')
 for i in ins:
     print('    %s = in->%s;' % (i, i))
+print('    (void)dmaack;                   /* an input of the chip that no output depends on */')
 for n, e in terms:
     print('    int %s = %s;' % (n, c(e)))
 for n, e in outs:

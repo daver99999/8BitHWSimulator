@@ -465,15 +465,6 @@ static uint8_t c128_ram_peek(board_t *b, int bank, uint16_t addr) {
     return v;
 }
 
-static void c128_ram_poke(board_t *b, int bank, uint16_t addr, uint8_t v) {
-    char ref[8];
-    for (int bit = 0; bit < 8; bit++) {
-        snprintf(ref, sizeof(ref), "U%d", 38 + bank * 8 + bit);
-        int p = sim_find_part(&b->sim, ref);
-        if (p >= 0) ((dram_state_t *)b->sim.parts[p].state)->cells[c128_cell(addr)] = (v >> bit) & 1;
-    }
-}
-
 static int c128_ram_cell(board_t *b, int part, uint16_t addr) {
     (void)b;
     const part_t *p = &b->sim.parts[part];

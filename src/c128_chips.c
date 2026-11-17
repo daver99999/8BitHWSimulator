@@ -958,7 +958,7 @@ void c128_vic_set_screen(part_t *p, uint32_t *fb, int w, int h) {
     v->fb = fb; v->fb_w = w; v->fb_h = h;
 }
 bool c128_vic_fast(const part_t *p) { return (((const vic8564_t *)p->state)->reg30 & 1) != 0; }
-uint8_t c128_vic_reg_of(const part_t *p, int r) { return ((const vic8564_t *)p->state)->vic.reg.regs[r & 63 < 47 ? r & 63 : 0]; }
+uint8_t c128_vic_reg_of(const part_t *p, int r) { return ((const vic8564_t *)p->state)->vic.reg.regs[(r & 63) < 47 ? (r & 63) : 0]; }
 
 const part_type_t PT_8564 = { "8564 VIC-IIe",
     "D6:B D5:B D4:B D3:B D2:B D1:B D0:B /IRQ:O /LP:m BA:O /DMARQST:m AEC:O /CS:m R/W:m /DMAACK:O CHROMA:O SYNC:O "
