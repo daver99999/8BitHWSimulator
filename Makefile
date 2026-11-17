@@ -41,6 +41,15 @@ build/%.o: src/%.c src/*.h chips/*.h
 
 OBJS = $(patsubst src/%.c,build/%.o,$(SIM_SRC) $(APP_SRC)) build/sokol_impl.o
 
+# The .exe's icon (Explorer, the taskbar, shortcuts): src/icon.rc names src/c64-hw-sim.ico.
+ifeq ($(OS),Windows_NT)
+  WINDRES ?= windres
+  OBJS += build/icon.o
+build/icon.o: src/icon.rc src/c64-hw-sim.ico
+	@mkdir -p build
+	$(WINDRES) -I src -i src/icon.rc -O coff -o $@
+endif
+
 8BitHWSimulator$(EXE): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $@ $(LIBS)
 
