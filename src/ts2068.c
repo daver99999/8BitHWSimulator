@@ -163,12 +163,12 @@ static const part_def_t ts_part_defs[] = {
     { "U13", &PT_4416, "DRAM", ROLE_RAM, "4416\nD4-D7\n$8000-$BFFF", "4416 DRAM, upper RAM, bits 4-7 of $8000-$BFFF" },
     { "U17", &PT_4416, "DRAM", ROLE_RAM, "4416\nD0-D3\n$C000-$FFFF", "4416 DRAM, upper RAM, bits 0-3 of $C000-$FFFF" },
     { "U18", &PT_4416, "DRAM", ROLE_RAM, "4416\nD4-D7\n$C000-$FFFF", "4416 DRAM, upper RAM, bits 4-7 of $C000-$FFFF" },
-    { "U9", &PT_TS_245, "BUF", ROLE_GLUE, "74LS245", "Data bus buffer between the CPU and the RAM side (the SCLD drives the direction)" },
-    { "U15", &PT_TS_245, "BUF", ROLE_GLUE, "74LS245", "Buffer from the CPU to the dock (J4): control lines and A13-A15" },
-    { "U5", &PT_74LS244, "BUF", ROLE_GLUE, "74LS244", "Address buffer onto the DRAM address bus MA0-MA7" },
-    { "U10", &PT_74LS157, "MUX", ROLE_GLUE, "74LS157", "Upper RAM address multiplexer (row/column)" },
-    { "U11", &PT_74LS157, "MUX", ROLE_GLUE, "74LS157", "Upper RAM address multiplexer (row/column)" },
-    { "U21", &PT_74LS00, "NAND", ROLE_GLUE, "74LS00", "Spare gates (the patch board of the 03D replaces what was here)" },
+    { "U9", &PT_TS_245, "74LS245", ROLE_GLUE, "buffer", "Data bus buffer between the CPU and the RAM side (the SCLD drives the direction)" },
+    { "U15", &PT_TS_245, "74LS245", ROLE_GLUE, "buffer", "Buffer from the CPU to the dock (J4): control lines and A13-A15" },
+    { "U5", &PT_74LS244, "74LS244", ROLE_GLUE, "buffer", "Address buffer onto the DRAM address bus MA0-MA7" },
+    { "U10", &PT_74LS157, "74LS157", ROLE_GLUE, "mux", "Upper RAM address multiplexer (row/column)" },
+    { "U11", &PT_74LS157, "74LS157", ROLE_GLUE, "mux", "Upper RAM address multiplexer (row/column)" },
+    { "U21", &PT_74LS00, "74LS00", ROLE_GLUE, "NAND gates", "Spare gates (the patch board of the 03D replaces what was here)" },
     { "U14", &PT_TS_AY, "AY", ROLE_CHIP, "AY-3-8912\nsound", "General Instrument AY-3-8912 sound chip with the joystick port" },
 };
 

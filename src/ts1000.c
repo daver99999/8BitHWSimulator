@@ -105,7 +105,7 @@ static const part_def_t t1_part_defs[] = {
     { "IC3", &PT_T1Z80, "CPU", ROLE_CHIP, "Z80A", "Z80A CPU, 3.25 MHz" },
     { "IC2", &PT_2364, "ROM", ROLE_ROM, "2364\n$0000-$1FFF", "ROM: BASIC and the character set, 8K" },
     { "IC4", &PT_T1RAM, "RAM", ROLE_VRAM, "2K x 8\n$4000-$47FF", "Static RAM, 2K: the program, the variables and the display file" },
-    { "TR1", &PT_T1TR1, "TR1", ROLE_GLUE, "ZTX313", "TR1 (ZTX313): makes /WAIT from /HALT (through R1) and /NMI (emitter); R17 pulls /WAIT up" },
+    { "TR1", &PT_T1TR1, "ZTX313", ROLE_GLUE, "TR1\nWAIT / NMI", "TR1 (ZTX313): makes /WAIT from /HALT (through R1) and /NMI (emitter); R17 pulls /WAIT up" },
 };
 
 static const conn_def_t t1_conn_defs[] = {

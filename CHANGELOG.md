@@ -10,6 +10,10 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 ## Unreleased
 
+- **Chip types on the chips.** On every machine the logic, buffer, clock and glue chips are now named by their type (74LS00, 74LS157,
+  74LS244, 4066, 556, 8701, 7406...) instead of a function word (GLUE, MUX, BUF, NAND, SW, INV...); the function is in the lines under
+  the name when you zoom in. CPUs, VIC/SID/CIAs, ROMs and RAMs keep their names (CPU, VIC, BASIC, RAM1...).
+
 - **C64 ASSY 250425.** A third C64 board (`--board 250425`, `--machine c64b`, or the board drop-down): the 250407 with the clock PLL
   (U29, U30, U32, the 74LS629 and the loop parts) replaced by the 8701 clock generator at U31, from schematic 251469. Generated from the
   250407 tables by `tools/c64_250425_from_250407.py`; netlist checked against the schematic (U27 gates, crystal trimmer, R31 differ from the 250407); layout is the 250407's with the PLA, SID, VIC, 8701, Y1, CT1 and C58 placed from a photo of a 250425.
