@@ -1,5 +1,5 @@
 /* icon_data.h - the program's icon, for the window and the taskbar
- * (icon_data.c, made by tools/make_icon.ps1). */
+ * (icon_data.c, made by tools/make_icon.py). */
 #ifndef ICON_DATA_H
 #define ICON_DATA_H
 #include <stddef.h>

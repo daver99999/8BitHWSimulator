@@ -125,7 +125,7 @@ for %%F in (%DATA_SRC% %APP_SRC%) do (
     set "OBJS=!OBJS! "%SRCDIR%\build\%%F.o""
 )
 
-rem  The .exe's icon (src/icon.rc, src/c64-hw-sim.ico; tools/make_icon.ps1).
+rem  The .exe's icon (src/icon.rc, src/c64-hw-sim.ico; tools/make_icon.py).
 rem  windres runs the preprocessor through the shell with its own full path,
 rem  which the space in a folder name like "Claude work" breaks: so plain
 rem  gcc (first on PATH), from inside src with relative paths.
