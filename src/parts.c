@@ -292,6 +292,51 @@ const part_type_t PT_2114 = { "2114 SRAM",
     "A6:M A5:M A4:M A3:M A0:M A1:M A2:M /CS:M GND:P /WE:M IO4:B IO3:B IO2:B IO1:B "
     "A9:M A8:M A7:M VCC:P", sram_eval, sram_commit, sram_reset, sizeof(sram_state_t), TECH_NMOS };
 
+/* The VIC-20's character ROM (901460-03) is a 2332 with both chip selects
+ * active low: it answers when VA13 and VA12 are low ($8000-$8FFF). */
+static void rom2332l_eval(sim_t *s, part_t *p) {
+    rom_state_t *st = p->state;
+    bool selected = !pin_in(s, p, 20) && !pin_in(s, p, 21);
+    unsigned addr = selected ? part_read_bus(s, p, rom_addr_pins, 12) : 0;
+    part_drive_bus_cached(s, p, rom_data_pins, 8, rom_byte(p, st, addr), selected, &st->out_cache);
+}
+
+const part_type_t PT_2332L = { "2332 ROM",
+    "A7:M A6:M A5:M A4:M A3:M A2:M A1:M A0:M D0:O D1:O D2:O GND:P D3:O D4:O D5:O D6:O "
+    "D7:O A11:M A10:M /CS1:M /CS2:M A9:M A8:M VCC:P", rom2332l_eval, 0, 0, sizeof(rom_state_t), TECH_NMOS };
+
+/* ------------------------------------------------------------------------ */
+/* 6116 static RAM 2K x 8 (the VIC-20's 250403 has two: M58725)               */
+/* ------------------------------------------------------------------------ */
+
+typedef struct { uint8_t cells[2048]; int32_t out_cache; } sram8_state_t;
+static const int s6116_addr[11] = { 8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 19 };
+static const int s6116_io[8] = { 9, 10, 11, 13, 14, 15, 16, 17 };
+
+static void s6116_eval(sim_t *s, part_t *p) {
+    sram8_state_t *st = p->state;
+    bool read = !pin_in(s, p, 18) && !pin_in(s, p, 20) && pin_in(s, p, 21);     /* /CE, /OE low, /WE high */
+    unsigned addr = read ? mem_addr(p, part_read_bus(s, p, s6116_addr, 11)) : 0;
+    unsigned v = p->mfault ? mem_read(p, addr, st->cells[addr]) & 255 : st->cells[addr];
+    part_drive_bus_cached(s, p, s6116_io, 8, v, read, &st->out_cache);
+}
+
+static void s6116_commit(sim_t *s, part_t *p) {
+    sram8_state_t *st = p->state;
+    if (!pin_in(s, p, 18) && !pin_in(s, p, 21))                                 /* /CE low, /WE low */
+        st->cells[mem_addr(p, part_read_bus(s, p, s6116_addr, 11))] = (uint8_t)part_read_bus(s, p, s6116_io, 8);
+}
+
+static void s6116_reset(sim_t *s, part_t *p) {
+    (void)s;
+    sram8_state_t *st = p->state;
+    for (int i = 0; i < 2048; i++) st->cells[i] = (uint8_t)((i * 37 + (i >> 5) * 11 + 5) & 255);
+}
+
+const part_type_t PT_6116 = { "6116 SRAM",
+    "A7:M A6:M A5:M A4:M A3:M A2:M A1:M A0:M IO0:B IO1:B IO2:B GND:P IO3:B IO4:B IO5:B IO6:B IO7:B "
+    "/CE:M A10:M /OE:M /WE:M A9:M A8:M VCC:P", s6116_eval, s6116_commit, s6116_reset, sizeof(sram8_state_t), TECH_NMOS };
+
 /* The PET's display RAM: the same 2114, but with an access time. The video
  * logic is built on it. A character period is 32 steps; the CRTC puts out the
  * address of character k about 5 steps (150 ns) after CLK1 falls, which is
@@ -1084,6 +1129,8 @@ int part_memory(const part_t *p, int *data_bits, bool *dram) {
     else if (p->eval == rom2332_eval) lines = 12;
     else if (p->eval == hn613128_eval || p->eval == upd23128_eval || p->eval == rom27128_eval) lines = 14;
     else if (p->eval == sram_eval) { lines = 10; bits = 4; }
+    else if (p->eval == rom2332l_eval) lines = 12;
+    else if (p->eval == s6116_eval) lines = 11;
     else if (part_is_dram64(p)) { lines = 8; bits = 1; d = true; }
     else if (p->commit == dram4116_commit) { lines = 7; bits = 1; d = true; }
     else if (p->commit == d41464_commit) { lines = 8; bits = 4; d = true; }

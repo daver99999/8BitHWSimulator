@@ -9,6 +9,7 @@ Usage:
     python3 tools/kicad2c.py Issue1.kicad_pcb zx48i1 > src/zx48i1_board_data.c
     python3 tools/kicad2c.py Issue4B.kicad_pcb zx48i4b > src/zx48i4b_board_data.c
     python3 tools/kicad2c.py Issue6A.kicad_pcb zx48i6a > src/zx48i6a_board_data.c
+    python3 tools/kicad2c.py Commodore-Vic-20.kicad_pcb vic20b > src/vic20b_board_data.c
 
 The second argument names the board: the tables become the board_data_t
 bd_<name>. Sources (see BOARDS below):
@@ -82,6 +83,8 @@ BOARDS = {
             '(https://github.com/bwack/C64-250407-Replica-KiCad, CERN OHL v1.2).'),
     'c64c': ('C64 ASSY 250469 (Rev. 4) geometry and netlist, from bwack\'s KiCad replica',
              '(https://github.com/bwack/C64C-250469-KiCAD-Replica, CERN OHL v1.2).'),
+    'vic20b': ('VIC-20 ASSY 250403 (cost reduced, schematic 251027) geometry and netlist, from',
+               'jimbro1000\'s KiCad project (github.com/jimbro1000/Commodore-Vic-20), a rough layout.'),
     'zx48': ('ZX Spectrum 48K Issue 3B geometry and netlist, from liveboxandy\'s KiCad',
              'files (github.com/liveboxandy/ZX-Spectrum-48K-Issue-3B---Based-on-Gerbers-\n'
              ' * by-PABB-on-PCBWay, CC0 1.0), redrawn from PABB\'s gerbers of the board.'),
@@ -252,7 +255,40 @@ def fixup_c64c(comps, board):
     return [c for c in comps if c[0] and c[3] and not c[0].startswith('HOLE')]
 
 
-FIXUPS = {'c64c': fixup_c64c, 'zx48i2': fixup_early, 'zx48i1': fixup_early, 'zx48i4b': fixup_zx48i4b, 'zx48i6a': fixup_zx48i6a}
+# The KiCad project of the 250403 labels two nets alike: the CPU address line CA11 and BLK4 (the $8000
+# block select) are both called BLK4. CA11 is on the 6502 (pin 20), the I/O decoder UC6 (pin 2), the
+# address buffer UE8 (pin 13), the ROMs UE11/UE12 (pin 18) and the expansion port (pin P); BLK4 only
+# on the block decoder UC5 (pin 11) and UE8 (pin 15), where it becomes VA13.
+VIC20B_CA11 = [('UE10', '20'), ('UC6', '2'), ('UE8', '13'), ('UE11', '18'), ('UE12', '18'), ('P6', 'P')]
+# Readable names for nets KiCad named after a pad.
+VIC20B_NETS = {
+    'Net-(UB7-PФ1)': 'VIC_PHI1', 'Net-(UD8-CE)': 'PHI1', 'Net-(UE10-Ø0(IN))': 'CPU_PHI0',
+    'Net-(UE10-Ø1(OUT))': 'CPU_PHI1', 'Net-(UE10-Ø2(OUT))': 'CPU_PHI2',
+    'Net-(UB7-Ф1IN)': 'DOT_A', 'Net-(UB7-Ф2IN)': 'DOT_B', 'Net-(UF8-CE)': 'DATA_EN',
+    'Net-(UC4-E1)': 'RAM_G2A', 'Net-(UB7-COMP-C)': 'CHROMA', 'Net-(UB7-SYCLU)': 'LUMA',
+    'Net-(UB7-COMP-S)': 'SOUND', 'Net-(UE1-CS)': 'COLOR_CS', 'Net-(UC6-O5)': 'COLOR_N',
+}
+FIXUP_NETS = {}
+
+
+def fixup_vic20b(comps, board):
+    comps = fixup_c64c(comps, board)
+    ca11 = max(FIXUP_NETS) + 1
+    FIXUP_NETS[ca11] = 'CA11'
+    want = set(VIC20B_CA11)
+    # The KiCad project also has both 6522s selected by CA4: the keyboard VIA UAB1 ($9120) is on CA5.
+    ca5 = [i for i, nm in FIXUP_NETS.items() if nm == 'CA5'][0]
+    out = []
+    for ref, value, fpname, pads in comps:
+        pads = [(n, x, y, w, h, ca11 if (ref, n) in want else ca5 if (ref, n) == ('UAB1', '24') else net)
+                for n, x, y, w, h, net in pads]
+        out.append((ref, value, fpname, pads))
+    for idx, name in list(FIXUP_NETS.items()):
+        FIXUP_NETS[idx] = VIC20B_NETS.get(name, name)
+    return out
+
+
+FIXUPS = {'c64c': fixup_c64c, 'vic20b': fixup_vic20b, 'zx48i2': fixup_early, 'zx48i1': fixup_early, 'zx48i4b': fixup_zx48i4b, 'zx48i6a': fixup_zx48i6a}
 
 
 # Active low signals on the Spectrum board are named with underscores:
@@ -370,8 +406,10 @@ def main():
     for ref, value, fpname, pads in EXTRAS.get(board, []):
         comps.append((ref, value, fpname,
                       [(name, x, y, 1.4, 1.4, named_net(net)) for name, x, y, net in pads]))
+    FIXUP_NETS.update(nets)
     if board in FIXUPS:
         comps = FIXUPS[board](comps, board)
+    nets = FIXUP_NETS
 
     # Renumber nets densely, dropping the "no net" entry.
     used = sorted({p[5] for c in comps for p in c[3] if p[5] != 0})

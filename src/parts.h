@@ -51,10 +51,20 @@ extern const part_type_t PT_ZX_LS93, PT_ZX_LS165, PT_ZX_LS365, PT_ZX_ROM, PT_ZX_
 extern const part_type_t PT_74LS74R, PT_74S74, PT_74177, PT_74LS164, PT_74166;
 extern const part_type_t PT_2316, PT_XTAL16, PT_LM555, PT_2114_PET;
 /* pet_chips.c: the PET's 6502, 6520 (x2), 6522 and 6545 around the cores in chips/ */
-extern const part_type_t PT_PET6502, PT_PET6520, PT_PET6522, PT_PET6545;
+extern const part_type_t PT_PET6502, PT_PET6520, PT_PET6522, PT_VIC6522, PT_PET6545;
 uint32_t pet_cpu_cycles_of(const part_t *p);
 void pet_cpu_regs_of(const part_t *p, char *buf, int len);
 uint8_t pet_crtc_reg_of(const part_t *p, int r);
+
+/* The VIC-20 (vic20_chips.c, parts.c): the 6560 video chip, 74LS245, 74LS133, the
+ * 14.31818 MHz crystal, the character ROM and the 6116 RAM of the 250403. */
+extern const part_type_t PT_6560, PT_74LS245, PT_74LS133, PT_XTAL14, PT_2332L, PT_6116;
+/* The raster picture the 6560 draws (VIC_W x VIC_H pixels) goes to SCREEN. */
+#define VIC_W 224
+#define VIC_H 232
+void vic_set_screen(part_t *p, uint32_t *screen);
+uint8_t vic_reg_of(const part_t *p, int r);
+uint32_t vic_frame_of(const part_t *p);
 
 /* A 64K x 1 DRAM, whole or half good (a 4164, 4532, 3732). */
 bool part_is_dram64(const part_t *p);

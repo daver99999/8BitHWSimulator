@@ -50,6 +50,8 @@
 #include "pet_parts.c"
 #include "pet_chips.c"
 #include "pet.c"
+#include "vic20_chips.c"
+#include "vic20.c"
 #include "scld.c"
 #include "ts2068.c"
 #include "ula81.c"

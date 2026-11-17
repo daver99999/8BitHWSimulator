@@ -294,6 +294,24 @@ const part_type_t PT_PET6522 = { "6522",
     "RS3:m RS2:m RS1:m RS0:m CA2:B CA1:m",
     via_eval, via_commit, via_reset, sizeof(pet_via_t), TECH_NMOS };
 
+/* The 6522 of the VIC-20 board: the port pins that are inputs are pulled up by the chip (the keyboard
+ * rows are read through them with nothing else on the line). */
+static void via_eval_pullup(sim_t *s, part_t *p) {
+    via_eval(s, p);
+    const m6522_t *m = &((pet_via_t *)p->state)->core;
+    uint8_t oea = m6522_pa_oe(m), oeb = m6522_pb_oe(m);
+    for (int i = 0; i < 8; i++) {
+        if (!((oea >> i) & 1)) pin_out(s, p, 2 + i, DRV_PULLUP);
+        if (!((oeb >> i) & 1)) pin_out(s, p, 10 + i, DRV_PULLUP);
+    }
+}
+
+const part_type_t PT_VIC6522 = { "6522",
+    "VSS:P PA0:B PA1:B PA2:B PA3:B PA4:B PA5:B PA6:B PA7:B PB0:B PB1:B PB2:B PB3:B PB4:B PB5:B PB6:B PB7:B "
+    "CB1:B CB2:B VCC:P /IRQ:O R/W:m /CS2:m CS1:m PHI2:M D7:B D6:B D5:B D4:B D3:B D2:B D1:B D0:B /RES:m "
+    "RS3:m RS2:m RS1:m RS0:m CA2:B CA1:m",
+    via_eval_pullup, via_commit, via_reset, sizeof(pet_via_t), TECH_NMOS };
+
 /* ------------------------------------------------------------------------ */
 /* 6545 CRT controller (UB13)                                                */
 /* ------------------------------------------------------------------------ */
