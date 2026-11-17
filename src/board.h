@@ -108,6 +108,10 @@ typedef struct machine {
     int (*host_key)(int keycode);
     int (*host_char)(int c);
     void (*monitor)(board_t *b, uint32_t *out);
+    /* A monitor with more than one input (the C128's composite and RGBI): the label of the button that
+     * switches it, which shows the input in use, and the switch. Optional. */
+    const char *(*monitor_label)(board_t *b);
+    void (*monitor_toggle)(board_t *b);
     /* Files: the title of the browser, what a file is for this machine
      * (NULL if it isn't one it takes), with a line about it, and whether
      * it can't be used (bad). */

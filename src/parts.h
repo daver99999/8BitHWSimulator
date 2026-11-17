@@ -63,6 +63,9 @@ extern const part_type_t PT_7360, PT_7501, PT_6529B, PT_7700, PT_74LS175, PT_74L
 extern const part_type_t PT_74LS74_128, PT_7407, PT_C128ROM, PT_C128CHR, PT_8502, PT_Z80A, PT_6526_128, PT_6581_128, PT_8563, PT_8564;
 void c128_rom_set(part_t *p, const uint8_t *data, unsigned size);
 void c128_vic_set_screen(part_t *p, uint32_t *fb, int w, int h);
+void c128_vdc_render(const sim_t *s, const part_t *p, uint32_t *out, int w, int h);
+uint8_t c128_vdc_peek(const part_t *p, uint16_t addr);
+uint8_t c128_vdc_reg_of(const part_t *p, int r);
 bool c128_vic_fast(const part_t *p);
 uint8_t c128_vic_reg_of(const part_t *p, int r);
 uint32_t c128_cpu_cycles_of(const part_t *p);

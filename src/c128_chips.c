@@ -654,7 +654,7 @@ const part_type_t PT_6581_128 = { "6581 SID",
     sid128_eval, sid128_commit, sid128_reset, sizeof(sid128_t), TECH_NMOS };
 
 /* ------------------------------------------------------------------------ */
-/* 8563 VDC (U22): registers and 16K video RAM, no picture in this release                                */
+/* 8563 VDC (U22): the registers and the video RAM; c128_vdc_render() draws its RGBI picture from them  */
 /* ------------------------------------------------------------------------ */
 static const int vdc_d[8] = { 18, 17, 16, 15, 14, 13, 11, 10 };
 typedef struct {
@@ -713,12 +713,72 @@ static void vdc_commit(sim_t *s, part_t *p) {
     if (pin_in(s, p, 7)) return;                         /* /CS */
     bool a0 = pin_in(s, p, 8) != 0;                      /* /RS: the register select (A0) */
     if (pin_in(s, p, 9)) {                               /* read */
-        v->dout = a0 ? vdc_read(v) : (uint8_t)(0x80 | ((v->frame++ & 0x100) ? 0x20 : 0));
+        v->dout = a0 ? vdc_read(v) : (uint8_t)(0x80 | ((s->cycle % (63 * 312) >= 63 * 262) ? 0x20 : 0));   /* ready, vertical blank */
         v->dout_en = 1;
         sim_mark_dirty(s, (int)(p - s->parts));
     } else {
         uint8_t d = (uint8_t)part_read_bus(s, p, vdc_d, 8);
         if (a0) vdc_write(v, d); else v->idx = d & 0x3F;
+    }
+}
+
+/* The picture of the VDC as a monitor on its RGBI output shows it: drawn from the registers and the video RAM when
+ * asked (a frame is 640 x 200 at most, every line twice, in a W x H picture with the border around it).
+ * Not done: the smooth scrolling (R24, R25), the interlace modes and the light pen. */
+static const uint8_t vdc_rgbi[16][3] = {
+    { 0, 0, 0 }, { 85, 85, 85 }, { 0, 0, 170 }, { 85, 85, 255 }, { 0, 170, 0 }, { 85, 255, 85 }, { 0, 170, 170 }, { 85, 255, 255 },
+    { 170, 0, 0 }, { 255, 85, 85 }, { 170, 0, 170 }, { 255, 85, 255 }, { 170, 85, 0 }, { 255, 255, 85 }, { 170, 170, 170 }, { 255, 255, 255 } };
+static uint32_t vdc_rgb(int c) { return 0xFF000000u | (uint32_t)vdc_rgbi[c & 15][2] << 16 | (uint32_t)vdc_rgbi[c & 15][1] << 8 | vdc_rgbi[c & 15][0]; }
+
+void c128_vdc_render(const sim_t *s, const part_t *p, uint32_t *out, int W, int H) {
+    const vdc_t *v = p->state;
+    const uint8_t *r = v->reg;
+    uint32_t border = vdc_rgb(r[26] & 15);
+    for (int i = 0; i < W * H; i++) out[i] = border;
+    int cols = r[1], rows = r[6], pitch = (r[22] >> 4) + 1, cw = r[22] & 15, lines = (r[9] & 31) + 1, shown = r[23] & 31;
+    if (!cols || !rows || p->dead) return;
+    if (cw < 1) cw = 1;
+    if (cw > pitch) cw = pitch;
+    bool dbl = (r[25] & 0x10) != 0, bitmap = (r[25] & 0x80) != 0, attrs = (r[25] & 0x40) != 0, rev = (r[24] & 0x40) != 0;
+    int aw = cols * pitch * (dbl ? 2 : 1), ah = rows * lines;
+    if (aw > W) aw = W;
+    if (ah > H / 2) ah = H / 2;
+    int x0 = (W - aw) / 2, y0 = (H - 2 * ah) / 2;
+    uint16_t base = (uint16_t)(r[12] << 8 | r[13]), abase = (uint16_t)(r[20] << 8 | r[21]), cur = (uint16_t)(r[14] << 8 | r[15]);
+    uint16_t font = (uint16_t)((r[28] & 0xE0) << 8);
+    int inc = r[27], cmode = (r[10] >> 5) & 3, cs = r[10] & 31, ce = r[11] & 31;
+    uint64_t frame = s->cycle / (63 * 312);
+    bool cur_on = cmode == 0 || (cmode == 2 && (frame & 8)) || (cmode == 3 && (frame & 16));
+    bool blink = (frame & 16) != 0;
+    int bg0 = r[26] & 15, fg0 = r[26] >> 4;
+    for (int y = 0; y < ah; y++) {
+        int row = y / lines, l = y % lines;
+        uint32_t *dst = out + (y0 + 2 * y) * W + x0;
+        for (int c = 0; c < cols; c++) {
+            uint8_t bits;
+            int fg = fg0, bg = bg0;
+            if (bitmap) {
+                bits = v->ram[(uint16_t)(base + y * cols + row * inc + c)];
+            } else {
+                uint16_t cell = (uint16_t)(row * (cols + inc) + c);
+                uint8_t ch = v->ram[(uint16_t)(base + cell)], at = 0;
+                if (attrs) { at = v->ram[(uint16_t)(abase + cell)]; fg = at & 15; }
+                uint16_t def = (uint16_t)(font + ((at & 0x80) ? 0x1000 : 0) + ch * 16 + l);
+                bits = l < shown ? v->ram[def] : 0;
+                if (attrs && (at & 0x20) && l == (r[29] & 31)) bits = 0xFF;
+                bool inv = (attrs && (at & 0x40)) != rev;
+                if (attrs && (at & 0x10) && blink) bits = 0;
+                if (cur_on && (uint16_t)(base + cell) == cur && l >= cs && l <= ce) inv = !inv;
+                if (inv) { int t = fg; fg = bg; bg = t; }
+            }
+            if (bitmap && rev) { int t = fg; fg = bg; bg = t; }
+            for (int x = 0; x < pitch; x++) {
+                uint32_t col = vdc_rgb((x < cw && x < 8 && (bits & (0x80 >> x))) ? fg : bg);
+                if (dbl) { int px = (c * pitch + x) * 2; if (px + 1 < aw) dst[px] = dst[px + 1] = col; }
+                else { int px = c * pitch + x; if (px < aw) dst[px] = col; }
+            }
+        }
+        memcpy(dst + W, dst, (size_t)aw * sizeof(uint32_t));
     }
 }
 static void vdc_reset(sim_t *s, part_t *p) { (void)s; memset(p->state, 0, sizeof(vdc_t)); }
@@ -918,3 +978,6 @@ static void chr128_eval(sim_t *s, part_t *p) {
 const part_type_t PT_C128CHR = { "390059-01 ROM",
     "A7:M A6:M A5:M A4:M A3:M A2:M A1:M A0:M D0:O D1:O D2:O GND:P D3:O D4:O D5:O D6:O D7:O /CS:M A12:M A10:M A11:M "
     "A9:M A8:M VCC:P", chr128_eval, 0, 0, sizeof(rom128_t), TECH_NMOS };
+
+uint8_t c128_vdc_peek(const part_t *p, uint16_t addr) { return ((const vdc_t *)p->state)->ram[addr]; }
+uint8_t c128_vdc_reg_of(const part_t *p, int r) { return ((const vdc_t *)p->state)->reg[r % 38]; }

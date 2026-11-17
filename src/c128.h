@@ -9,15 +9,18 @@
 #define C128_FREQ            985248     /* the system clock: sim.cycle counts these (the VIC core is the PAL 6569) */
 #define C128_STEPS_PER_CYCLE 16         /* half periods of the dot clock */
 #define C128_CYCLES_PER_FRAME (63 * 312)
-#define C128_SCREEN_W        392
-#define C128_SCREEN_H        272
+#define C128_VIC_W           392        /* the picture of the 8564 */
+#define C128_VIC_H           272
+#define C128_SCREEN_W        784        /* the monitor's: the 8564's picture twice as big, or the VDC's 640 x 200 lines doubled */
+#define C128_SCREEN_H        544
 
 typedef struct c128 {
     board_t board;                      /* first: a c128_t is a board_t */
     int p_cpu, p_z80, p_vic, p_mmu, p_cia[2], p_sid, p_vdc, p_osc, p_y2, p_cn5;
     uint8_t rom32[32768], basic_lo[16384], basic_hi[16384], chr[8192];
     unsigned rom_mask;                  /* 1 system ROM, 2 BASIC lo, 4 BASIC hi, 8 characters */
-    uint32_t raster[C128_SCREEN_W * C128_SCREEN_H];
+    uint32_t raster[C128_VIC_W * C128_VIC_H];
+    uint8_t mon80;                      /* the monitor is on the RGBI output (the VDC, 80 columns), not the composite one */
     kbd_t kbd;
     uint16_t key_matrix[12];            /* per line: the PB bits closed; lines 0-7 are PA bits, 8-10 the K lines, 11 RESTORE */
     uint8_t caps, key4080;              /* the two latching keys */
@@ -29,5 +32,6 @@ typedef struct c128 {
 static inline c128_t *C128(board_t *b) { return (c128_t *)b; }
 extern const machine_t machine_c128;
 static inline bool board_is_c128(const board_t *b) { return b->m == &machine_c128; }
+void c128_set_monitor80(board_t *b, bool on);
 const char *c128_key_legend(int line, int col);
 #endif

@@ -2591,6 +2591,11 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
         if (nk_button_label(ctx, "Keyboard")) U.kbd_open = !U.kbd_open;
         nk_layout_row_end(ctx);
         if ((down || U.reset_hold) != b->reset_button) board_set_reset_button(b, down || U.reset_hold);
+        if (M()->monitor_label) {
+            nk_layout_row_dynamic(ctx, 26, 1);
+            if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, "Which of the machine's two video outputs the monitor is plugged into. For the 80 column screen hold the 40/80 DISPLAY key down at power on or reset, and switch to RGBI");
+            if (nk_button_label(ctx, M()->monitor_label(b))) M()->monitor_toggle(b);
+        }
         /* The save state slot: one, in memory. */
         nk_layout_row_begin(ctx, NK_STATIC, 26, 3);
         nk_layout_row_push(ctx, 140);

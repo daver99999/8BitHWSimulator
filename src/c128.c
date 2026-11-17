@@ -6,7 +6,7 @@
  * system ROM (U32), sets up the MMU and hands over to the 8502 (U6) through the bus request logic of U8, U31,
  * U37, U56, U57, U60 and U61, and the latches U12 and U13 that carry the Z80's data. Nothing in this file drives
  * a bus cycle: the chips watch their own clocks. This file has the keyboard, the joysticks, the ROMs and the
- * power-on reset. Not in this release: C64 mode, the 80 column picture of the 8563 and CP/M. */
+ * power-on reset. Not in this release: C64 mode and CP/M. */
 #include "c128.h"
 #include "sokol/sokol_app.h"   /* key codes */
 #include <stdio.h>
@@ -25,7 +25,7 @@ static const part_def_t c128_part_defs[] = {
     { "U7", &PT_8722, "8722 MMU", ROLE_CHIP, "8722 MMU\n$D500-$D50B\n$FF00-$FF04", "8722 MMU: banks the RAM and ROM, relocates pages 0 and 1, makes the Z80's addresses, holds the mode" },
     { "U11", &PT_8721, "8721 PLA", ROLE_PLA, "8721 PLA\nmemory map", "8721 PLA: decodes the chip selects from the processors' address and the MMU's bank lines" },
     { "U21", &PT_8564, "VIC-IIe", ROLE_CHIP, "8564 VIC-IIe\n$D000-$D3FF", "8564 VIC-IIe video chip, $D000-$D02F: 40 column picture, the DRAM strobes and the clocks of the 8502 and the Z80" },
-    { "U22", &PT_8563, "VDC", ROLE_CHIP, "8563 VDC\n$D600-$D601", "8563 VDC: the 80 column video chip (registers and RAM only in this release, no picture)" },
+    { "U22", &PT_8563, "VDC", ROLE_CHIP, "8563 VDC\n$D600-$D601", "8563 VDC: the 80 column video chip (its picture is on the RGBI monitor input)" },
     { "U5", &PT_6581_128, "SID", ROLE_CHIP, "6581\n$D400-$D41C", "6581 SID sound chip, $D400-$D7FF" },
     { "U1", &PT_6526_128, "CIA1", ROLE_CHIP, "6526\n$DC00-$DCFF", "6526 CIA #1, $DC00-$DCFF: keyboard, joysticks, IRQ" },
     { "U4", &PT_6526_128, "CIA2", ROLE_CHIP, "6526\n$DD00-$DDFF", "6526 CIA #2, $DD00-$DDFF: serial bus, user port, VIC bank bits, NMI" },
@@ -370,7 +370,7 @@ static void c128_create(board_t *b) {
     z->rom_mask = 0;
     c128_find_roms(b);
     c128_attach_roms(b);
-    if (z->p_vic >= 0) c128_vic_set_screen(&s->parts[z->p_vic], z->raster, C128_SCREEN_W, C128_SCREEN_H);
+    if (z->p_vic >= 0) c128_vic_set_screen(&s->parts[z->p_vic], z->raster, C128_VIC_W, C128_VIC_H);
     static const int col_pin[8] = { 13, 19, 18, 17, 16, 15, 14, 20 }, row_pin[8] = { 12, 11, 10, 5, 8, 7, 6, 9 };
     for (int i = 0; i < 8; i++) {
         z->pin_col[i] = c128_pin_of(b, "CN5", col_pin[i]);
@@ -480,7 +480,19 @@ static int c128_ram_cell(board_t *b, int part, uint16_t addr) {
     return p->reset == PT_4164.reset ? c128_cell(addr) : -1;
 }
 
-static void c128_monitor(board_t *b, uint32_t *out) { memcpy(out, C128(b)->raster, sizeof(C128(b)->raster)); }
+static void c128_monitor(board_t *b, uint32_t *out) {
+    c128_t *z = C128(b);
+    if (z->mon80 && z->p_vdc >= 0) { c128_vdc_render(&b->sim, &b->sim.parts[z->p_vdc], out, C128_SCREEN_W, C128_SCREEN_H); return; }
+    for (int y = 0; y < C128_VIC_H; y++)
+        for (int x = 0; x < C128_VIC_W; x++) {
+            uint32_t c = z->raster[y * C128_VIC_W + x];
+            uint32_t *d = out + 2 * y * C128_SCREEN_W + 2 * x;
+            d[0] = d[1] = d[C128_SCREEN_W] = d[C128_SCREEN_W + 1] = c;
+        }
+}
+void c128_set_monitor80(board_t *b, bool on) { C128(b)->mon80 = on; }
+static const char *c128_monitor_label(board_t *b) { return C128(b)->mon80 ? "Monitor: RGBI (80 col, VDC)" : "Monitor: composite (40 col, VIC)"; }
+static void c128_monitor_toggle(board_t *b) { C128(b)->mon80 ^= 1; }
 
 /* ------------------------------------------------------------------------ */
 /* Files                                                                     */
@@ -529,6 +541,24 @@ static void c128_cpu_regs(board_t *b, char *buf, int len) {
 }
 
 static void c128_print_text(board_t *b) {
+    c128_t *z = C128(b);
+    if (z->mon80 && z->p_vdc >= 0) {                    /* the 80 column screen: the VDC's own RAM */
+        const part_t *v = &b->sim.parts[z->p_vdc];
+        uint16_t base = (uint16_t)(c128_vdc_reg_of(v, 12) << 8 | c128_vdc_reg_of(v, 13));
+        int inc = c128_vdc_reg_of(v, 27);
+        for (int y = 0; y < 25; y++) {
+            char line[88];
+            for (int x = 0; x < 80; x++) {
+                int code = c128_vdc_peek(v, (uint16_t)(base + y * (80 + inc) + x)) & 0x7F;
+                line[x] = code == 0 ? '@' : code <= 26 ? (char)('A' + code - 1) : code < 64 ? "[\\]^_ !\"#$%&'()*+,-./0123456789:;<=>?"[code - 27] : '#';
+            }
+            line[80] = 0;
+            int end = 80;
+            while (end > 0 && line[end - 1] == ' ') line[--end] = 0;
+            printf("|%s\n", line);
+        }
+        return;
+    }
     /* The 40 column screen: the video matrix at $0400 of bank 0 (screen codes to ASCII). */
     for (int y = 0; y < 25; y++) {
         char line[48];
@@ -576,6 +606,8 @@ const machine_t machine_c128 = {
     .host_key = c128_host_key,
     .host_char = c128_host_char,
     .monitor = c128_monitor,
+    .monitor_label = c128_monitor_label,
+    .monitor_toggle = c128_monitor_toggle,
     .files_title = "Open a ROM image or save state",
     .file_kind = c128_file_kind,
     .load = c128_load,
