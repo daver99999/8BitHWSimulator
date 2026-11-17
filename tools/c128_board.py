@@ -453,11 +453,113 @@ def sheet_video():
         decouple(r)
 
 
+def sheet_vic():
+    """Sheet 3: the 8564 VIC-IIe, its address multiplexer U26 and the VDC's data pins (U22, U23, U25)."""
+    v = 'U21'
+    for i, pn in enumerate((7, 6, 5, 4, 3, 2, 1, 47)):
+        net('SD%d' % i, '%s.%d' % (v, pn))
+    for i, pn in enumerate((46, 45, 44, 43)):
+        net('D%d_VIC' % (8 + i), '%s.%d' % (v, pn))
+    net('R/W', v + '.14')
+    net('VA7', v + '.39')
+    net('VA6', v + '.38')
+    for ta, pn in (('TA11', 31), ('TA10', 42), ('TA9', 41), ('TA8', 40)):
+        net(ta, '%s.%d' % (v, pn))
+    for i, pn in enumerate((32, 33, 34, 35, 36, 37)):
+        net('VMA%d' % i, '%s.%d' % (v, pn))
+    net('MUX', v + '.21')
+    net('AEC', v + '.12')
+    net('CAS', v + '.20')
+    net('RAS', v + '.19')
+    net('/LP', v + '.9')
+    net('VIC', v + '.13')
+    net('IOACC', v + '.22')
+    net('/DMARQST', v + '.11')
+    net('BA', v + '.10')
+    net('2MHZ', v + '.23')
+    net('1MHZ', v + '.18')
+    net('Z80PHI_VIC', v + '.25')
+    net('K0', v + '.26')
+    net('K1', v + '.27')
+    net('K2', v + '.28')
+    net('COLOR_CLK', v + '.29')
+    net('DOT_CLK', v + '.30')
+    net('LUM', v + '.17')
+    net('CHROMA', v + '.16')
+    net('/IRQ', v + '.8')
+    power(v, 48, 24)
+    # U26 (74LS257): VA14/VA15 and VA6/VA7 onto VMA6/VMA7 (MUX selects); enabled while AEC is low
+    for pa, pb, py, a_, b_, y_ in ((2, 3, 4, 'VA14', 'VA6', 'VMA6'), (5, 6, 7, 'VA15', 'VA7', 'VMA7')):
+        net(a_, 'U26.%d' % pa)
+        net(b_, 'U26.%d' % pb)
+        net(y_, 'U26.%d' % py)
+    net('MUX', 'U26.1')
+    net('AEC', 'U26.15')
+    net('U26_Y3', 'U26.9')
+    net('U26_Y2', 'U26.12')
+    for pn in (11, 10, 14, 13):
+        net('U26_UNUSED', 'U26.%d' % pn)
+    power('U26', 16, 8)
+    # U29F: inverted MUX (680 ohm pull-up R41). Where its output goes is not resolved yet.
+    net('MUX', 'U29.13')
+    net('/MUX', 'U29.12')
+    pullup('R41', '680', '/MUX')
+    # the VDC (U22) and its two 4416 video RAMs: data pins as read; address/control lines still to do
+    for i, pn in enumerate((18, 17, 16, 15, 14, 13, 11, 10)):
+        net(D[i], 'U22.%d' % pn)
+    for i, pn in enumerate((34, 35, 36, 38, 39, 40, 41, 42)):
+        net('DD%d' % i, 'U22.%d' % pn)
+    net('2MHZ', 'U22.4')  # VDC clock pin; 16 MHz crystal circuit still to type
+    net('A0', 'U22.8')
+    net('CS8563', 'U22.7')
+    net('+5V', 'U22.37')
+    for ref, pins in (('U25', {17: 'DD7', 15: 'DD6', 3: 'DD5', 2: 'DD4'}),):
+        for pn, nm in pins.items():
+            net(nm, '%s.%d' % (ref, pn))
+    for pn, nm in {10: 'DA7', 6: 'DA6', 7: 'DA5', 8: 'DA4', 11: 'DA3', 12: 'DA2', 13: 'DA1', 14: 'DA0'}.items():
+        net(nm, 'U25.%d' % pn)
+    net('VDC_CAS', 'U25.16')
+    net('VDC_RAS', 'U25.5')
+    net('VDC_RW', 'U25.4')
+    net(VCC, 'U25.9')
+    net(GND, 'U25.18')
+    net(GND, 'U25.1')
+    decouple('C25'); decouple('C26')
+
+
+def sheet_clock():
+    """8701 clock generator (U28), dot clock buffer, the 1 MHz line to D_1MHZ, VIC DMA request pull-up."""
+    net('COLOR_CLK', 'U28.8')
+    net('DOT_CLK', 'U28.6', 'U29.1')
+    net('DOT_CLK_B', 'U29.2', 'FB18.1')
+    net('DOT_CLOCK', 'FB18.2')
+    part('FB18', 'ferrite', 'R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal', 2)
+    pullup('R101', '1K', 'DOT_CLK_B')
+    net('XTAL1', 'U28.14', 'Y2.1')
+    net('XTAL2', 'U28.13', 'Y2.2', 'C20.1')
+    part('Y2', '14.31818MHz NTSC', 'Crystal_HC49-U_Vertical', 2)
+    part('C20', '4-40pF', 'C_Trimmer', 2)
+    net(GND, 'C20.2')
+    net('NTSC_PAL', 'U28.7', 'J1.1')
+    net(GND, 'J1.2')
+    part('J1', 'open=NTSC closed=PAL', 'Jumper_2', 2)
+    net('+5V', 'U28.15', 'U28.12')
+    net(GND, 'U28.2', 'U28.9', 'U28.4')
+    decouple('C62'); decouple('C118'); decouple('C28')
+    net('1MHZ', 'R102.1')
+    part('R102', '68', 'R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal', 2)
+    net('D_1MHZ', 'R102.2')
+    pullup('R48', '10K', '/DMARQST')
+    net('Z80PHI', 'Z80PHI_VIC')
+
+
 def build():
     ics()
     sheet_cpu()
     sheet_mem()
     sheet_video()
+    sheet_vic()
+    sheet_clock()
 
 
 if __name__ == '__main__':
