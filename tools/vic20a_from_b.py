@@ -7,7 +7,8 @@ usage: python3 tools/vic20a_from_b.py src/vic20b_board_data.c > src/vic20a_board
 The circuit of the early board is the 250403's with the memory of schematic 324001 sheet c: eleven 2114s
 (UE1 the color RAM; the pairs UD2/UE2 at $0000, UD3/UE3 ... UD6/UE6 at $1000, $1400, $1800 and $1C00; the
 UD chips take BD0-BD3, the UE chips BD4-BD7) selected by the outputs 0 and 4-7 of the 74LS138 UC4, instead
-of the two 6116s and the 74LS08 U13. Everything else is taken from the 250403 as it is.
+of the two 6116s and the 74LS08 U13, and the glue logic of sheets a and c (OVERRIDES below). Everything else is
+taken from the 250403 as it is (the passives keep its references and values).
 
 The positions: the chips and the connectors are put where the photo of the 25HB board has them (about 6 pixels
 to the millimeter), with the pins numbered as on a DIP. The passives are NOT placed from the photo: each one
@@ -47,7 +48,28 @@ FIXED = {
     'CN1': (29.3, 15.0), 'Q4': (293.0, 83.0), 'C39': (239.0, 77.0), 'CR2': (350.0, 100.0), 'Y1': (205.0, 88.0),
 }
 OUTLINE = (0.0, 0.0, 408.0, 169.0)
-REMOVED = {'U13', 'U14', 'U15', 'C24', 'C46'}      # the 6116s, their AND gate and their decoupling
+REMOVED = {'U13', 'U14', 'U15', 'C24', 'C46', 'C50'}      # the 6116s, their AND gate and decoupling; C50 is the replica's
+# Where the 324001 (sheets a and c) wires the glue chips differently from the 250403: pin -> net.
+#  UB9 (7402): the crystal oscillator is the gates A and B (A: pins 2+3 in, 1 out; B: 5+6 in, 4 out); C and D are a
+#  cross-coupled latch (C: 9 and 8 in, 10 out; D: 11 and 12 in, 13 out) that makes the two phases for the 6560.
+#  UC3 (74LS02): 1 = NOR(CPU phase 0, phase 2) = SO1; 4 = NOR(not BLK0, SO1) = the RAM enable; 10 = NOR(R/W, CPU
+#  phase 1); 13 = NOR(its inversion, VIC phase 1). UC2 (74LS04): 1 > 2 COLOR, 3 > 4 SO2, 5 > 6, 9 > 8 color RAM
+#  select, 11 > 10, 13 > 12 the RAMs' R/W.
+OVERRIDES = {
+    'UB9': {'1': 'OSC_AOUT', '2': 'OSC_AIN', '3': 'OSC_AIN', '4': 'OSC_BOUT', '5': 'OSC_AOUT', '6': 'OSC_AOUT',
+            '8': 'Net-(FB4-Pad2)', '9': 'OSC_AOUT', '10': 'Net-(FB5-Pad2)', '11': 'Net-(FB5-Pad2)',
+            '12': 'OSC_BOUT', '13': 'Net-(FB4-Pad2)'},
+    'Y1': {'1': 'OSC_AIN'},
+    'R5': {'1': 'OSC_AIN', '2': 'OSC_AOUT'},
+    'R6': {'1': 'OSC_AOUT', '2': 'OSC_BOUT'},
+    'C48': {'2': 'OSC_BOUT'},
+    'UC3': {'1': 'Net-(FB12-Pad1)', '2': 'CPU_PHI0', '3': 'CPU_PHI2', '4': 'RAM_G2A', '5': 'Net-(UC2-Pad6)',
+            '6': 'SO1', '8': 'CRW', '9': 'CPU_PHI1', '10': 'Net-(UC3-Pad10)', '11': 'Net-(UC2-Pad10)',
+            '12': 'PHI1', '13': 'Net-(UC2-Pad13)'},
+    'UC2': {'1': 'COLOR_N', '2': 'COLOR', '3': 'SO1', '4': 'Net-(FB13-Pad2)', '5': 'BLK0', '6': 'Net-(UC2-Pad6)',
+            '8': 'COLOR_CS', '9': 'CENB', '10': 'Net-(UC2-Pad10)', '11': 'Net-(UC3-Pad10)',
+            '12': 'VRW', '13': 'Net-(UC2-Pad13)'},
+}
 RAM_PAIRS = {'UE3': 'O4', 'UD3': 'O4', 'UE4': 'O5', 'UD4': 'O5', 'UE5': 'O6', 'UD5': 'O6', 'UE6': 'O7', 'UD6': 'O7'}
 
 
@@ -124,6 +146,11 @@ def main():
                 p[5] = 'Net-(UC4-%s)' % out
         comps.append([ref, '2114', src[2], pads])
     by_ref = {c[0]: c for c in comps}
+
+    for ref, pins in OVERRIDES.items():
+        for p in by_ref[ref][3]:
+            if p[0] in pins:
+                p[5] = pins[p[0]]
 
     # Original centers (for "the nearest chip").
     orig = {c[0]: center(c[3]) for c in comps}
