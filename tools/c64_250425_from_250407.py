@@ -45,7 +45,7 @@ REF_RENAME = {"C70": "CT1"}
 PX0, PY0, PSX, PSY = 28.0, 60.0, 6.0303, 5.8666
 MOVES = {
     "U17": (1026, 690, 0),     # the PLA is below the SID here (the replica has it above)
-    "U18": (947, 335, 0),      # the SID
+    "U18": (1000, 335, 0),     # the SID: centred between the 6510 and the passives to its right
     "U19": (1481, 823, 1),     # the VIC lies on its side in the shielded corner, notch to the left
     "U31": (1580, 697, 1),     # the 8701
     "Y1": (1575, 597, 0),
