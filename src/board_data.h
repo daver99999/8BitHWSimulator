@@ -39,6 +39,7 @@ extern const board_data_t bd_ts1000;   /* ts1000_board_data.c (Issue 3, reconstr
 extern const board_data_t bd_ts1500;   /* ts1500_board_data.c (schematic, U5 pins inferred) */
 extern const board_data_t bd_zx80;     /* zx80_board_data.c (schematic) */
 extern const board_data_t bd_ts2068;   /* ts2068_board_data.c (335-850001 rev 03) */
+extern const board_data_t bd_vic20a;   /* vic20a_board_data.c (the early board, schematic 324001, photo 25HB) */
 extern const board_data_t bd_vic20b;   /* vic20b_board_data.c (ASSY 250403, from jimbro1000's KiCad project) */
 extern const board_data_t bd_pet8032;   /* pet8032_board_data.c (8032080-03, 80 columns) */
 

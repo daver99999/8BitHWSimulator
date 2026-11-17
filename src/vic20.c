@@ -63,6 +63,19 @@ static const part_def_t vic20b_part_defs[] = {
     GLUE("U13", &PT_74LS08, "74LS08", "74LS08: ANDs the RAM selects of the two 6116s"),
 };
 
+/* The early board: eleven 2114s (the color RAM UE1 is in the common parts) instead of the 6116s. */
+#define VIC20A_RAM(d, e, lo, hi) \
+    { d, &PT_2114, "RAM", ROLE_RAM, "2114\n" lo "-" hi "\nbits 0-3", "2114 static RAM, 1K x 4, bits 0-3 of " lo "-" hi }, \
+    { e, &PT_2114, "RAM", ROLE_RAM, "2114\n" lo "-" hi "\nbits 4-7", "2114 static RAM, 1K x 4, bits 4-7 of " lo "-" hi }
+static const part_def_t vic20a_part_defs[] = {
+    VIC20_COMMON_PARTS,
+    VIC20A_RAM("UD2", "UE2", "$0000", "$03FF"),
+    VIC20A_RAM("UD3", "UE3", "$1000", "$13FF"),
+    VIC20A_RAM("UD4", "UE4", "$1400", "$17FF"),
+    VIC20A_RAM("UD5", "UE5", "$1800", "$1BFF"),
+    VIC20A_RAM("UD6", "UE6", "$1C00", "$1FFF"),
+};
+
 /* The connectors: what each pin is for (reference, name, "PAD=FUNCTION"). */
 static const conn_def_t vic20_conn_defs[] = {
     { "P1", "USER PORT", "1=GND 2=+5V 3=/RES 4=JOY0 5=JOY1 6=JOY2 7=LITE_PEN 8=CASS_SWITCH 9=ATN_IN 10=9VAC 11=9VAC 12=GND "
@@ -255,11 +268,14 @@ static uint8_t *vic20_cells(board_t *b, const char *ref) {
     return i < 0 ? NULL : (uint8_t *)b->sim.parts[i].state;     /* both RAM states start with their cells */
 }
 
+/* The 2114 model keeps its bit 0 on pin 14 (I/O 4): the cells hold a nibble in the reverse order of the pins. */
+static uint8_t rev4(uint8_t v) { return (uint8_t)((v & 1) << 3 | (v & 2) << 1 | (v & 4) >> 1 | (v & 8) >> 3); }
+
 void vic20_ram_poke(board_t *b, uint16_t addr, uint8_t v) {
     vic20_t *z = VIC20(b);
     if (addr >= 0x9400 && addr < 0x9800) {
         uint8_t *c = vic20_cells(b, z->v->color);
-        if (c) c[addr & 0x3FF] = v & 15;
+        if (c) c[addr & 0x3FF] = rev4(v & 15);
         return;
     }
     for (int i = 0; i < z->v->nram; i++) {
@@ -268,8 +284,8 @@ void vic20_ram_poke(board_t *b, uint16_t addr, uint8_t v) {
         int off = addr - r->base;
         if (r->hi) {
             uint8_t *lo = vic20_cells(b, r->lo), *hi = vic20_cells(b, r->hi);
-            if (lo) lo[off] = v & 15;
-            if (hi) hi[off] = v >> 4;
+            if (lo) lo[off] = rev4(v & 15);
+            if (hi) hi[off] = rev4(v >> 4);
         } else {
             uint8_t *c = vic20_cells(b, r->lo);
             if (c) c[off] = v;
@@ -282,7 +298,7 @@ uint8_t vic20_ram_peek(board_t *b, uint16_t addr) {
     vic20_t *z = VIC20(b);
     if (addr >= 0x9400 && addr < 0x9800) {
         uint8_t *c = vic20_cells(b, z->v->color);
-        return c ? c[addr & 0x3FF] & 15 : 0;
+        return c ? rev4(c[addr & 0x3FF] & 15) : 0;
     }
     for (int i = 0; i < z->v->nram; i++) {
         const vic20_ram_t *r = &z->v->ram[i];
@@ -290,7 +306,7 @@ uint8_t vic20_ram_peek(board_t *b, uint16_t addr) {
         int off = addr - r->base;
         if (r->hi) {
             uint8_t *lo = vic20_cells(b, r->lo), *hi = vic20_cells(b, r->hi);
-            return (uint8_t)((lo ? lo[off] & 15 : 0) | (hi ? hi[off] << 4 : 0));
+            return (uint8_t)((lo ? rev4(lo[off] & 15) : 0) | (hi ? rev4(hi[off] & 15) << 4 : 0));
         }
         uint8_t *c = vic20_cells(b, r->lo);
         return c ? c[off] : 0;
@@ -582,4 +598,25 @@ const machine_t machine_vic20b = {
     .board_name = "VIC-20 ASSY 250403 (cost reduced)",
     .data = &bd_vic20b,
     .parts = vic20b_part_defs, .nparts = sizeof(vic20b_part_defs) / sizeof(vic20b_part_defs[0]),
+};
+
+/* RAM of the early board (324001): five pairs of 2114s, $0000-$03FF and $1000-$1FFF. */
+static const vic20_ram_t vic20a_ram[] = {
+    { "UD2", "UE2", 0x0000, 1024 },
+    { "UD3", "UE3", 0x1000, 1024 },
+    { "UD4", "UE4", 0x1400, 1024 },
+    { "UD5", "UE5", 0x1800, 1024 },
+    { "UD6", "UE6", 0x1C00, 1024 },
+};
+static const vic20_variant_t vic20a_variant = { vic20a_ram, 5, "UE1" };
+
+const machine_t machine_vic20a = {
+    VIC20_MACHINE,
+    .id = "vic20a",
+    .issue = "324001",
+    .variant = &vic20a_variant,
+    .name = "Commodore VIC-20",
+    .board_name = "VIC-20 early board (324001, MDK 25HB)",
+    .data = &bd_vic20a,
+    .parts = vic20a_part_defs, .nparts = sizeof(vic20a_part_defs) / sizeof(vic20a_part_defs[0]),
 };
