@@ -10,6 +10,7 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 ## Unreleased
 
+- **A Commodore tab.** The C64 and the PET are one tab, Commodore, with the machine (PET 4032, PET 8032, C64 250407, 250425, 250469) in the drop-down; the tabs are now Commodore, Spectrum and Timex.
 - **The .exe's icon with `make`.** `mingw32-make` now embeds the icon (src/icon.rc, src/c64-hw-sim.ico) as `build.bat` does; before, only `build.bat` did.
 - **Chip types on the chips.** On every machine the logic, buffer, clock and glue chips are now named by their type (74LS00, 74LS157,
   74LS244, 4066, 556, 8701, 7406...) instead of a function word (GLUE, MUX, BUF, NAND, SW, INV...); the function is in the lines under

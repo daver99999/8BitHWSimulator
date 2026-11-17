@@ -169,10 +169,10 @@ monitor and the scope screen look the same either way.
 ## Using it
 
 The window shows the board, the monitor, a control panel and an
-oscilloscope. The four buttons at the top of the control panel switch
-between the Commodore 64, the ZX Spectrum 48K, the Commodore PET and the Timex Sinclair family (TS2068, TS1000, TS1500, ZX80, picked in the drop-down): the
+oscilloscope. The three buttons at the top of the control panel switch
+between the Commodore family (the PET and the C64), the ZX Spectrum 48K and the Timex Sinclair family (TS2068, TS1000, TS1500, ZX80, picked in the drop-down): the
 machine that runs is switched off, the other one on. The drop-down under
-them picks the board (on the PET, the 4032 or the 8032).
+them picks the machine or board (on the Commodore tab: the PET 4032 or 8032, the C64's 250407, 250425 or 250469).
 
 The **Keyboard** button (next to Help) opens the machine's keyboard with the PC key that
 types each key: the Spectrum's and the TS2068's 40 keys with their BASIC keywords and
