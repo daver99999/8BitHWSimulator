@@ -74,6 +74,14 @@
 static uint8_t zx48_rom[16384];
 static bool zx48_rom_loaded, zx48_rom_searched;
 
+/* Whether the name has the text in it, in any case (strcasestr is not in every C library). */
+static bool name_has(const char *name, const char *key) {
+    size_t n = strlen(key);
+    for (; *name; name++)
+        if (!strncasecmp(name, key, n)) return true;
+    return false;
+}
+
 static void zx48_find_rom(void) {
     static const char *const dirs[] = { "roms/zx48", "roms", "." };
     if (zx48_rom_searched) return;
@@ -86,8 +94,8 @@ static void zx48_find_rom(void) {
         while ((e = readdir(dir)) && !zx48_rom_loaded) {
             size_t l = strlen(e->d_name);
             if (l < 5 || (strcasecmp(e->d_name + l - 4, ".bin") && strcasecmp(e->d_name + l - 4, ".rom"))) continue;
-            if (d > 0 && !strcasestr(e->d_name, "zx48") && !strcasestr(e->d_name, "48k") &&
-                !strcasestr(e->d_name, "spectrum")) continue;
+            if (d > 0 && !name_has(e->d_name, "zx48") && !name_has(e->d_name, "48k") &&
+                !name_has(e->d_name, "spectrum")) continue;
             char path[1024];
             snprintf(path, sizeof(path), "%s/%s", dirs[d], e->d_name);
             FILE *f = fopen(path, "rb");
