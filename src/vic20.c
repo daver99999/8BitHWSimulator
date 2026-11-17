@@ -123,12 +123,16 @@ bool vic20_set_rom(board_t *b, const char *ref, const uint8_t *data, size_t n) {
 }
 
 static const char *vic20_rom_ref(const char *path) {
-    static const struct { const char *key, *ref; } map[] = {
-        { "901486-01", "UE11" }, { "901486-04", "UE12" }, { "901486-06", "UE12" }, { "901486-07", "UE12" },
-        { "901460-03", "UD7" }, { "901460-02", "UD7" }, { "basic", "UE11" }, { "kernal", "UE12" }, { "characters", "UD7" },
+    static const struct { const char *key, *ref; bool own_folder; } map[] = {
+        { "901486-01", "UE11", false }, { "901486-04", "UE12", false }, { "901486-06", "UE12", false },
+        { "901486-07", "UE12", false }, { "901460-03", "UD7", false }, { "901460-02", "UD7", false },
+        { "basic", "UE11", true }, { "kernal", "UE12", true }, { "characters", "UD7", true },
     };
     const char *name = board_basename(path);
+    /* The generic names only count in a folder called vic20 (the C64 has a "basic" and a "kernal" too). */
+    bool own = strstr(path, "vic20/") || strstr(path, "vic20\\");
     for (size_t i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
+        if (map[i].own_folder && !own) continue;
         size_t n = strlen(map[i].key);
         for (const char *s = name; *s; s++)
             if (!strncasecmp(s, map[i].key, n)) return map[i].ref;

@@ -28,12 +28,83 @@
  * how it is modeled, and what is assumed). Its bus cycle is the same.
  * What differs between the boards is in c64_variant_t. */
 #include "c64.h"
-#include "c64-roms.h"
 #include "sokol/sokol_app.h"   /* key codes */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <dirent.h>
+
+/* The C64's ROM images are not part of the program: they are read from roms/c64 (or roms, or the current
+ * folder) at start: BASIC 901226-01, the KERNAL 901227-03 (or -02, -01) and the character ROM 901225-01, or
+ * the 16K BASIC + KERNAL image of the 250469 (251913-01). What is missing reads as $FF (zero for the
+ * characters), and the status line says so. */
+static uint8_t dump_c64_basic_bin[8192], dump_c64_kernalv3_bin[8192], dump_c64_char_bin[4096];
+static unsigned c64_roms_have;      /* 1 BASIC, 2 KERNAL, 4 characters */
+
+/* Which ROM a file is, by its name: 1 BASIC, 2 KERNAL, 4 characters, 8 the 16K BASIC + KERNAL. The generic
+ * names only count in a folder called c64 (the other machines have a "basic" and a "kernal" too). */
+static int c64_rom_kind(const char *path) {
+    static const struct { const char *key; int kind; bool own_folder; } map[] = {
+        { "901226-01", 1, false }, { "901227-03", 2, false }, { "901227-02", 2, false }, { "901227-01", 2, false },
+        { "901225-01", 4, false }, { "251913-01", 8, false },
+        { "basic", 1, true }, { "kernal", 2, true }, { "char", 4, true }, { "64c", 8, true },
+    };
+    const char *name = board_basename(path);
+    bool own = strstr(path, "c64/") || strstr(path, "c64\\");
+    for (size_t i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
+        if (map[i].own_folder && !own) continue;
+        size_t n = strlen(map[i].key);
+        for (const char *s = name; *s; s++)
+            if (!strncasecmp(s, map[i].key, n)) return map[i].kind;
+    }
+    return 0;
+}
+
+/* Read a ROM file into its image; false if the size is wrong. */
+static bool c64_read_rom(const char *path, int kind) {
+    uint8_t buf[16385];
+    FILE *f = fopen(path, "rb");
+    size_t n = f ? fread(buf, 1, sizeof(buf), f) : 0;
+    if (f) fclose(f);
+    if (kind == 1 && n == 8192) { memcpy(dump_c64_basic_bin, buf, 8192); c64_roms_have |= 1; }
+    else if (kind == 2 && n == 8192) { memcpy(dump_c64_kernalv3_bin, buf, 8192); c64_roms_have |= 2; }
+    else if (kind == 4 && n == 4096) { memcpy(dump_c64_char_bin, buf, 4096); c64_roms_have |= 4; }
+    else if (kind == 8 && n == 16384) {
+        if (!(c64_roms_have & 1)) { memcpy(dump_c64_basic_bin, buf, 8192); c64_roms_have |= 1; }
+        if (!(c64_roms_have & 2)) { memcpy(dump_c64_kernalv3_bin, buf + 8192, 8192); c64_roms_have |= 2; }
+    } else return false;
+    return true;
+}
+
+/* At start: whatever is missing is looked for. */
+static void c64_find_roms(void) {
+    static const char *const dirs[] = { "roms/c64", "roms", "." };
+    if (c64_roms_have == 7) return;
+    static bool cleared;
+    if (!cleared) {
+        memset(dump_c64_basic_bin, 0xFF, sizeof(dump_c64_basic_bin));
+        memset(dump_c64_kernalv3_bin, 0xFF, sizeof(dump_c64_kernalv3_bin));
+        memset(dump_c64_char_bin, 0, sizeof(dump_c64_char_bin));
+        cleared = true;
+    }
+    for (int pass = 0; pass < 2; pass++)        /* the single images first, then the 16K one for what is missing */
+        for (size_t d = 0; d < sizeof(dirs) / sizeof(dirs[0]); d++) {
+            DIR *dir = opendir(dirs[d]);
+            if (!dir) continue;
+            struct dirent *e;
+            while ((e = readdir(dir))) {
+                size_t l = strlen(e->d_name);
+                if (l < 5 || (strcasecmp(e->d_name + l - 4, ".bin") && strcasecmp(e->d_name + l - 4, ".rom"))) continue;
+                char path[1024];
+                snprintf(path, sizeof(path), "%s/%s", dirs[d], e->d_name);
+                int kind = c64_rom_kind(path);
+                if (!kind || (pass == 0) != (kind != 8) || (c64_roms_have & (kind == 8 ? 0 : kind))) continue;
+                c64_read_rom(path, kind);
+            }
+            closedir(dir);
+        }
+}
 
 /* Pin numbers of the big chips, from their datasheets. */
 static const int cpu_addr_pins[16] = { 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23 };
@@ -908,6 +979,7 @@ static const uint8_t *basic_kernal_rom(void) {
 }
 
 static void c64_create(board_t *b) {
+    c64_find_roms();
     c64_t *c64 = C64(b);
     sim_t *s = &b->sim;
     const c64_variant_t *v = CV(b);
@@ -1236,6 +1308,9 @@ void c64_set_kernal(board_t *b, const uint8_t *image) {
 
 static const char *c64_cpu_status(board_t *b) {
     c64_t *c64 = C64(b);
+    if (!(c64_roms_have & 2)) return "no KERNAL ROM (put the C64 ROMs in roms/c64)";
+    if (!(c64_roms_have & 1)) return "no BASIC ROM (put the C64 ROMs in roms/c64)";
+    if (!(c64_roms_have & 4)) return "no character ROM (put the C64 ROMs in roms/c64)";
     return !c64->cpu_running ? "stopped (no clock)" : c64->cpu_in_reset ? "in reset" : "running";
 }
 

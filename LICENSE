@@ -24,9 +24,9 @@ Parts of this repository come from others and keep their own licenses:
   is in each file). chips/m6569.h, m6526.h, m6581.h and z80.h are altered
   versions, marked as such. chips/codegen: the code generator of z80.h
   from the same project (zlib license), altered too.
-- chips/c64-roms.h: images of the Commodore 64 ROMs (BASIC, KERNAL,
-  character generator). They belong to their copyright holders and are
-  not covered by this license.
+- The Commodore ROM images (C64, VIC-20, PET) are not part of this
+  repository: you supply your own, in roms/ (see the README). They belong
+  to their copyright holders.
 - chips/zx48-rom.h: the ZX Spectrum 48K ROM, copyright Amstrad plc.
   Amstrad have kindly given their permission for the redistribution of
   their copyrighted material but retain that copyright.

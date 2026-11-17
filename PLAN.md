@@ -685,7 +685,7 @@ U5 removed
 5. **ROMs**:
    - 2364 (/CS, A0–A12) and 2332 (/CS1, CS2, A0–A11). Q is Z when not
      selected.
-   - Images from `c64-roms.h`; faults as in §5.
+   - Images read from `roms/c64` at start (they used to be compiled in from `c64-roms.h`); faults as in §5.
 6. **DRAM 4164 ×8**:
    - Row latch on /RAS fall, column latch on /CAS fall.
    - Early write (WE low at CAS fall: Q stays Z, D latched). Read: Q driven

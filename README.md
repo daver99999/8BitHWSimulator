@@ -135,6 +135,19 @@ found on [Zimmers.net](https://www.zimmers.net/anonftp/pub/cbm/firmware/computer
 8032080-03 board that the model was checked against belongs to David Green,
 who directed and tested the PET work.
 
+The C64 and VIC-20 ROM images are not included either; like the PET's they
+go in a folder under `roms` (next to the program, or the folder you start it
+from), and the part number in the file name tells the program which socket
+each one goes in:
+
+- `roms/c64`: BASIC `901226-01` (8K), KERNAL `901227-03` (8K; `-02` and `-01`
+  work too) and the character ROM `901225-01` (4K). The 250469 can take the
+  one 16K BASIC + KERNAL image `251913-01` instead of the two 8K ones.
+- `roms/vic20`: BASIC `901486-01` (8K), KERNAL `901486-04` (also `-06`, `-07`;
+  a dump one byte short is padded with $FF) and the characters `901460-03` (4K).
+
+If one is missing the status line says which.
+
 The light theme is by Henry, published here with permission.
 
 ## Building
