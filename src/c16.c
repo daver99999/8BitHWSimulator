@@ -167,6 +167,45 @@ static void c16_create(board_t *b) {
         z->pin_row[i] = c16_pin_of(b, "CN2", row_pin[i]);
         z->pin_col[i] = c16_pin_of(b, "CN2", col_pin[i]);
     }
+    static const int jpin[5] = { 1, 2, 3, 4, 6 };
+    for (int j = 0; j < 2; j++) {
+        const char *cn = j ? "CN5" : "CN4";
+        for (int d = 0; d < 5; d++) z->pin_joy[j][d] = c16_pin_of(b, cn, jpin[d]);
+        z->pin_joy_sel[j] = c16_pin_of(b, cn, 8);
+    }
+    memset(z->joy, 0, sizeof(z->joy));
+    /* The joystick diodes D1-D5 (port 1) and D6-D10 (port 2): the anode (pin 2) on a TED K line, the cathode
+     * (pin 1) on the joystick's switch. */
+    for (int i = 1; i <= 10; i++) {
+        char ref[8];
+        snprintf(ref, sizeof(ref), "D%d", i);
+        int pi = sim_find_part(s, ref);
+        if (pi < 0) continue;
+        part_t *dp = &s->parts[pi];
+        if (part_pin(dp, 1) < 0 || part_pin(dp, 2) < 0) continue;
+        resistor_state_t *st = calloc(1, sizeof(*st));
+        dp->state = st;
+        dp->state_size = sizeof(*st);
+        dp->kind = PART_RESISTOR;
+        st->nel = 1;
+        st->el[0] = (element_t){ part_pin(dp, 2), part_pin(dp, 1), EL_ANALOG };
+        element_set_type(s, dp, 0, EL_DIODE);
+    }
+    /* The EMI T-filters EM1-EM5 pass the signal from pin 1 to pin 3 (pin 2 is ground). */
+    for (int i = 1; i <= 5; i++) {
+        char ref[8];
+        snprintf(ref, sizeof(ref), "EM%d", i);
+        int pi = sim_find_part(s, ref);
+        if (pi < 0) continue;
+        part_t *ep = &s->parts[pi];
+        if (part_pin(ep, 1) < 0 || part_pin(ep, 3) < 0) continue;
+        resistor_state_t *st = calloc(1, sizeof(*st));
+        ep->state = st;
+        ep->state_size = sizeof(*st);
+        ep->kind = PART_RESISTOR;
+        st->nel = 1;
+        st->el[0] = (element_t){ part_pin(ep, 1), part_pin(ep, 3), EL_LINK };
+    }
     b->pin_reset = c16_pin_of(b, "U2", 40);             /* 7501 /RES to VSS, as an external reset switch would */
     b->pin_reset_gnd = c16_pin_of(b, "U2", 20);
     c16_keys_register(z);
@@ -188,6 +227,13 @@ static void c16_joins(board_t *b) {
             int pr = z->pin_row[row], pc = z->pin_col[col];
             if (pr < 0 || pc < 0 || s->pins[pr].fault == PF_OPEN || s->pins[pc].fault == PF_OPEN) continue;
             sim_join(s, s->pins[pr].net, s->pins[pc].net);
+        }
+    /* A closed joystick switch joins its direction (or fire) pin to pin 8, the select the 74LS125 drives. */
+    for (int j = 0; j < 2; j++)
+        for (int d = 0; d < 5; d++) {
+            int pa = z->pin_joy[j][d], ps = z->pin_joy_sel[j];
+            if (!((z->joy[j] >> d) & 1) || pa < 0 || ps < 0 || s->pins[pa].fault == PF_OPEN || s->pins[ps].fault == PF_OPEN) continue;
+            sim_join(s, s->pins[pa].net, s->pins[ps].net);
         }
 }
 
@@ -308,8 +354,17 @@ static void c16_sync_keys(board_t *b) {
     if (changed) board_rebuild(b);
 }
 
-static void c16_key_down(board_t *b, int key) { kbd_key_down(&C16(b)->kbd, key); c16_sync_keys(b); }
-static void c16_key_up(board_t *b, int key) { kbd_key_up(&C16(b)->kbd, key); c16_sync_keys(b); }
+#define CK_JOY 0x100        /* + 5 * port + switch: the joysticks */
+static void c16_key_down(board_t *b, int key) {
+    if (key >= CK_JOY && key < CK_JOY + 10) { C16(b)->joy[(key - CK_JOY) / 5] |= (uint8_t)(1 << ((key - CK_JOY) % 5)); board_rebuild(b); return; }
+    kbd_key_down(&C16(b)->kbd, key);
+    c16_sync_keys(b);
+}
+static void c16_key_up(board_t *b, int key) {
+    if (key >= CK_JOY && key < CK_JOY + 10) { C16(b)->joy[(key - CK_JOY) / 5] &= (uint8_t)~(1 << ((key - CK_JOY) % 5)); board_rebuild(b); return; }
+    kbd_key_up(&C16(b)->kbd, key);
+    c16_sync_keys(b);
+}
 static void c16_frame_update(board_t *b, uint32_t us) { kbd_update(&C16(b)->kbd, us); c16_sync_keys(b); }
 
 static int c16_host_key(int keycode) {
@@ -329,6 +384,16 @@ static int c16_host_key(int keycode) {
     case SAPP_KEYCODE_F2: return CK_F1 + 1;
     case SAPP_KEYCODE_F3: return CK_F1 + 2;
     case SAPP_KEYCODE_F4: return CK_HELP;
+    case SAPP_KEYCODE_KP_8: return CK_JOY;                  /* joystick 1: the keypad */
+    case SAPP_KEYCODE_KP_2: return CK_JOY + 1;
+    case SAPP_KEYCODE_KP_4: return CK_JOY + 2;
+    case SAPP_KEYCODE_KP_6: return CK_JOY + 3;
+    case SAPP_KEYCODE_KP_0: return CK_JOY + 4;
+    case SAPP_KEYCODE_PAGE_UP: return CK_JOY + 5;           /* joystick 2 */
+    case SAPP_KEYCODE_PAGE_DOWN: return CK_JOY + 6;
+    case SAPP_KEYCODE_DELETE: return CK_JOY + 7;
+    case SAPP_KEYCODE_END: return CK_JOY + 8;
+    case SAPP_KEYCODE_RIGHT_CONTROL: return CK_JOY + 9;
     default: return 0;
     }
 }
@@ -455,7 +520,7 @@ const machine_t machine_c16 = {
     .crystals = "Y1",
     .diodes = "D", .jumpers = "",
     .supplies = "9V_IN 9V_RET 9V_L 9V_SW VIN",
-    .keys_help = "Keys: type; Esc = RUN/STOP, Insert = ESC, Tab = CTRL, Left Alt = C=, Home = HOME, Backspace = INST/DEL, arrow keys, F1-F3, F4 = HELP",
+    .keys_help = "Keys: type; Esc = RUN/STOP, Insert = ESC, Tab = CTRL, Left Alt = C=, Home = HOME, Backspace = INST/DEL, arrow keys, F1-F3, F4 = HELP; joystick 1: keypad 8 2 4 6, 0 = fire; joystick 2: PgUp PgDn Del End, Right Ctrl = fire",
     .reset_help = "Hold to press RESET: shorts the 7501 /RES (U2 pin 40) to GND",
     .create = c16_create,
     .destroy = c16_destroy,

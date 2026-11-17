@@ -21,6 +21,8 @@ typedef struct c16 {
     kbd_t kbd;
     uint16_t key_matrix[8];             /* per row (6529 port bit): the columns (TED K lines) closed */
     int pin_row[8], pin_col[8];
+    uint8_t joy[2];                     /* closed switches of the joysticks: bit 0 up, 1 down, 2 left, 3 right, 4 fire */
+    int pin_joy[2][5], pin_joy_sel[2];
 } c16_t;
 
 static inline c16_t *C16(board_t *b) { return (c16_t *)b; }
