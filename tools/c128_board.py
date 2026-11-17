@@ -41,7 +41,7 @@ def ics():
             ('U13', '74LS244', 20, 7.62), ('U14', '74LS257', 16, 7.62), ('U15', '74LS257', 16, 7.62),
             ('U16', '74LS14', 14, 7.62), ('U17', '74ALS373', 20, 7.62), ('U18', '390059-01', 24, 15.24),
             ('U19', '2016', 24, 15.24), ('U20', '4066', 14, 7.62), ('U21', '8564 VIC-IIe', 48, 15.24),
-            ('U22', '8563 VDC', 40, 15.24), ('U23', '4416', 18, 7.62), ('U25', '4416', 18, 7.62),
+            ('U22', '8563 VDC', 48, 15.24), ('U23', '4416', 18, 7.62), ('U25', '4416', 18, 7.62),
             ('U24', '74LS244', 20, 7.62), ('U26', '74LS257', 16, 7.62), ('U27', '556', 14, 7.62),
             ('U28', '8701', 16, 7.62), ('U29', '7406', 14, 7.62), ('U30', '7406', 14, 7.62),
             ('U31', '74LS00', 14, 7.62), ('U32', '318023-02', 28, 15.24), ('U33', '318018-04', 28, 15.24),
@@ -436,8 +436,7 @@ def sheet_video():
         pullup(rp, '3.3K', 'U19_%d' % pn)
         net('U19_%d' % pn, 'U19.%d' % pn)
     net('U19_CS', 'U19.18', 'U19.20')
-    net('U19_WE', 'U19.21', 'U56.9')
-    net('U56B_Q', 'U56.9')
+    net('U56B_Q', 'U19.21')
     power('U19', 24, 12)
     # U20 (4066): colour RAM low nibble between the VIC's D8-D11 and the system D0-D3
     for i, (pa, pb) in enumerate(((1, 2), (4, 3), (8, 9), (11, 10))):
@@ -449,7 +448,7 @@ def sheet_video():
     net('+5V', 'U56.10', 'U56.13')
     net('U56B_D', 'U56.12')
     net('U56B_CLK', 'U56.11')
-    for r in ('C17', 'C55', 'C19', 'C20'):
+    for r in ('C17', 'C55', 'C19', 'C120'):
         decouple(r)
 
 
@@ -478,7 +477,7 @@ def sheet_vic():
     net('BA', v + '.10')
     net('2MHZ', v + '.23')
     net('1MHZ', v + '.18')
-    net('Z80PHI_VIC', v + '.25')
+    net('Z80PHI', v + '.25')
     net('K0', v + '.26')
     net('K1', v + '.27')
     net('K2', v + '.28')
@@ -524,7 +523,7 @@ def sheet_vic():
     net(VCC, 'U25.9')
     net(GND, 'U25.18')
     net(GND, 'U25.1')
-    decouple('C25'); decouple('C26')
+    decouple('C125')
 
 
 def sheet_clock():
@@ -550,7 +549,117 @@ def sheet_clock():
     part('R102', '68', 'R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal', 2)
     net('D_1MHZ', 'R102.2')
     pullup('R48', '10K', '/DMARQST')
-    net('Z80PHI', 'Z80PHI_VIC')
+
+
+def cia(ref, cs, irq):
+    """6526 common pins: D0-D7 33..26, A0-A3 38..35, /RES 34, phi2 25 (D_1MHZ), R/W 22, /IRQ 21, /CS 23."""
+    for i in range(8):
+        net(D[i], '%s.%d' % (ref, 33 - i))
+    for i in range(4):
+        net(A[i], '%s.%d' % (ref, 38 - i))
+    net('/RES', ref + '.34')
+    net('D_1MHZ', ref + '.25')
+    net('R/W', ref + '.22')
+    net(irq, ref + '.21')
+    net(cs, ref + '.23')
+    net(GND, ref + '.1')
+    net(VCC, ref + '.20')
+    decouple('C%s' % ('1' if ref == 'U1' else '4'))
+
+
+def sheet_io():
+    """Sheet 4: CIA1 (keyboard, joysticks), CIA2 (VIC bank, serial bus, user port), pot switches, connectors.
+    Simplified: the serial bus uses the C64's 7406 driver arrangement instead of the U58/U60/U16 gating of the 128 (the
+    FSDIR fast-serial direction is not modelled); the expansion port, RF and audio output are left out."""
+    cia('U1', 'CIA1', '/IRQ')
+    cia('U4', 'CIA2', '/NMI')
+    # keyboard columns PA0-7 and rows PB0-7; joystick B (CN4) on PA, joystick A (CN3) on PB as on the C64
+    for i in range(8):
+        net('COL%d' % i, 'U1.%d' % (2 + i), 'CN5.%d' % (13, 19, 18, 17, 16, 15, 14, 20)[i])
+        net('ROW%d' % i, 'U1.%d' % (10 + i), 'CN5.%d' % (12, 11, 10, 5, 8, 7, 6, 9)[i])
+    for i in range(5):
+        net('COL%d' % i, 'CN4.%d' % (1, 2, 3, 4, 6)[i])
+        net('ROW%d' % i, 'CN3.%d' % (1, 2, 3, 4, 6)[i])
+    part('CN3', 'control port 1', 'DB9_Male', 9)
+    part('CN4', 'control port 2', 'DB9_Male', 9)
+    part('CN5', 'keyboard', 'DB25_Male', 25)
+    net('POTAX', 'CN3.9', 'U2.8')
+    net('POTAY', 'CN3.5', 'U2.11')
+    net('POTBX', 'CN4.9', 'U2.1')
+    net('POTBY', 'CN4.5', 'U2.4')
+    net(VCC, 'CN3.7', 'CN4.7')
+    net(GND, 'CN3.8', 'CN4.8')
+    net('POTX', 'U2.9', 'U2.2')
+    net('POTY', 'U2.10', 'U2.3')
+    net('COL6', 'U2.6', 'U2.12')
+    net('COL7', 'U2.13', 'U2.5')
+    net('CAPLK_SENSE', 'CN5.25')
+    net('40/80', 'CN5.24')
+    net('K0', 'CN5.21')
+    net('K1', 'CN5.22')
+    net('K2', 'CN5.23')
+    net('RSTR', 'CN5.3')
+    net(GND, 'CN5.1', 'CN5.2')
+    net(VCC, 'CN5.4')
+    net('CNT1', 'U1.40')
+    net('SP1', 'U1.39')
+    net('CASS_READ', 'U1.24')
+    pullup('RP5_4', '3.3K', 'CASS_READ')
+    net('TOD1', 'U1.19')
+    pullup('RP5_2', '3.3K', 'TOD1')
+    net('CASS_RD_PC', 'U1.18')
+    # RESTORE key: NMI via the 556 half and RC, simplified to a direct pull-up with the key pulling low
+    pullup('RP5_5', '3.3K', '/NMI')
+    pullup('RP5_6', '3.3K', '/IRQ')
+    # CIA2
+    net('VA14_N', 'U4.2')
+    net('VA15_N', 'U4.3')
+    net('USER_PA2', 'U4.4')
+    net('ATN_OUT', 'U4.5')
+    net('CLK_OUT', 'U4.6')
+    net('DATA_OUT', 'U4.7')
+    for i in range(8):
+        net('PB%d' % i, 'U4.%d' % (10 + i), 'CN9.' + 'CDEFHJKL'[i])
+    net('CNT2', 'U4.40', 'CN9.7')
+    net('SP2', 'U4.39')
+    net('PC2', 'U4.18')
+    net('FLAG2', 'U4.24', 'CN9.B')
+    net('TOD2', 'U4.19')
+    pullup('RP5_TOD', '3.3K', 'TOD2')
+    part('CN9', 'user port', 'Edge_24', list('123456789ABCDEFHJKLMNXYZ'[:24]))
+    net('USER_PA2', 'CN9.M')
+    # VA14/VA15 are the inverted CIA2 PA0/PA1 (U63 7406)
+    inv('U63', 5, 'VA14_N', 'VA14')
+    inv('U63', 6, 'VA15_N', 'VA15')
+    pullup('RP1_8', '1K', 'VA14')
+    pullup('RP1_7', '1K', 'VA15')
+    power('U63', 14, 7)
+    # serial bus drivers (C64 style): ATN/CLK/DATA out through open-collector inverters, inputs read back
+    inv('U30', 1, 'ATN_OUT', 'SER_ATN')
+    inv('U30', 2, 'CLK_OUT', 'SER_CLK')
+    inv('U30', 3, 'DATA_OUT', 'SER_DATA')
+    power('U30', 14, 7)
+    net('SER_CLK', 'U4.8')
+    net('SER_DATA', 'U4.9')
+    for i, nm in ((3, 'SER_ATN'), (4, 'SER_CLK'), (5, 'SER_DATA')):
+        pullup('R_%s' % nm, '1K', nm)
+    part('CN6', 'serial bus', 'DIN-6', 6)
+    net('SRQIN', 'CN6.1')
+    net('SER_DATA', 'CN6.5')
+    net('SER_CLK', 'CN6.4')
+    net('SER_ATN', 'CN6.3')
+    net(GND, 'CN6.2')
+    pullup('R3', '1K', 'SRQIN')
+    # cassette: sense/write/motor go to the 8502 port through the board's own circuit; read goes to CIA1 FLAG
+    part('CN2', 'cassette', 'Edge_6', list('ABCDEF'))
+    net('CASS_READ', 'CN2.F')
+    net('CASS_SENSE', 'CN2.E')
+    net('CASS_WRT', 'CN2.D')
+    net(GND, 'CN2.A')
+    net(VCC, 'CN2.B')
+    # the keyboard's two switch sources, and the 4066 U2 power
+    power('U2', 14, 7)
+    decouple('C123')
 
 
 def build():
@@ -560,8 +669,70 @@ def build():
     sheet_video()
     sheet_vic()
     sheet_clock()
+    sheet_io()
+
+
+def check():
+    bad = 0
+    seen = {}
+    for n, pins in nets.items():
+        for pn in pins:
+            ref, _, pin = pn.partition('.')
+            if ref not in parts or pin not in parts[ref][2]:
+                print('bad pin', n, pn, file=sys.stderr); bad += 1
+            elif pn in seen and seen[pn] != n:
+                print('pin on two nets', pn, seen[pn], n, file=sys.stderr); bad += 1
+            seen[pn] = n
+    return bad
+
+
+OUTLINE = (0.0, 0.0, 420.0, 250.0)
+ICS = {}
+FIXED = {}
+
+
+def autoplace():
+    """Chips in rows, in schematic order; the connectors along the bottom edge. (The real board layout is not
+    reproduced; only the relative order is kept.)"""
+    x, y, rowh = 8.0, 8.0, 0.0
+    order = [r for r in parts if parts[r][1].startswith('DIP-') and not r.startswith('U38') and
+             not (r[0] == 'U' and 38 <= int(r[1:]) <= 53)]
+    order += ['U%d' % i for i in range(38, 54)]
+    for ref in order:
+        n = len(parts[ref][2])
+        w = n // 2 * 2.54 + 4
+        h = float(parts[ref][1].split('_W')[1][:-2]) + 6
+        if x + w > OUTLINE[2] - 6:
+            x, y, rowh = 8.0, y + rowh + 2, 0.0
+        ICS[ref] = (x + w / 2, y + h / 2, 'h')
+        x += w + 2
+        rowh = max(rowh, h)
+    cx = 25.0
+    for ref in ('CN1', 'CN2', 'CN3', 'CN4', 'CN5', 'CN6', 'CN9', 'Y2'):
+        if ref in parts:
+            FIXED[ref] = (cx, 232.0)
+            cx += 45.0
+
+
+def emit():
+    src = open(__file__.replace('c128_board.py', 'plus4_board.py')).read()
+    src = src[src.index('def dip('):src.index("if __name__ == '__main__':")]
+    src = src.replace('plus4_board_data.c - GENERATED by tools/plus4_board.py', 'c128_board_data.c - GENERATED by tools/c128_board.py')
+    src = src.replace('Commodore Plus/4 (schematic 310164 rev C, 4 sheets)', 'Commodore 128 (schematic 310378 rev 7A)')
+    src = src.replace('bd_plus4', 'bd_c128')
+    src = src.replace("('CN1', 'CN2', 'CN3', 'CN4', 'CN5', 'CN6', 'CN7', 'CN8', 'CN9', 'M1')", "('CN1', 'CN2', 'CN3', 'CN4', 'CN5', 'CN6', 'CN7', 'CN9')")
+    src = src.replace("anchor = 'U2'", "anchor = 'U6'")
+    src = src.replace("    if ref == 'CN4':\n        return [[nm, cx + (i % 25 - 12) * 2.54, cy + (0 if i < 25 else 5.08), 1.7, 1.7] for i, nm in enumerate(names)]\n", "")
+    g = globals()
+    g['math'] = __import__('math')
+    exec(src, g)
+    g['main']()
 
 
 if __name__ == '__main__':
     build()
+    if check():
+        sys.exit('netlist errors')
+    autoplace()
+    emit()
     print('%d parts, %d nets' % (len(parts), len(nets)), file=sys.stderr)
