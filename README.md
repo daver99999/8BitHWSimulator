@@ -146,6 +146,8 @@ each one goes in:
 - `roms/vic20`: BASIC `901486-01` (8K), KERNAL `901486-04` (also `-06`, `-07`;
   a dump one byte short is padded with $FF) and the characters `901460-03` (4K).
 
+- `roms/c16`: BASIC 3.5 `318006-01` (16K, $8000-$BFFF) and KERNAL `318005-04` (16K, $C000-$FFFF; `-05` works too).
+
 - `roms/zx48`: the Spectrum 48K ROM (16K, any `.rom` or `.bin` in that folder; for example `zx48.rom`).
 
 If one is missing the status line says which.

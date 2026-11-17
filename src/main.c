@@ -1,7 +1,7 @@
 /* main.c - c64-hw-sim entry point.
  *
  *   c64-hw-sim [program.prg | cartridge.crt | image.rom | image.bin] [--harness]
- *       [--fault SPEC]... [--machine c64|c64b|c64c|zx48|zx48i2|zx48i1|zx48i4b|zx48i6a|pet4032|pet8032|vic20a|vic20b|ts2068|ts1000|ts1500|zx80]
+ *       [--fault SPEC]... [--machine c64|c64b|c64c|zx48|zx48i2|zx48i1|zx48i4b|zx48i6a|pet4032|pet8032|vic20a|vic20b|c16|ts2068|ts1000|ts1500|zx80]
  *       [--rom UD6=FILE]... (the PET's ROMs: UD6 $F000 ... UD12 $9000, UA3 the character ROM)
  *       [--board 250407|250425|250469|issue3b|issue4b|issue6a|issue2|issue1]
  *       [--option ID=VALUE]... [--bank N] [--socket u4|port]
@@ -269,7 +269,7 @@ static board_t *board;
 static const machine_t *const machines[] = { &machine_c64, &machine_c64b, &machine_c64c, &machine_zx48, &machine_zx48i2,
                                              &machine_zx48i1, &machine_zx48i4b, &machine_zx48i6a,
                                              &machine_pet4032, &machine_pet8032, &machine_ts2068, &machine_ts1000, &machine_ts1500, &machine_zx80,
-                                             &machine_vic20a, &machine_vic20b };
+                                             &machine_vic20a, &machine_vic20b, &machine_c16 };
 
 static const machine_t *machine_named(const char *id) {
     for (size_t k = 0; k < sizeof(machines) / sizeof(machines[0]); k++)
@@ -671,7 +671,7 @@ int main(int argc, char **argv) {
                            !strcasecmp(id, "issue2") ? &machine_zx48i2 : !strcasecmp(id, "issue3b") ? &machine_zx48 :
                            !strcasecmp(id, "issue1") ? &machine_zx48i1 : !strcasecmp(id, "issue4b") ? &machine_zx48i4b :
                            !strcasecmp(id, "issue6a") ? &machine_zx48i6a :
-                           !strcmp(id, "250403") ? &machine_vic20b : !strcmp(id, "324001") ? &machine_vic20a :
+                           !strcmp(id, "251788") ? &machine_c16 : !strcmp(id, "250403") ? &machine_vic20b : !strcmp(id, "324001") ? &machine_vic20a :
                            !strcmp(id, "8032080-40") ? &machine_pet4032 : !strcmp(id, "8032080-80") ? &machine_pet8032 : NULL;
             if (!args.machine) {
                 fprintf(stderr, "unknown board %s (250407, 250425, 250469, 250403, 324001, issue3b, issue4b, issue6a, issue2, issue1, 8032080-40, 8032080-80)\n", id);

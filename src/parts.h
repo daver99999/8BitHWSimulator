@@ -58,6 +58,16 @@ uint8_t pet_crtc_reg_of(const part_t *p, int r);
 
 /* The VIC-20 (vic20_chips.c, parts.c): the 6560 video chip, 74LS245, 74LS133, the
  * 14.31818 MHz crystal, the character ROM and the 6116 RAM of the 250403. */
+/* The Commodore 16 (c16_chips.c): the TED, the 7501, the 6529B, the 7700 PLA and the small chips. */
+extern const part_type_t PT_7360, PT_7501, PT_6529B, PT_7700, PT_74LS175, PT_74LS125, PT_C16ROM;
+void ted_set_screen(part_t *p, uint32_t *screen);
+uint8_t ted_reg_of(const part_t *p, int r);
+uint32_t ted_frame_of(const part_t *p);
+bool ted_rom_on(const part_t *p);
+void ted_status_of(const part_t *p, char *buf, int len);
+uint32_t c16_cpu_cycles_of(const part_t *p);
+void c16_cpu_regs_of(const part_t *p, char *buf, int len);
+
 extern const part_type_t PT_6560, PT_74LS245, PT_74LS133, PT_XTAL14, PT_2332L, PT_6116;
 /* The raster picture the 6560 draws (VIC_W x VIC_H pixels) goes to SCREEN. */
 #define VIC_W 224
