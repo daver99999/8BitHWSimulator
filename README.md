@@ -149,11 +149,11 @@ and the interface library (nuklear) are in `third_party/`. Two of their
 headers carry local fixes to mouse input and window handling; they are
 listed in `third_party/PATCHES.md`.
 
-The icon is a piece of the C64 board: `src/c64-hw-sim.ico` for the
-Windows .exe (build.bat compiles `src/icon.rc` into it), and the same
-pixels in `src/icon_data.c` for the window and the taskbar on every
-system. `tools/make_icon.ps1 shot.png [X Y SIZE]` makes both again from
-a `--screenshot`.
+The icon is an 8-bit home computer with a blue READY. screen:
+`src/c64-hw-sim.ico` for the Windows .exe (build.bat and the Makefile compile
+`src/icon.rc` into it), and the same picture in `src/icon_data.c` for the
+window and the taskbar on every system. `python3 tools/make_icon.py` (Pillow)
+draws and writes both.
 
 The mouse wheel scrolls whatever window is under the mouse (over the
 board, it zooms). Esc closes the window on top. If the interface ever
