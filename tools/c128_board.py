@@ -705,48 +705,125 @@ def check():
     return bad
 
 
-OUTLINE = (0.0, 0.0, 345.0, 275.0)
+OUTLINE = (0.0, 0.0, 406.6, 253.4)
 ICS = {}
 FIXED = {}
 
 
+# Positions of the chips and connectors on the real board, from the KiCad board of Johan Grip's C128 Neo / Open128
+# (rev 3.3, a copy of the revision 9 layout; github.com/jgrip/open128, CC BY-SA 4.0): the footprint origin in mm and
+# its rotation. A DIP's origin is its pin 1 (rotation 0: the pins run down from it, 180: up).
+REAL = {
+    'CN1': (350.37, 70.52, 0),
+    'CN2': (281.36, 43.92, 0),
+    'CN3': (421.65, 182.93, 90),
+    'CN4': (421.64, 151.38, 90),
+    'CN5': (428.5, 210.82, 90),
+    'CN6': (242.45, 47.38, 180),
+    'CN7': (290.35, 53.87, 90),
+    'CN8': (222.38, 47.37, 180),
+    'CN9': (77.49, 43.94, 0),
+    'CN10': (129.84, 48.25, 0),
+    'CN11': (431.42, 69.22, 90),
+    'CN12': (415.91, 43.44, 180),
+    'CN13': (43.65, 213.48, 180),
+    'CN20': (175.26, 239.27, 0),
+    'U1': (381.51, 194.06, 0),
+    'U2': (396.75, 178.18, 180),
+    'U3': (307.47, 211.96, 180),
+    'U4': (61.98, 151.13, 180),
+    'U5': (294.2, 131.32, 180),
+    'U6': (317.25, 194.06, 0),
+    'U7': (380.11, 178.31, 180),
+    'U8': (307.47, 272.16, 180),
+    'U9': (188.57, 231.8, 180),
+    'U10': (355.85, 242.31, 180),
+    'U11': (252.86, 264.16, 180),
+    'U12': (372.62, 272.03, 180),
+    'U13': (372.36, 216.86, 180),
+    'U14': (172.09, 243.71, 180),
+    'U15': (172.09, 272.29, 180),
+    'U16': (307.59, 242.57, 180),
+    'U17': (224.28, 233.81, 180),
+    'U18': (196.4, 272.16, 180),
+    'U19': (224.37, 272.12, 180),
+    'U20': (253.37, 137.79, 180),
+    'U21': (234.95, 148.59, 180),
+    'U22': (123.7, 90.17, 0),
+    'U23': (171.32, 150.62, 180),
+    'U24': (156.08, 122.56, 180),
+    'U25': (156.08, 150.62, 180),
+    'U26': (206.63, 231.78, 180),
+    'U27': (275.84, 158.12, 180),
+    'U28': (212.09, 112.52, 180),
+    'U29': (212.09, 152.53, 180),
+    'U30': (83.57, 106.81, 180),
+    'U31': (338.33, 272.16, 180),
+    'U32': (62.1, 201.42, 180),
+    'U33': (83.76, 201.42, 180),
+    'U34': (105.28, 201.42, 180),
+    'U35': (105.28, 151.26, 180),
+    'U36': (83.57, 151.26, 180),
+    'U37': (292.48, 272.16, 180),
+    'U38': (58.32, 272.21, 180),
+    'U39': (71.15, 272.21, 180),
+    'U40': (83.85, 272.21, 180),
+    'U41': (96.67, 272.21, 180),
+    'U42': (109.22, 272.21, 180),
+    'U43': (122.07, 272.21, 180),
+    'U44': (134.77, 272.21, 180),
+    'U45': (147.47, 272.21, 180),
+    'U46': (58.12, 243.87, 180),
+    'U47': (70.82, 243.87, 180),
+    'U48': (83.64, 243.87, 180),
+    'U49': (96.34, 243.87, 180),
+    'U50': (109.17, 243.87, 180),
+    'U51': (121.74, 243.87, 180),
+    'U52': (134.59, 243.87, 180),
+    'U53': (147.35, 243.87, 180),
+    'U54': (105.13, 106.81, 180),
+    'U55': (122.56, 201.47, 180),
+    'U56': (322.85, 272.16, 180),
+    'U57': (197.49, 152.53, 180),
+    'U58': (292.35, 242.57, 180),
+    'U59': (394.59, 133.35, 180),
+    'U60': (276.99, 272.16, 180),
+    'U61': (294.13, 158.12, 180),
+    'U62': (359.28, 177.04, 180),
+    'U63': (54.1, 91.44, 180),
+    'Y1': (171.83, 114.43, 90),
+    'Y2': (184.18, 111.15, 0),
+}
+BOARD = (32.97, 35.46, 439.55, 288.85)      # the board edge in the same coordinates
+
+
 def autoplace():
-    """Chips grouped by function in rows, roughly as on the board: the DRAM banks across the top, the processors and
-    the MMU, PLA and VIC in the middle, the ROMs, then the CIAs, SID and the VDC with its video RAM, the glue chips
-    last and the connectors along the bottom edge. (Only the grouping is meant to follow the real board; the
-    exact positions are approximate.)"""
-    rows = [
-        ['U%d' % i for i in range(38, 46)],                              # DRAM bank 0
-        ['U%d' % i for i in range(46, 54)],                              # DRAM bank 1
-        ['U6', 'U10', 'U7', 'U11', 'U21'],                               # 8502, Z80, MMU, PLA, VIC-IIe
-        ['U32', 'U33', 'U34', 'U35', 'U36', 'U18', 'U19'],               # the ROMs, character ROM, colour RAM
-        ['U1', 'U4', 'U5', 'U22', 'U23', 'U25'],                         # CIAs, SID, VDC and its two video RAMs
-        ['U12', 'U13', 'U17', 'U55', 'U62', 'U24', 'U14', 'U15', 'U26'],   # latches, buffers, multiplexers
-        ['U2', 'U3', 'U8', 'U9', 'U16', 'U20', 'U27', 'U28', 'U29', 'U30', 'U31', 'U37'],
-        ['U54', 'U56', 'U57', 'U58', 'U60', 'U61', 'U63'],
-    ]
-    placed = set(r for row in rows for r in row)
-    rows[-1] += [r for r in parts if parts[r][1].startswith('DIP-') and r not in placed]
-    y = 8.0
-    for row in rows:
-        x, rowh = 8.0, 0.0
-        for ref in row:
-            if ref not in parts:
-                continue
+    """Put every chip and connector where it is on the real board (REAL). Anything without a position is placed in
+    a row below the board."""
+    ox, oy = BOARD[0], BOARD[1]
+    missing = []
+    for ref in sorted(parts):
+        fp = parts[ref][1]
+        if ref not in REAL:
+            if fp.startswith('DIP-'):
+                missing.append(ref)
+            continue
+        x, y, rot = REAL[ref]
+        if fp.startswith('DIP-'):
             n = len(parts[ref][2])
-            w = n // 2 * 2.54 + 4
-            h = float(parts[ref][1].split('_W')[1][:-2]) + 6
-            if x + w > OUTLINE[2] - 6:                                     # a row that is too long wraps
-                x, y, rowh = 8.0, y + rowh + 2, 0.0
-            ICS[ref] = (x + w / 2, y + h / 2, 'h')
-            x += w + 6
-            rowh = max(rowh, h)
-        y += rowh + 12
-    cx = 25.0
-    for ref in ('CN1', 'CN2', 'CN3', 'CN4', 'CN5', 'CN6', 'CN9', 'Y2'):
-        if ref in parts:
-            FIXED[ref] = (cx, 258.0)
-            cx += 45.0
+            w = float(fp.split('_W')[1][:-2])
+            dx, dy = w / 2, (n // 2 - 1) * 1.27             # the centre, from pin 1, for rotation 0
+            if rot == 180:
+                dx, dy = -dx, -dy
+            ICS[ref] = (x + dx - ox, y + dy - oy, 'r' if rot == 180 else 'v')
+        elif ref.startswith('CN') or ref.startswith('Y'):
+            FIXED[ref] = (x - ox, y - oy)
+    if missing:
+        sys.stderr.write('no board position for %s\n' % ' '.join(missing))
+    # the edge connectors: the footprint origin is the first pin, so move to the middle of the row
+    for ref, (dx, dy) in (('CN9', (47.0, 0.0)), ('CN2', (15.0, 0.0))):
+        if ref in FIXED:
+            FIXED[ref] = (FIXED[ref][0] + dx, FIXED[ref][1] + dy)
 
 
 def emit():
@@ -756,6 +833,7 @@ def emit():
     src = src.replace('Commodore Plus/4 (schematic 310164 rev C, 4 sheets)', 'Commodore 128 (schematic 310378 rev 7A)')
     src = src.replace('bd_plus4', 'bd_c128')
     src = src.replace("('CN1', 'CN2', 'CN3', 'CN4', 'CN5', 'CN6', 'CN7', 'CN8', 'CN9', 'M1')", "('CN1', 'CN2', 'CN3', 'CN4', 'CN5', 'CN6', 'CN7', 'CN9')")
+    src = src.replace("        if d == 'h':\n            x, y = y, -x\n        pads.append([str(pin)", "        if d == 'h':\n            x, y = y, -x\n        elif d == 'r':\n            x, y = -x, -y\n        pads.append([str(pin)")
     src = src.replace("anchor = 'U2'", "anchor = 'U6'")
     src = src.replace("    if ref == 'CN4':\n        return [[nm, cx + (i % 25 - 12) * 2.54, cy + (0 if i < 25 else 5.08), 1.7, 1.7] for i, nm in enumerate(names)]\n", "")
     g = globals()
