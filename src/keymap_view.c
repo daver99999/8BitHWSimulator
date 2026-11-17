@@ -14,6 +14,7 @@
 #include "zx48.h"
 #include "c64.h"
 #include "pet.h"
+#include "vic20.h"
 
 typedef struct {
     const char *cap;        /* the key's own legend */
@@ -99,9 +100,11 @@ static bool is_spectrum(const machine_t *m) {
 }
 static bool is_ts1000(const machine_t *m) { return m == &machine_ts1000 || m == &machine_ts1500 || m == &machine_zx80; }   /* the TS1500 has the same 40 key keyboard */
 static bool is_c64(const machine_t *m) { return m == &machine_c64 || m == &machine_c64b || m == &machine_c64c; }
+/* The VIC-20 keyboard has the C64's layout (and the same PC keys). */
+static bool is_vic20(const machine_t *m) { return m == &machine_vic20a || m == &machine_vic20b; }
 static bool is_pet(const machine_t *m) { return m == &machine_pet4032 || m == &machine_pet8032; }
 
-bool keymap_supported(const machine_t *m) { return is_spectrum(m) || is_ts1000(m) || is_c64(m) || is_pet(m); }
+bool keymap_supported(const machine_t *m) { return is_spectrum(m) || is_ts1000(m) || is_c64(m) || is_vic20(m) || is_pet(m); }
 
 /* A key of the other machines: the shifted legend (red), the key (white), the PC key (green); style: 0 normal,
  * 1 modifier, 2 no PC key. */
@@ -350,8 +353,9 @@ void keymap_window(struct nk_context *ctx, bool *open, const machine_t *m, float
             nk_label(ctx, zx80 ? "Arrow keys are the cursors (SHIFT+5..8), Tab is EDIT (SHIFT+NEWLINE), Esc is BREAK (Space), Enter is NEWLINE." :
                                  "Arrow keys are the cursors (SHIFT+5..8), Tab is EDIT (SHIFT+1), Esc is BREAK (Space), Enter is NEWLINE.", NK_TEXT_LEFT);
             nk_label_colored(ctx, "Left Shift is SHIFT. Typing a symbol that needs SHIFT (\" ( ) $ : ; ? / + - = * < > ,) presses it for you.", NK_TEXT_LEFT, COL_DIMTEXT);
-        } else if (is_c64(m)) {
+        } else if (is_c64(m) || is_vic20(m)) {
             nk_layout_row_dynamic(ctx, 20, 1);
+            if (is_vic20(m)) nk_label(ctx, "The VIC-20's keyboard: the C64's layout, scanned as an 8 x 8 matrix by the second 6522.", NK_TEXT_LEFT);
             nk_label(ctx, "Each key: the shifted legend (red), the key (white), the PC key (green).", NK_TEXT_LEFT);
             nk_label(ctx, "A shifted character typed on the PC (! \" # ...) presses SHIFT for you.", NK_TEXT_LEFT);
             nk_layout_row_dynamic(ctx, 56 * 5 + 6, 1);

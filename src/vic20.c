@@ -362,9 +362,7 @@ static void vic20_keys_register(vic20_t *z) {
             else if (!strcmp(n, "CBM")) key = VK_CBM;
             else if (!strcmp(n, "CTRL")) key = VK_CTRL;
             else if (!strcmp(n, "SPACE")) key = ' ';
-            else if (!strcmp(n, "POUND")) key = 0x5C;
-            else if (!strcmp(n, "LARROW")) key = 0x5F;
-            else if (!strcmp(n, "UPARROW")) key = 0x5E;
+            else if (!strcmp(n, "POUND")) key = '~';       /* the C64 map's PC key for the pound sign; the arrows have none */
             else if (n[0] == 'F' && n[1] >= '1' && n[1] <= '7' && !n[2]) {     /* F1 F3 F5 F7; shifted F2 F4 F6 F8 */
                 key = VK_F1 + (n[1] - '1') / 2;
                 shifted = 0x89 + (n[1] - '1') / 2;
@@ -414,6 +412,8 @@ static int vic20_host_key(int keycode) {
     case SAPP_KEYCODE_ESCAPE: return VK_STOP;
     case SAPP_KEYCODE_RIGHT_SHIFT: return VK_RSHIFT;
     case SAPP_KEYCODE_PAGE_UP: return VK_RESTORE;
+    case SAPP_KEYCODE_TAB: return VK_CTRL;          /* as on the C64 map */
+    case SAPP_KEYCODE_LEFT_ALT: return VK_CBM;
     case SAPP_KEYCODE_F1: return VK_F1;
     case SAPP_KEYCODE_F3: return VK_F1 + 1;
     case SAPP_KEYCODE_F5: return VK_F1 + 2;
@@ -561,7 +561,7 @@ static void vic20_print_text(board_t *b) {
     .crystals = "Y1", \
     .diodes = "CR", .jumpers = "", \
     .supplies = "9VACin 9VACout +5VP", \
-    .keys_help = "Keys: type; Esc = RUN/STOP, Home = HOME, Del = CLR, Page Up = RESTORE, arrow keys, F1-F8", \
+    .keys_help = "Keys: type; Esc = RUN/STOP, Tab = CTRL, Left Alt = C=, Home = HOME, Del = CLR, Page Up = RESTORE, arrow keys, F1-F8", \
     .reset_help = "Hold to press RESET: shorts the 6502 /RES (UE10 pin 40) to GND", \
     .create = vic20_create, \
     .destroy = vic20_destroy, \
