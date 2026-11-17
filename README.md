@@ -647,12 +647,18 @@ across pins 14 and 13, +5V from the clock supply on pins 12 and 15, ground on
 2, 4 and 9, DOT CLOCK on pin 6, COLOR CLOCK on pin 8 and the PAL/NTSC jumper
 (E2/E3) on pin 7. Everything else is the 250407, with the same references.
 The 8701 stops both clocks if the crystal is bad (the 250407's dot clock came
-from the VCO, not the crystal). **Not known:** the 250425's own copper. The
-layout is the 250407's with the 8701 in U31's place and the PLL parts left
-out (`tools/c64_250425_from_250407.py`); the 8701's pin 7 jumper and the
-crystal's series capacitor C70 are the 250407's, not read from a 250425. It
-boots to READY like the 250407; I have not compared the two boards' nets
-beyond the clock.
+from the VCO, not the crystal). The netlist was compared with schematic 251469
+chip by chip (CPU, both CIAs, SID, VIC, PLA, ROMs, color RAM, the 257s, 258,
+139, 373, 4066s, connectors): it agrees except for three things, which follow
+the 251469: the 74LS08 U27 uses other gates (CAEC on 1-2-3, the color RAM
+select on 4-5-6, the mains clock on 9-10-8, RDY on 12-13-11), the crystal Y1
+is across 8701 pins 14 and 13 with the trimmer CT1 to ground (no series
+capacitor), and R31 is 180 ohms. Resistor and capacitor values were not all
+compared. The 250425's own copper is not known: the layout is the 250407's
+(`tools/c64_250425_from_250407.py`), which matches a photo of a 250425 to a few
+mm on the left half; the PLA and SID, the VIC (on its side), the 8701, Y1, CT1
+and C58 are placed from the photo. Other small parts (the shield's ferrites,
+resistors) are still the 250407's places. It boots to READY like the 250407.
 
 ### The 250469 board
 

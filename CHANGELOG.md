@@ -12,7 +12,7 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 - **C64 ASSY 250425.** A third C64 board (`--board 250425`, `--machine c64b`, or the board drop-down): the 250407 with the clock PLL
   (U29, U30, U32, the 74LS629 and the loop parts) replaced by the 8701 clock generator at U31, from schematic 251469. Generated from the
-  250407 tables by `tools/c64_250425_from_250407.py`; the layout is the 250407's (the 250425's copper is not known).
+  250407 tables by `tools/c64_250425_from_250407.py`; netlist checked against the schematic (U27 gates, crystal trimmer, R31 differ from the 250407); layout is the 250407's with the PLA, SID, VIC, 8701, Y1, CT1 and C58 placed from a photo of a 250425.
 
 - **PET chiclet keyboard.** The 4032 has a `keyboard` option (`--option keyboard=graphics|chiclet`, or the control panel): the 2001's chiclet
   keyboard, from a photo. It has the graphics keyboard's matrix, so only the Keyboard window changes (key places and legends, RETURN two
