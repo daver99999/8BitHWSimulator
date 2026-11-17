@@ -53,6 +53,7 @@
 #include "vic20_chips.c"
 #include "vic20.c"
 #include "c16_chips.c"
+#include "c128_chips.c"
 #include "c16.c"
 #include "plus4.c"
 #include "scld.c"
