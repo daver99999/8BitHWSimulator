@@ -42,7 +42,7 @@ First, idle: what it does left running, before any reset (the clock, /RESET, the
 The boot goes wrong at RAM test (1 stage before it is good).
 What to look at, most likely first:
   1. The lower RAM (4000-7FFF) as a whole: bits D0 D1 D2 D3 D4 D5 D6 D7 wrong (the first at 4004). Not one chip: what all its
-     chips share: IC4 (MUX), IC3 (MUX), IC1 (ULA); and for the data, the resistors to the CPU's data lines: R1 R2 R3 R4 R5 R6 R7 R8
+     chips share: IC4 (74LS157), IC3 (74LS157), IC1 (ULA); and for the data, the resistors to the CPU's data lines: R1 R2 R3 R4 R5 R6 R7 R8
 ######## real diagnosis-board
 First, idle: what it does left running, before any reset (the clock, /RESET, the frame interrupt, the CPU)
   CLK: running (the analyser sees 85% of its pulses)
@@ -449,7 +449,7 @@ First, idle: what it does left running, before any reset (the clock, /RESET, the
 The boot goes wrong at RAM test (1 stage before it is good).
 What to look at, most likely first:
   1. The lower RAM (4000-7FFF) as a whole: bits D0 D1 D2 D3 D4 D6 D7 wrong (the first at 4004). Not one chip: what all its
-     chips share: IC4 (MUX), IC3 (MUX), IC1 (ULA); and for the data, the resistors to the CPU's data lines: R1 R2 R3 R4 R5 R6 R7 R8
+     chips share: IC4 (74LS157), IC3 (74LS157), IC1 (ULA); and for the data, the resistors to the CPU's data lines: R1 R2 R3 R4 R5 R6 R7 R8
 ######## real diagnosis-iss2-majorchip-1
 First, idle: what it does left running, before any reset (the clock, /RESET, the frame interrupt, the CPU)
   Not in the folder (taken before there was this stage): on to the boot
@@ -528,7 +528,7 @@ The boot goes wrong at RAM done (2 stages before it are good).
 What to look at, most likely first:
   1. IC17, the upper RAM's bit D2 (8000-FFFF): it reads 1 where it should be 0 (1 read, the first at 8000)
   2. Or what the upper RAM's chips share, if they are all addressed wrong (only 1 wrong read to go on):
-     IC25 (MUX), IC24 (NAND), IC26 (MUX), IC23 (OR)
+     IC25 (74LS157), IC24 (74LS00), IC26 (74LS157), IC23 (74LS32)
      The RAM test (the ROM's own, at the switch on) stopped at 8000, in the upper RAM; a working one's goes to FFFF.
      There it read 06, wrote 05, read 05, wrote 04; a working one's reads 02, writes 01, reads 01, writes 00.
 ######## real diagnosis-issue2-has-clk-and-addr15
@@ -566,7 +566,7 @@ The boot goes wrong at RAM test (1 stage before it is good).
 What to look at, most likely first:
   1. IC8, the lower RAM's bit D2 (4000-7FFF): it reads 1 where it should be 0 (2 reads, the first at 4000)
   2. Or what the lower RAM's chips share, if they are all addressed wrong (only 2 wrong reads to go on):
-     IC3 (MUX), IC4 (MUX), IC1 (ULA)
+     IC3 (74LS157), IC4 (74LS157), IC1 (ULA)
 ######## real diagnosis-issue2-wait
 First, idle: what it does left running, before any reset (the clock, /RESET, the frame interrupt, the CPU)
   CLK: running (the analyser sees 57% of its pulses)
@@ -827,7 +827,7 @@ The boot goes wrong at RAM done (2 stages before it are good).
 What to look at, most likely first:
   1. IC17, the upper RAM's bit D2 (8000-FFFF): it reads 1 where it should be 0 (1 read, the first at 8000)
   2. Or what the upper RAM's chips share, if they are all addressed wrong (only 1 wrong read to go on):
-     IC25 (MUX), IC24 (NAND), IC26 (MUX), IC23 (OR)
+     IC25 (74LS157), IC24 (74LS00), IC26 (74LS157), IC23 (74LS32)
      The RAM test (the ROM's own, at the switch on) stopped at 8000, in the upper RAM; a working one's goes to FFFF.
      There it read 06, wrote 05, read 05, wrote 04; a working one's reads 02, writes 01, reads 01, writes 00.
 ######## sim IC1.19:gnd
@@ -872,7 +872,7 @@ First, idle: what it does left running, before any reset (the clock, /RESET, the
 The boot goes wrong at RAM test (1 stage before it is good).
 What to look at, most likely first:
   1. The lower RAM (4000-7FFF) as a whole: bits D0 D1 D2 D3 D4 D5 wrong (the first at 4000). Not one chip: what all its
-     chips share: IC3 (MUX), IC4 (MUX), IC1 (ULA); and for the data, the resistors to the CPU's data lines: R1 R2 R3 R4 R5 R6 R7 R8
+     chips share: IC3 (74LS157), IC4 (74LS157), IC1 (ULA); and for the data, the resistors to the CPU's data lines: R1 R2 R3 R4 R5 R6 R7 R8
      The ULA's timing with the CPU (contention) can make this too; it can't be told here (no /INT in the
      capture to place the ULA's screen fetch). Run again with --la-all: the later stages show more.
 ######## sim IC1:removed
@@ -911,7 +911,7 @@ The boot goes wrong at RAM done (2 stages before it are good).
 What to look at, most likely first:
   1. IC20, the upper RAM's bit D5 (8000-FFFF): it reads 1 where it should be 0 (1 read, the first at 8000)
   2. Or what the upper RAM's chips share, if they are all addressed wrong (only 1 wrong read to go on):
-     IC25 (MUX), IC24 (NAND), IC26 (MUX), IC23 (OR)
+     IC25 (74LS157), IC24 (74LS00), IC26 (74LS157), IC23 (74LS32)
      The RAM test (the ROM's own, at the switch on) stopped at 8000, in the upper RAM; a working one's goes to FFFF.
      There it read 22, wrote 21, read 21, wrote 20; a working one's reads 02, writes 01, reads 01, writes 00.
 ######## sim IC25:removed
@@ -1198,7 +1198,7 @@ First, idle: what it does left running, before any reset (the clock, /RESET, the
 The boot goes wrong at RAM test (1 stage before it is good).
 What to look at, most likely first:
   1. The lower RAM (4000-7FFF) as a whole: bits D0 D1 D2 D3 D4 D5 wrong (the first at 4002). Not one chip: what all its
-     chips share: IC3 (MUX), IC4 (MUX), IC1 (ULA); and for the data, the resistors to the CPU's data lines: R1 R2 R3 R4 R5 R6 R7 R8
+     chips share: IC3 (74LS157), IC4 (74LS157), IC1 (ULA); and for the data, the resistors to the CPU's data lines: R1 R2 R3 R4 R5 R6 R7 R8
      The ULA's timing with the CPU (contention) can make this too; it can't be told here (no /INT in the
      capture to place the ULA's screen fetch). Run again with --la-all: the later stages show more.
 ######## sim IC5:data3=0
@@ -1269,7 +1269,7 @@ The boot goes wrong at RAM done (2 stages before it are good).
 What to look at, most likely first:
   1. IC6, the lower RAM's bit D0 (4000-7FFF): it reads 1 where it should be 0 (2 reads, the first at 5C50)
   2. Or what the lower RAM's chips share, if they are all addressed wrong (only 2 wrong reads to go on):
-     IC3 (MUX), IC4 (MUX), IC1 (ULA)
+     IC3 (74LS157), IC4 (74LS157), IC1 (ULA)
 ######## sim IC6:removed
 First, idle: what it does left running, before any reset (the clock, /RESET, the frame interrupt, the CPU)
   CLK: running (the analyser sees 86% of its pulses)
@@ -1431,7 +1431,7 @@ The boot goes wrong at RAM done (2 stages before it are good).
 What to look at, most likely first:
   1. IC6, the lower RAM's bit D0 (4000-7FFF): it reads 1 where it should be 0 (2 reads, the first at 5C50)
   2. Or what the lower RAM's chips share, if they are all addressed wrong (only 2 wrong reads to go on):
-     IC3 (MUX), IC4 (MUX), IC1 (ULA)
+     IC3 (74LS157), IC4 (74LS157), IC1 (ULA)
 Checked against the captures: 24 faults of the verdict's parts, each put on the simulated board and
 its 6 stages compared with the analyser's (4 at a time).
   A working board: 3 of 6 stages the same as the captures, the others the same for 2751 cycles.
