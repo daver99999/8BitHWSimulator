@@ -59,6 +59,11 @@ OVERRIDES = {
     'UB9': {'1': 'OSC_AOUT', '2': 'OSC_AIN', '3': 'OSC_AIN', '4': 'OSC_BOUT', '5': 'OSC_AOUT', '6': 'OSC_AOUT',
             '8': 'Net-(FB4-Pad2)', '9': 'OSC_AOUT', '10': 'Net-(FB5-Pad2)', '11': 'Net-(FB5-Pad2)',
             '12': 'OSC_BOUT', '13': 'Net-(FB4-Pad2)'},
+    # UB4 (7406, sheet b): 1 > 2 serial data out, 3 > 4 serial clock out, 5 > 6 ATN out, 9 > 8 reset from the 555,
+    # 11 > 10 CPU phase 0 from the VIC's phase 1; 12 and 13 are not used.
+    'UB4': {'1': 'Net-(UAB1-CB2)', '2': 'Net-(UAB3-PA1)', '3': 'Net-(UAB1-CA2)', '4': 'Net-(UAB3-PA0)',
+            '5': 'Net-(UAB3-PA7)', '6': 'Net-(P1-ATN-IN)', '8': '/RES', '9': 'Net-(UB6-Q)', '10': 'Net-(FB11-Pad2)',
+            '11': 'PHI1', '12': None, '13': None},
     'Y1': {'1': 'OSC_AIN'},
     'R5': {'1': 'OSC_AIN', '2': 'OSC_AOUT'},
     'R6': {'1': 'OSC_AOUT', '2': 'OSC_BOUT'},
