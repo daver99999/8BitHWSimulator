@@ -161,6 +161,11 @@ static void mmu_map(const mmu8722_t *t, unsigned hi, bool aec, mmu_map_t *m) {
     if (z80) {                                      /* the Z80 has the start-up ROM at $0000 and the RAM where the 8502 sees it */
         m->ta = (uint8_t)(hi < 0x10 ? hi + 0x10 : hi);   /* the BIOS ROM is read 4K up, the RAM where it is */
         m->block = (t->cr >> 6) & 3;
+        {                                           /* the common RAM works for the Z80 as it does for the 8502 */
+            static const unsigned csizes[4] = { 0x400, 0x1000, 0x2000, 0x4000 };
+            unsigned csize = csizes[t->rcr & 3];
+            if (((t->rcr & 4) && addr < csize) || ((t->rcr & 8) && addr >= 0x10000 - csize)) m->block = 0;
+        }
         if (hi < 0x10) m->ms = 0;                   /* the start-up code stays visible while the Z80 runs */
     } else {
         if (hi == 0) { m->ta = t->p0l; m->block = t->p0h & 0x0F; }
@@ -275,7 +280,7 @@ static void mmu_commit(sim_t *s, part_t *p) {
             switch (reg) {
             case 0: t->cr = v; break;
             case 1: case 2: case 3: case 4: t->pcr[reg - 1] = v; break;
-            case 5: t->mcr = v & 0x79; if (getenv("C128DBG")) fprintf(stderr,"MCR=%02X cyc=%u\n", v, (unsigned)s->cycle); break;
+            case 5: t->mcr = v & 0x79; break;
             case 6: t->rcr = v; break;
             case 7: t->p0l = v; break;
             case 8: t->p0h = v & 0x0F; break;
@@ -361,7 +366,8 @@ typedef struct {
     uint64_t pins;
     sim_t *s;
     part_t *part;
-    uint8_t phi0, in_reset, latched, aec_seen;
+    uint8_t phi0, in_reset, latched, aec_seen, aec_now, settle;
+    uint16_t aec_low;                  /* phi2 cycles the bus was away (a Z80 run is long, a VIC steal short) */
     uint32_t cycles;
     int32_t cache_a, cache_d, cache_p;
 } c502_t;
@@ -398,7 +404,7 @@ static void c502_commit(sim_t *s, part_t *p) {
     c->s = s;
     c->part = p;
     c->core.user_data = c;
-    if (phi0) { c->latched = (uint8_t)part_read_bus(s, p, c502_d, 8); c->aec_seen = (uint8_t)pin_in(s, p, 5); }
+    if (phi0) { c->latched = (uint8_t)part_read_bus(s, p, c502_d, 8); c->aec_now = (uint8_t)(pin_in(s, p, 5) && pin_in(s, p, 2)); }
     if (!phi0 && c->phi0) {                       /* phi0 falls: one cycle of the core */
         if (!pin_in(s, p, 40)) {
             c->in_reset = 1;
@@ -412,7 +418,16 @@ static void c502_commit(sim_t *s, part_t *p) {
             uint64_t pins = c->pins & ~(M6502_IRQ | M6502_NMI | M6502_RDY);
             if (!pin_in(s, p, 3)) pins |= M6502_IRQ;
             if (!pin_in(s, p, 4)) pins |= M6502_NMI;
-            if (!pin_in(s, p, 2) || !c->aec_seen) pins |= M6502_RDY;   /* off the bus (AEC low): a read waits */
+            if (c->aec_now) {                           /* on the bus (seen while phi0 was high); right after a Z80 run the address was not out yet: wait a cycle */
+                if (c->aec_low > 200) c->settle = 3;      /* back from a Z80 run: the memory cycle needs a few cycles to come round */
+                c->aec_seen = c->settle == 0;
+                if (c->settle) c->settle--;
+                c->aec_low = 0;
+            } else {
+                c->aec_seen = 0;
+                if (c->aec_low < 0xFFFF) c->aec_low++;
+            }
+            if (!c->aec_seen) pins |= M6502_RDY;   /* off the bus (AEC low): a read waits */
             if (pins & M6502_RW) M6502_SET_DATA(pins, c->latched);
             if (M6510_CHECK_IO(pins)) pins = m6510_iorq(&c->core, pins);
             c->pins = m6502_tick(&c->core, pins);

@@ -41,14 +41,11 @@ struct diskdrive {
     int status_pos;
     uint8_t dirbuf[8192];
     /* burst commands (the 1571/1581 fast serial) */
-    uint8_t burst[16];
-    int burst_len, burst_pending;
-    uint8_t fast_req;               /* the controller asked for fast serial */
-    /* a byte on its way out in fast serial: bit time counter */
-    int fbit;
-    uint8_t fbyte;
-    uint64_t ft0;
-    uint8_t bq[1100];               /* the burst reply: status bytes and sector data */
+    int burst_pending;
+    uint8_t boot_redirect;          /* the disk has a CP/M auto-boot file: track 1 sector 0 is track 40 sector 5 */
+    uint8_t bclk, blogical, bside, bphase;
+    int bcyl, bsec, bsec_left;
+    uint8_t bq[520];                /* the reply being sent: status bytes, or a sector */
     int bq_len, bq_pos;
 };
 

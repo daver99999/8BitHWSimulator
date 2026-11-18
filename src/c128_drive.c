@@ -36,12 +36,18 @@ static long disk_offset(const diskdrive_t *d, int t, int s) {
     else for (int i = 1; i < t; i++) n += zone_sectors(d->kind, i);
     return (n + s) * 256;
 }
+static uint8_t *disk_sector(diskdrive_t *d, int t, int s);
+static uint8_t *disk_sector_asked(diskdrive_t *d, int t, int s);
+static uint8_t *disk_sector512(diskdrive_t *d, int cyl, int side, int sec);
+static uint8_t *dir_find(diskdrive_t *d, const uint8_t *pat, int plen, int type);
 static uint8_t *disk_sector(diskdrive_t *d, int t, int s) {
     long o = disk_offset(d, t, s);
     return o >= 0 && o + 256 <= (long)d->size ? d->img + o : NULL;
 }
 
 static int dir_track(const diskdrive_t *d) { return d->kind == DISK_D81 ? 40 : 18; }
+
+static bool disk_has_boot_redirect(diskdrive_t *d);
 
 bool drive_mount(diskdrive_t *d, const char *path, char *msg, int msglen) {
     FILE *f = fopen(path, "rb");
@@ -66,6 +72,7 @@ bool drive_mount(diskdrive_t *d, const char *path, char *msg, int msglen) {
     d->dirty = false;
     snprintf(d->path, sizeof(d->path), "%s", path);
     d->changed = 1;                                 /* a disk change, for the status */
+    d->boot_redirect = disk_has_boot_redirect(d);
     snprintf(msg, (size_t)msglen, "%s: %s disk image", path, kind == DISK_D81 ? "D81 (1581)" : kind == DISK_D71 ? "D71 (1571)" : "D64 (1541)");
     return true;
 }
@@ -147,10 +154,12 @@ static uint8_t *dir_find(diskdrive_t *d, const uint8_t *pat, int plen, int type)
 }
 
 /* The directory as a BASIC program (what LOAD "$",8 reads). */
-static int dir_listing(diskdrive_t *d, const uint8_t *pat, int plen, int type, uint8_t *out, int max) {
+static int dir_listing(diskdrive_t *d, const uint8_t *pat, int plen, int type) {
+    uint8_t *out = d->dirbuf;
+    const int max = (int)sizeof(d->dirbuf);
     int n = 0;
     uint8_t *hdr = disk_sector(d, dir_track(d), 0);
-#define PUT(b) do { if (n < max) out[n] = (uint8_t)(b); n++; } while (0)
+#define PUT(b) do { if (n >= 0 && n < max) out[n++] = (uint8_t)(b); } while (0)
     PUT(0x01); PUT(0x04);
     int link_at = n;
     PUT(0); PUT(0); PUT(0); PUT(0);                        /* link, line number 0 */
@@ -280,7 +289,7 @@ static void chan_open(diskdrive_t *d, int sa, const uint8_t *name, int len) {
         int type = 0;
         for (int i = 0; i < plen; i++) if (pat[i] == '=') { type = plen > i + 1 ? pat[i + 1] : 0; plen = i; break; }
         c->type = CH_DIR;
-        c->len = dir_listing(d, pat, plen, type, d->dirbuf, (int)sizeof(d->dirbuf));
+        c->len = dir_listing(d, pat, plen, type);
         c->pos = 0;
         status_ok(d);
         return;
@@ -308,7 +317,7 @@ static void chan_close(diskdrive_t *d, int sa) { memset(&d->ch[sa & 15], 0, size
 /* The command channel: the commands this drive knows. */
 void drive_command(diskdrive_t *d, const uint8_t *cmd, int len) {
     char s[64];
-    int n = len > 60 ? 60 : len;
+    int n = len > 60 ? 60 : len < 0 ? 0 : len;
     while (n > 0 && (cmd[n - 1] == '\r' || cmd[n - 1] == '\n')) n--;
     memcpy(s, cmd, (size_t)n);
     s[n] = 0;
@@ -322,7 +331,7 @@ void drive_command(diskdrive_t *d, const uint8_t *cmd, int len) {
         if (sscanf(p, "%d %d %d %d", &ch, &dr, &t, &sec) == 4 || sscanf(p, "%d,%d,%d,%d", &ch, &dr, &t, &sec) == 4) {
             dchan_t *c = &d->ch[ch & 15];
             if (c->type != CH_BUF) { set_status(d, 70, "NO CHANNEL", 0, 0); return; }
-            uint8_t *b = disk_sector(d, t, sec);
+            uint8_t *b = disk_sector_asked(d, t, sec);
             if (!b) { set_status(d, 66, "ILLEGAL TRACK OR SECTOR", t, sec); return; }
             if (s[1] == '1' || s[1] == 'A') { memcpy(c->buf, b, 256); c->pos = 0; }
             else { memcpy(b, c->buf, 256); d->dirty = true; }
@@ -362,12 +371,88 @@ static uint8_t *disk_sector512(diskdrive_t *d, int cyl, int side, int sec) {
     return o + 512 <= (long)d->size ? d->img + o : NULL;
 }
 
+/* The 1581's auto-boot file "COPYRIGHT CBM 86" is code the drive runs; the CP/M system disks have one that makes
+ * the drive give track 40 sector 5 when the computer reads track 1 sector 0 (the boot sector the C128's BOOT
+ * command looks for). The drive's own CPU is not simulated, so that one effect is done here. */
+static bool disk_has_boot_redirect(diskdrive_t *d) {
+    static const uint8_t pat[] = { 0xA2, 0x28, 0x96, 0x0B, 0xA2, 0x05, 0x96, 0x0C };      /* LDX #40, STX $0B,Y, LDX #5, STX $0C,Y */
+    if (d->kind != DISK_D81) return false;
+    uint8_t *e = dir_find(d, (const uint8_t *)"COPYRIGHT CBM 86", 16, 'U');
+    if (!e) return false;
+    uint8_t *sec = disk_sector(d, e[3], e[4]);
+    if (!sec) return false;
+    for (int k = 2; k + (int)sizeof(pat) <= 256; k++) if (!memcmp(sec + k, pat, sizeof(pat))) return true;
+    return false;
+}
+
+/* A CBM sector of the image as the computer asks for it: the boot redirect applies. */
+static uint8_t *disk_sector_asked(diskdrive_t *d, int t, int s) {
+    if (t == 1 && s == 0 && d->boot_redirect) { t = 40; s = 5; }
+    return disk_sector(d, t, s);
+}
+
+/* The status byte of a burst transfer: sector size 512 and the controller status in the low nibble. */
+static uint8_t burst_status(const diskdrive_t *d, int code) { return (uint8_t)(0x20 | code | (d->device == 9 ? 0x40 : 0)); }
+
 void drive_burst_command(diskdrive_t *d, const uint8_t *cmd, int len) {
-    /* cmd = "U0" + the command byte and its parameters (the leading $55 $30 are 'U' '0') */
-    d->burst_len = len > 16 ? 16 : len;
-    memcpy(d->burst, cmd, (size_t)d->burst_len);
-    d->burst_pending = 1;
-    status_ok(d);
+    /* cmd = 'U' '0' + the command byte + its parameters */
+    d->bq_len = d->bq_pos = 0;
+    d->bsec_left = 0;
+    d->burst_pending = 0;
+    if (len < 3) { status_ok(d); return; }
+    uint8_t b = cmd[2];
+    int code = (b >> 1) & 7;
+    int n = len - 3;
+    const uint8_t *p = cmd + 3;
+    switch (code) {
+    case 0: {                                           /* CMD 1: read */
+        int logical = (b & 0x80) != 0, side = (b & 0x10) != 0;
+        d->bcyl = n > 0 ? p[0] : 0;
+        d->bsec = n > 1 ? p[1] : 0;
+        d->bsec_left = n > 2 ? p[2] : 1;
+        d->blogical = (uint8_t)logical;
+        d->bside = (uint8_t)side;
+        d->bq_len = 0;
+        d->burst_pending = 1;
+        d->bphase = 0;
+        break;
+    }
+    case 2:                                             /* CMD 3: inquire disk: log the disk in, one status byte */
+        d->bq[0] = d->kind == DISK_D81 ? burst_status(d, 0) : burst_status(d, 15);
+        d->bq_len = 1;
+        d->burst_pending = 1;
+        d->bsec_left = 0;
+        break;
+    case 6:                                             /* CMD 7: inquire status: with W=0 it sets the status, no reply */
+        if (b & 0x80) { d->bq[0] = burst_status(d, 0); d->bq_len = 1; d->burst_pending = 1; }
+        break;
+    default:
+        break;
+    }
+}
+
+/* The next byte of the burst reply: false if there is none. */
+static bool burst_next(diskdrive_t *d, uint8_t *b) {
+    if (d->bq_pos < d->bq_len) { *b = d->bq[d->bq_pos++]; return true; }
+    if (d->bsec_left <= 0) return false;
+    if (d->bphase == 0) {                               /* the status byte of the next sector */
+        const uint8_t *sec = d->blogical ? disk_sector_asked(d, d->bcyl, d->bsec) : disk_sector512(d, d->bcyl, d->bside, d->bsec);
+        d->bq_pos = d->bq_len = 0;
+        if (!sec) { *b = burst_status(d, 2); d->bsec_left = 0; return true; }    /* can't find the header */
+        int n = d->blogical ? 256 : 512;
+        memcpy(d->bq, sec, (size_t)n);
+        d->bq_len = n;
+        d->bphase = 1;
+        *b = burst_status(d, 0);
+        return true;
+    }
+    if (d->bq_pos < d->bq_len) { *b = d->bq[d->bq_pos++]; if (d->bq_pos >= d->bq_len) d->bphase = 2; return true; }
+    /* the sector is done: the next one */
+    d->bphase = 0;
+    d->bsec_left--;
+    if (d->blogical) { d->bsec++; if (d->bsec >= zone_sectors(d->kind, d->bcyl)) { d->bsec = 0; d->bcyl++; } }
+    else { d->bsec++; if (d->bsec > 10) { d->bsec = 1; d->bcyl++; } }
+    return burst_next(d, b);
 }
 
 /* ------------------------------------------------------------------------ */
@@ -391,7 +476,12 @@ enum {
     S_TX_BIT_B,             /* CLK released, the bit is valid: hold */
     S_TX_ACK,               /* after the byte: wait for the receiver to pull DATA */
     S_TX_DONE,              /* the last byte went: lines released, wait for UNTALK */
+    S_B_SETTLE,             /* a burst command was given: wait for the controller's CLK to be released */
+    S_B_IDLE,               /* wait for the controller to toggle CLK: it wants the next byte */
+    S_B_BIT_LO,             /* a byte goes out on DATA, clocked by SRQ: SRQ pulled */
+    S_B_BIT_HI,             /* SRQ released: the rising edge is where the controller reads the bit */
 };
+#define T_SRQ       4       /* microseconds SRQ is held each way */
 
 #define T_BIT       70      /* microseconds the sender holds each clock phase */
 #define T_EOI       200     /* the receiver waits this long before it answers with an EOI acknowledge */
@@ -479,6 +569,7 @@ void drive_poll(diskdrive_t *d, int atn, int clk, int data, int srq, uint64_t no
 
     if (atn_fall) {                                     /* attention: every device answers within 1 ms */
         if (d->listening) end_listen(d);
+        d->pull_srq = 0;
         d->atn_cmd = 1;
         d->state = S_RX_READY;
         d->armed = (uint8_t)clk_low;
@@ -496,6 +587,10 @@ void drive_poll(diskdrive_t *d, int atn, int clk, int data, int srq, uint64_t no
             d->state = S_RX_READY;
             d->armed = (uint8_t)clk_low;
             d->pull_data = 1;
+        } else if (d->burst_pending) {                   /* UNLISTEN after a burst command */
+            d->state = S_B_SETTLE;
+            d->t0 = now;
+            d->pull_data = d->pull_clk = 0;
         } else {
             d->state = S_IDLE;
             d->pull_data = d->pull_clk = 0;
@@ -586,6 +681,37 @@ void drive_poll(diskdrive_t *d, int atn, int clk, int data, int srq, uint64_t no
         } else if (now - d->t0 > 5000) {
             d->pull_clk = 0;
             d->state = S_TX_DONE;
+        }
+        break;
+    case S_B_SETTLE:
+        if (clk) { d->bclk = 1; d->state = S_B_IDLE; }
+        else if (now - d->t0 > 300) { d->bclk = 0; d->state = S_B_IDLE; }
+        break;
+    case S_B_IDLE:
+        if (clk != d->bclk) {
+            /* the controller toggled CLK: send the next byte */
+            d->bclk = (uint8_t)clk;
+            uint8_t b;
+            if (!burst_next(d, &b)) { d->burst_pending = 0; d->state = S_IDLE; break; }
+            d->shift = b;
+            d->nbits = 0;
+            d->pull_data = !(b & 0x80);
+            d->pull_srq = 1;
+            d->t0 = now;
+            d->state = S_B_BIT_LO;
+        }
+        break;
+    case S_B_BIT_LO:
+        if (now - d->t0 >= T_SRQ) { d->pull_srq = 0; d->t0 = now; d->state = S_B_BIT_HI; }
+        break;
+    case S_B_BIT_HI:
+        if (now - d->t0 >= T_SRQ) {
+            d->nbits++;
+            if (d->nbits >= 8) { d->pull_data = 0; d->state = S_B_IDLE; break; }
+            d->pull_data = !((d->shift << d->nbits) & 0x80);
+            d->pull_srq = 1;
+            d->t0 = now;
+            d->state = S_B_BIT_LO;
         }
         break;
     default:
