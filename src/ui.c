@@ -2605,10 +2605,13 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
         }
         if (b->m == &machine_c128) {
             /* The disk drive: a button for the file dialog, and its light. */
-            nk_layout_row_begin(ctx, NK_STATIC, 26, 3);
-            nk_layout_row_push(ctx, 140);
+            nk_layout_row_begin(ctx, NK_STATIC, 26, 4);
+            nk_layout_row_push(ctx, 80);
             if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, "Put a disk image (.d64, .d71, .d81) in drive 8. A file dropped on the window does the same");
             if (nk_button_label(ctx, "Disk...")) U.want_disk = true;
+            nk_layout_row_push(ctx, 56);
+            if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, "Take the disk out of drive 8");
+            if (nk_button_label(ctx, "Eject")) c128_disk_eject(b);
             nk_layout_row_push(ctx, 26);
             struct nk_rect led;
             nk_widget(&led, ctx);
@@ -2616,7 +2619,7 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
             bool on = c128_disk_active(b);
             nk_fill_rect(cv, nk_rect(led.x + 3, led.y + 3, led.w - 6, led.h - 6), 2, on ? nk_rgb(255, 40, 30) : nk_rgb(70, 30, 28));
             nk_stroke_rect(cv, nk_rect(led.x + 3, led.y + 3, led.w - 6, led.h - 6), 2, 1, nk_rgb(20, 20, 20));
-            nk_layout_row_push(ctx, 150);
+            nk_layout_row_push(ctx, 110);
             nk_label(ctx, on ? "drive busy" : (board_cart_name(b) ? "drive 8" : "drive 8: empty"), NK_TEXT_LEFT);
             nk_layout_row_end(ctx);
         }
