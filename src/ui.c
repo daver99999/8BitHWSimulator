@@ -2624,6 +2624,10 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
             nk_layout_row_push(ctx, 110);
             nk_label(ctx, on ? "drive busy" : (board_cart_name(b) ? "drive 8" : "drive 8: empty"), NK_TEXT_LEFT);
             nk_layout_row_end(ctx);
+            if (board_cart_name(b)) {           /* the name of the disk in it, on a row of its own */
+                nk_layout_row_dynamic(ctx, 20, 1);
+                nk_label(ctx, board_cart_name(b), NK_TEXT_LEFT);
+            }
         }
         /* The save state slot: one, in memory. */
         nk_layout_row_begin(ctx, NK_STATIC, 26, 3);
