@@ -22,6 +22,7 @@ typedef struct ts1000 {
     int32_t cache_addr, cache_data;
     uint8_t rom[8192];
     bool rom_loaded;
+    bool ram1k;                 /* option "ram": the ZX81's 1K instead of the TS1000's 2K */
     kbd_t kbd;
     uint16_t key_matrix[5];
     int pin_row[8], pin_kb[5];  /* KB2 (the half rows A8-A15) and KB1 (KBD0-KBD4) */

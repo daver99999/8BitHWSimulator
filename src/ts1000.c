@@ -71,22 +71,23 @@ static void t1_cpu_edge(board_t *b, int clk) {
 static const int t1r_data_pins[8] = { 9, 10, 11, 13, 14, 15, 16, 17 };
 
 /* The RAM: 2K x 8 static (6116 pins: 18 /CS, 20 /OE, 21 /WE). */
-typedef struct { uint8_t cells[2048]; int32_t out_cache; } t1_ram_t;
+typedef struct { uint8_t cells[2048]; int32_t out_cache; unsigned mask; } t1_ram_t;   /* mask: 2047 (2K) or 1023 (1K: A10 is not wired) */
 static const int t1m_addr_pins[11] = { 8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 19 };
 static void t1_ram_eval(sim_t *s, part_t *p) {
     t1_ram_t *st = p->state;
     bool read = !pin_in(s, p, 18) && !pin_in(s, p, 20) && pin_in(s, p, 21);
-    unsigned a = read ? part_read_bus(s, p, t1m_addr_pins, 11) : 0;
+    unsigned a = read ? part_read_bus(s, p, t1m_addr_pins, 11) & st->mask : 0;
     part_drive_bus_cached(s, p, t1r_data_pins, 8, st->cells[a], read, &st->out_cache);
 }
 static void t1_ram_commit(sim_t *s, part_t *p) {
     t1_ram_t *st = p->state;
     if (!pin_in(s, p, 18) && !pin_in(s, p, 21))
-        st->cells[part_read_bus(s, p, t1m_addr_pins, 11)] = (uint8_t)part_read_bus(s, p, t1r_data_pins, 8);
+        st->cells[part_read_bus(s, p, t1m_addr_pins, 11) & st->mask] = (uint8_t)part_read_bus(s, p, t1r_data_pins, 8);
 }
 static void t1_ram_reset(sim_t *s, part_t *p) {
     (void)s;
     t1_ram_t *st = p->state;
+    if (!st->mask) st->mask = 2047;
     for (int i = 0; i < 2048; i++) st->cells[i] = (uint8_t)((i * 7 + (i >> 4) + 0x5A) & 0xFF);
 }
 static const part_type_t PT_T1RAM = { "6116 SRAM",
@@ -259,6 +260,7 @@ static void t1_create(board_t *b) {
 
 static void t1_power_on(board_t *b) {
     ts1000_t *z = T1(b);
+    ((t1_ram_t *)b->sim.parts[z->p_ram].state)->mask = z->ram1k ? 1023 : 2047;
     z->cpu_pins = z80_init(&z->cpu);
     z->in_reset = true;
     z->clk = 0;
@@ -353,7 +355,7 @@ static void t1_run(board_t *b, int cycles) {
 
 uint8_t ts1000_ram_peek(board_t *b, uint16_t addr) {
     t1_ram_t *st = b->sim.parts[T1(b)->p_ram].state;
-    return st->cells[addr & 0x7FF];
+    return st->cells[addr & st->mask & 0x7FF];
 }
 
 /* ------------------------------------------------------------------------ */
@@ -402,6 +404,22 @@ static void t1_print_text(board_t *b) {
     putchar('\n');
 }
 
+/* Option: how much RAM. The ZX81 had 1K (the same board, A10 of the RAM not wired: the 1K shows again at $4400); the TS1000 has 2K. */
+static const char *const t1_ram_values[] = { "2K (TS1000)", "1K (ZX81)" };
+static const char *const t1_ram_ids[] = { "2k", "1k" };
+static const machine_option_t t1_options[] = {
+    { "ram", "RAM", "The TS1000's 2K of RAM, or the ZX81's 1K (the RAM chip's A10 is left out, so the 1K repeats at $4400)",
+      t1_ram_values, t1_ram_ids, 2 },
+};
+static int t1_get_option(board_t *b, int option) { (void)option; return T1(b)->ram1k; }
+static void t1_set_option(board_t *b, int option, int value) {
+    (void)option;
+    T1(b)->ram1k = value != 0;
+    board_config_changed(b);
+    board_rebuild(b);
+    board_power_on(b);
+}
+
 const machine_t machine_ts1000 = {
     .id = "ts1000",
     .name = "Timex Sinclair 1000",
@@ -421,6 +439,9 @@ const machine_t machine_ts1000 = {
     .diodes = "D", .jumpers = "", .supplies = "",
     .keys_help = "Keys: type; Left Shift = SHIFT, Enter = NEWLINE, Backspace = RUBOUT (= DELETE), arrows = cursor, Esc = BREAK",
     .reset_help = "Hold to press RESET: shorts the Z80 /RESET (IC3 pin 26) to GND",
+    .options = t1_options, .noptions = 1,
+    .get_option = t1_get_option,
+    .set_option = t1_set_option,
     .create = t1_create,
     .destroy = t1_destroy,
     .power_on = t1_power_on,
