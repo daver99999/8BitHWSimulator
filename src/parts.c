@@ -415,6 +415,9 @@ enum {
     HALF_COL7_LOW,      /* the columns with A7 low: OKI 3732-L */
     HALF_COL7_HIGH,     /* the columns with A7 high: OKI 3732-H */
 };
+/* Set by a CPU part while the address bus still carries an I/O address after
+ * the cycle's /IORQ has ended: the PLA would not let /CAS through then. */
+int g_dram_inhibit;
 static void dram_cycle(sim_t *s, part_t *p, int bits, int half) {
     dram_state_t *st = p->state;
     int ras = pin_in(s, p, 4), cas = pin_in(s, p, 15);
@@ -428,7 +431,7 @@ static void dram_cycle(sim_t *s, part_t *p, int bits, int half) {
         bool bad = half == HALF_ROW7_LOW ? (st->row & 0x80) : half == HALF_ROW7_HIGH ? !(st->row & 0x80) :
                    half == HALF_COL7_LOW ? (st->col & 0x80) : half == HALF_COL7_HIGH ? !(st->col & 0x80) : false;
         if (!pin_in(s, p, 3)) {          /* /WE low before /CAS: early write */
-            if (!bad) st->cells[cell] = (uint8_t)pin_in(s, p, 2);
+            if (!bad && !g_dram_inhibit) st->cells[cell] = (uint8_t)pin_in(s, p, 2);
             st->out_en = 0;
         } else {                        /* read: Q drives until /CAS rises */
             st->out_en = 1;

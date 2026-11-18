@@ -471,12 +471,14 @@ void c128_cpu_regs_of(const part_t *p, char *buf, int len) {
 #include "z80.h"
 static const int z80_a[16] = { 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 1, 2, 3, 4, 5 };
 static const int z80_d[8] = { 14, 15, 12, 8, 7, 9, 10, 13 };
+extern int g_dram_inhibit;
 typedef struct {
     z80_t cpu;
     uint64_t pins;
     uint8_t clk, started;
     uint32_t edges;
     int32_t cache_a, cache_d;
+    uint8_t io_tail;    /* an I/O cycle has just ended, its address is still out */
 } z80p_t;
 
 static void z80p_eval(sim_t *s, part_t *p) {
@@ -512,6 +514,11 @@ static void z80p_commit(sim_t *s, part_t *p) {
     if (!pin_in(s, p, 26)) pins |= Z80_RES;
     if (clk) pins |= Z80_CLK;
     z->pins = z80_tick(&z->cpu, pins);
+    /* The core lets /IORQ go while the I/O address is still on the bus; until
+     * the next bus cycle starts the DRAM must not take that for a write. */
+    if (z->pins & Z80_IORQ) z->io_tail = 1;
+    else if (z->pins & (Z80_MREQ | Z80_RD)) z->io_tail = 0;
+    g_dram_inhibit = z->io_tail && (z->pins & Z80_AOE);
     g_z80_iorq = (z->pins & Z80_IORQ) != 0;
     z->edges++;
     sim_mark_dirty(s, (int)(p - s->parts));
@@ -523,6 +530,7 @@ static void z80p_reset(sim_t *s, part_t *p) {
     memset(z, 0, sizeof(*z));
     z->pins = z80_init(&z->cpu);
     g_z80_iorq = 0;
+    g_dram_inhibit = 0;
 }
 
 const part_type_t PT_Z80A = { "Z80A",
