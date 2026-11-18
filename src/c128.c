@@ -483,11 +483,17 @@ static void c128_monitor(board_t *b, uint32_t *out) {
 }
 void c128_set_monitor80(board_t *b, bool on) { C128(b)->mon80 = on; }
 static const char *c128_monitor_label(board_t *b) {
-    static char buf[80];
-    snprintf(buf, sizeof(buf), "Monitor: %s   (40/80 key: %s)", C128(b)->mon80 ? "RGBI, VDC" : "composite, VIC", C128(b)->key4080 ? "80" : "40");
-    return buf;
+    return C128(b)->mon80 ? "Monitor: RGBI, 80 col (VDC)  - click for 40 col" : "Monitor: composite, 40 col (VIC)  - click for 80 col";
 }
-static void c128_monitor_toggle(board_t *b) { C128(b)->mon80 ^= 1; }
+/* Move the cable to the other output, put the 40/80 DISPLAY key where the Kernal will set that screen up and
+ * switch the machine off and on again (the Kernal reads the key at start-up only). */
+static void c128_monitor_toggle(board_t *b) {
+    c128_t *z = C128(b);
+    z->mon80 ^= 1;
+    z->key4080 = z->mon80;
+    board_rebuild(b);
+    board_power_on(b);
+}
 
 /* ------------------------------------------------------------------------ */
 /* Files                                                                     */
