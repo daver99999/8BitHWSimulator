@@ -482,7 +482,11 @@ static void c128_monitor(board_t *b, uint32_t *out) {
         }
 }
 void c128_set_monitor80(board_t *b, bool on) { C128(b)->mon80 = on; }
-static const char *c128_monitor_label(board_t *b) { return C128(b)->mon80 ? "Monitor: RGBI (80 col, VDC)" : "Monitor: composite (40 col, VIC)"; }
+static const char *c128_monitor_label(board_t *b) {
+    static char buf[80];
+    snprintf(buf, sizeof(buf), "Monitor: %s   (40/80 key: %s)", C128(b)->mon80 ? "RGBI, VDC" : "composite, VIC", C128(b)->key4080 ? "80" : "40");
+    return buf;
+}
 static void c128_monitor_toggle(board_t *b) { C128(b)->mon80 ^= 1; }
 
 /* ------------------------------------------------------------------------ */
