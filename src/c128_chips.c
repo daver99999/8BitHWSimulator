@@ -541,8 +541,8 @@ static void cia128_eval(sim_t *s, part_t *p) {
     pin_out(s, p, 21, t->irq ? DRV_LO : DRV_Z);
     pin_out(s, p, 18, c->pc_low ? DRV_LO : DRV_HI);
     bool sp_out = (c->ta.cr & (1 << 6)) != 0;
-    pin_out(s, p, 39, sp_out ? DRV_BIT(c->sp.sp_out) : DRV_Z);
-    pin_out(s, p, 40, sp_out ? DRV_BIT(c->sp.cnt_out) : DRV_Z);
+    pin_out(s, p, 39, sp_out && !c->sp.sp_out ? DRV_LO : DRV_Z);        /* open collector: the bus lines are shared with the drives */
+    pin_out(s, p, 40, sp_out && !c->sp.cnt_out ? DRV_LO : DRV_Z);
     part_drive_bus_cached(s, p, cia_d, 8, t->dout, t->dout_en, &t->cache_d);
 }
 

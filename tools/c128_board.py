@@ -620,8 +620,6 @@ def sheet_io():
     net('/NMI', 'CN5.3')
     net(GND, 'CN5.1', 'CN5.2')
     net(VCC, 'CN5.4')
-    net('CNT1', 'U1.40')
-    net('SP1', 'U1.39')
     net('CASS_READ', 'U1.24')
     pullup('RP5_4', '3.3K', 'CASS_READ')
     net('TOD1', 'U1.19')
@@ -663,8 +661,8 @@ def sheet_io():
     for i, nm in ((3, 'SER_ATN'), (4, 'SER_CLK'), (5, 'SER_DATA')):
         pullup('R_%s' % nm, '1K', nm)
     part('CN6', 'serial bus', 'DIN-6', 6)
-    net('SRQIN', 'CN6.1')
-    net('SER_DATA', 'CN6.5')
+    net('SRQIN', 'CN6.1', 'U1.40')                  # SRQ is the fast serial clock: CIA1's CNT
+    net('SER_DATA', 'CN6.5', 'U1.39')               # and DATA the shift register's SP
     net('SER_CLK', 'CN6.4')
     net('SER_ATN', 'CN6.3')
     net(GND, 'CN6.2')

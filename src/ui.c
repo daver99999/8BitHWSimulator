@@ -2791,12 +2791,13 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
                 const char *cname = sp >= 0 ? board_connector_name(b, sp) : NULL;
                 for (int k = 0; cname && cname[k] && k < 31; k++) slot[k] = (char)tolower((unsigned char)cname[k]);
                 if (board_is_c64(b) && c64_cart_in_u4(b)) snprintf(line, sizeof(line), "ROM in the KERNAL socket U4: %s", cart);
+                else if (b->m == &machine_c128) snprintf(line, sizeof(line), "Disk in drive 8: %s", cart);
                 else snprintf(line, sizeof(line), "Cartridge in the %s: %s", slot[0] ? slot : "slot", cart);
                 nk_layout_row_begin(ctx, NK_STATIC, 22, 2);
                 nk_layout_row_push(ctx, 330);
                 nk_label_colored(ctx, line, NK_TEXT_LEFT, COL_SOCKET);
                 nk_layout_row_push(ctx, 80);
-                if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, "Pull the cartridge out (the C64 is switched off and on)");
+                if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, b->m == &machine_c128 ? "Take the disk out of the drive" : "Pull the cartridge out (the C64 is switched off and on)");
                 if (nk_button_label(ctx, "remove")) { board_remove_cart(b); select_pin(b->scope_pin); }
                 nk_layout_row_end(ctx);
             }

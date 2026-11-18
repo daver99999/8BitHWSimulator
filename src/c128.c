@@ -29,6 +29,7 @@ static const part_def_t c128_part_defs[] = {
     { "U5", &PT_6581_128, "SID", ROLE_CHIP, "6581\n$D400-$D41C", "6581 SID sound chip, $D400-$D7FF" },
     { "U1", &PT_6526_128, "CIA1", ROLE_CHIP, "6526\n$DC00-$DCFF", "6526 CIA #1, $DC00-$DCFF: keyboard, joysticks, IRQ" },
     { "U4", &PT_6526_128, "CIA2", ROLE_CHIP, "6526\n$DD00-$DDFF", "6526 CIA #2, $DD00-$DDFF: serial bus, user port, VIC bank bits, NMI" },
+    { "CN6", &PT_IECDRV, "SERIAL", ROLE_OTHER, "serial bus\ndrive 8", "Serial bus connector: ATN, CLK, DATA and SRQ. With a disk image inserted a drive (device 8) answers on it" },
     { "U32", &PT_C128ROM, "SYSROM", ROLE_ROM, "23256 ROM\n252343-04\nsystem", "23256 system ROM (252343-04, 32K): the Z80 start-up, the C64 OS (first half), the C128 KERNAL (second half)" },
     { "U33", &PT_C128ROM, "BASICLO", ROLE_ROM, "23128 ROM\nBASIC 7.0\n$4000-$7FFF", "23128 BASIC 7.0 low (318018-04), $4000-$7FFF" },
     { "U34", &PT_C128ROM, "BASICHI", ROLE_ROM, "23128 ROM\nBASIC 7.0\n$8000-$AFFF", "23128 BASIC 7.0 high (318019-04), $8000-$BFFF" },
@@ -370,6 +371,7 @@ static void c128_create(board_t *b) {
     z->p_osc = sim_find_part(s, "U28");
     z->p_y2 = sim_find_part(s, "Y2");
     z->p_cn5 = sim_find_part(s, "CN5");
+    z->p_cn6 = sim_find_part(s, "CN6");
     z->net_gnd = sim_find_net(s, "GND");
     memset(z->raster, 0, sizeof(z->raster));
     z->rom_mask = 0;
@@ -519,11 +521,38 @@ static void c128_monitor_toggle(board_t *b) {
 /* ------------------------------------------------------------------------ */
 
 static const file_kind_t c128_rom_kind = { "ROM image", "Fit in its socket", false, ROLE_ROM };
+static const file_kind_t c128_disk_kind = { "disk image", "Insert in drive 8", false, ROLE_OTHER };
+
+static bool is_disk_path(const char *path) {
+    size_t pl = strlen(path);
+    return pl > 4 && (!strcasecmp(path + pl - 4, ".d64") || !strcasecmp(path + pl - 4, ".d71") || !strcasecmp(path + pl - 4, ".d81"));
+}
+
+/* A disk image in drive 8: the drive answers on the serial bus from then on. */
+bool c128_disk_insert(board_t *b, const char *path, char *msg, int msglen) {
+    c128_t *z = C128(b);
+    if (z->p_cn6 < 0) { snprintf(msg, (size_t)msglen, "this board has no serial connector"); return false; }
+    diskdrive_t *d = drive_of(&b->sim.parts[z->p_cn6]);
+    if (!drive_mount(d, path, msg, msglen)) return false;
+    d->enabled = 1;
+    if (!d->device) d->device = 8;
+    drive_reset(d);
+    return true;
+}
+void c128_disk_eject(board_t *b) {
+    c128_t *z = C128(b);
+    if (z->p_cn6 < 0) return;
+    diskdrive_t *d = drive_of(&b->sim.parts[z->p_cn6]);
+    drive_eject(d);
+    d->enabled = 0;
+    d->pull_clk = d->pull_data = d->pull_srq = 0;
+}
 
 static const file_kind_t *c128_file_kind(const char *path, char *info, int len, bool *bad) {
     const file_kind_t *state = board_state_file_kind(path, info, len, bad);
     if (state) return state;
     size_t pl = strlen(path);
+    if (is_disk_path(path)) { snprintf(info, (size_t)len, "a floppy disk for the drive on the serial bus"); return &c128_disk_kind; }
     if (pl > 4 && (!strcasecmp(path + pl - 4, ".bin") || !strcasecmp(path + pl - 4, ".rom"))) {
         const char *ref = c128_rom_ref(path);
         if (!ref) return NULL;
@@ -533,8 +562,20 @@ static const file_kind_t *c128_file_kind(const char *path, char *info, int len, 
     return NULL;
 }
 
+static const char *c128_cart_name(board_t *b) {
+    const c128_t *z = C128(b);
+    if (z->p_cn6 < 0) return NULL;
+    const char *p = drive_disk_name(drive_of(&b->sim.parts[z->p_cn6]));
+    const char *base = p ? strrchr(p, '/') : NULL;
+    const char *base2 = p ? strrchr(p, '\\') : NULL;
+    if (base2 > base) base = base2;
+    return p ? (base ? base + 1 : p) : NULL;
+}
+static void c128_remove_cart(board_t *b) { c128_disk_eject(b); }
+
 static bool c128_load(board_t *b, const char *path, bool run, char *msg, int msglen) {
     (void)run;
+    if (is_disk_path(path)) return c128_disk_insert(b, path, msg, msglen);
     if (!c128_fit_rom(b, path, msg, msglen)) return false;
     board_config_changed(b);
     board_power_on(b);
@@ -632,6 +673,9 @@ const machine_t machine_c128 = {
     .monitor_toggle = c128_monitor_toggle,
     .files_title = "Open a ROM image or save state",
     .file_kind = c128_file_kind,
+    .cart_slot = "CN6",
+    .cart_name = c128_cart_name,
+    .remove_cart = c128_remove_cart,
     .load = c128_load,
     .cpu_status = c128_cpu_status,
     .cpu_regs = c128_cpu_regs,

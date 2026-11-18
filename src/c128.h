@@ -5,6 +5,7 @@
 #include "board.h"
 #include "chips_common.h"
 #include "kbd.h"
+#include "c128_drive.h"
 
 #define C128_FREQ            985248     /* the system clock: sim.cycle counts these (the VIC core is the PAL 6569) */
 #define C128_STEPS_PER_CYCLE 16         /* half periods of the dot clock */
@@ -16,7 +17,7 @@
 
 typedef struct c128 {
     board_t board;                      /* first: a c128_t is a board_t */
-    int p_cpu, p_z80, p_vic, p_mmu, p_cia[2], p_sid, p_vdc, p_osc, p_y2, p_cn5;
+    int p_cn6, p_cpu, p_z80, p_vic, p_mmu, p_cia[2], p_sid, p_vdc, p_osc, p_y2, p_cn5;
     uint8_t rom32[32768], basic_lo[16384], basic_hi[16384], chr[8192];
     unsigned rom_mask;                  /* 1 system ROM, 2 BASIC lo, 4 BASIC hi, 8 characters */
     uint32_t raster[C128_VIC_W * C128_VIC_H];
@@ -33,6 +34,8 @@ typedef struct c128 {
 static inline c128_t *C128(board_t *b) { return (c128_t *)b; }
 extern const machine_t machine_c128;
 static inline bool board_is_c128(const board_t *b) { return b->m == &machine_c128; }
+bool c128_disk_insert(board_t *b, const char *path, char *msg, int msglen);
+void c128_disk_eject(board_t *b);
 void c128_set_c64(board_t *b, bool on);
 bool c128_is_c64(board_t *b);
 void c128_set_monitor80(board_t *b, bool on);
