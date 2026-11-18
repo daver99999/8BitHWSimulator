@@ -6,7 +6,7 @@
  * system ROM (U32), sets up the MMU and hands over to the 8502 (U6) through the bus request logic of U8, U31,
  * U37, U56, U57, U60 and U61, and the latches U12 and U13 that carry the Z80's data. Nothing in this file drives
  * a bus cycle: the chips watch their own clocks. This file has the keyboard, the joysticks, the ROMs and the
- * power-on reset. Not in this release: C64 mode and CP/M. */
+ * power-on reset. Not in this release: CP/M. */
 #include "c128.h"
 #include "sokol/sokol_app.h"   /* key codes */
 #include <stdio.h>
@@ -285,7 +285,12 @@ static void c128_key_up(board_t *b, int key) {
     kbd_key_up(&z->kbd, key);
     c128_sync_keys(b);
 }
-static void c128_frame_update(board_t *b, uint32_t us) { kbd_update(&C128(b)->kbd, us); c128_sync_keys(b); }
+static void c128_frame_update(board_t *b, uint32_t us) {
+    c128_t *z = C128(b);
+    if (z->cbm_hold && b->sim.cycle > 1500000) { z->cbm_hold = 0; kbd_key_up(&z->kbd, K_CBM); }   /* the start-up code has looked */
+    kbd_update(&z->kbd, us);
+    c128_sync_keys(b);
+}
 
 static int c128_host_key(int keycode) {
     switch (keycode) {
@@ -482,6 +487,20 @@ static void c128_monitor(board_t *b, uint32_t *out) {
         }
 }
 void c128_set_monitor80(board_t *b, bool on) { C128(b)->mon80 = on; }
+bool c128_is_c64(board_t *b) { return b->sim.parts[C128(b)->p_mmu].dead ? false : c128_mmu_c64_of(&b->sim.parts[C128(b)->p_mmu]); }
+/* C64 mode as on the real machine: switch on (or reset) with the C= key held, and the Z80's start-up code starts
+ * the C64 ROMs. The key is let go after 1.5 s. */
+void c128_set_c64(board_t *b, bool on) {
+    c128_t *z = C128(b);
+    board_power_on(b);
+    z->cbm_hold = on;
+    if (on) kbd_key_down(&z->kbd, K_CBM);
+    c128_sync_keys(b);
+}
+static const char *c128_mode_label(board_t *b) {
+    return c128_is_c64(b) ? "Mode: C64  - click for C128" : "Mode: C128  - click for C64";
+}
+static void c128_mode_toggle(board_t *b) { c128_set_c64(b, !c128_is_c64(b)); }
 static const char *c128_monitor_label(board_t *b) {
     return C128(b)->mon80 ? "Monitor: RGBI, 80 col (VDC)  - click for 40 col" : "Monitor: composite, 40 col (VIC)  - click for 80 col";
 }
@@ -607,6 +626,8 @@ const machine_t machine_c128 = {
     .host_key = c128_host_key,
     .host_char = c128_host_char,
     .monitor = c128_monitor,
+    .mode_label = c128_mode_label,
+    .mode_toggle = c128_mode_toggle,
     .monitor_label = c128_monitor_label,
     .monitor_toggle = c128_monitor_toggle,
     .files_title = "Open a ROM image or save state",

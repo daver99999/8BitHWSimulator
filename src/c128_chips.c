@@ -981,3 +981,5 @@ const part_type_t PT_C128CHR = { "390059-01 ROM",
 
 uint8_t c128_vdc_peek(const part_t *p, uint16_t addr) { return ((const vdc_t *)p->state)->ram[addr]; }
 uint8_t c128_vdc_reg_of(const part_t *p, int r) { return ((const vdc_t *)p->state)->reg[r % 38]; }
+
+bool c128_mmu_c64_of(const part_t *p) { return (((const mmu8722_t *)p->state)->mcr & 0x40) != 0; }

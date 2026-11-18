@@ -2591,6 +2591,11 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
         if (nk_button_label(ctx, "Keyboard")) U.kbd_open = !U.kbd_open;
         nk_layout_row_end(ctx);
         if ((down || U.reset_hold) != b->reset_button) board_set_reset_button(b, down || U.reset_hold);
+        if (M()->mode_label) {
+            nk_layout_row_dynamic(ctx, 26, 1);
+            if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, "Start the machine in the other mode: it is switched off and on (memory is lost). C64 mode is what the real machine does when you switch on with the C= key held");
+            if (nk_button_label(ctx, M()->mode_label(b))) M()->mode_toggle(b);
+        }
         if (M()->monitor_label) {
             nk_layout_row_dynamic(ctx, 26, 1);
             if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, "Plug the monitor into the other video output: the 40/80 DISPLAY key is set to match and the machine restarts (switched off and on, memory is lost)");

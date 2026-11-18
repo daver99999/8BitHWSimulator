@@ -20,6 +20,7 @@ typedef struct c128 {
     uint8_t rom32[32768], basic_lo[16384], basic_hi[16384], chr[8192];
     unsigned rom_mask;                  /* 1 system ROM, 2 BASIC lo, 4 BASIC hi, 8 characters */
     uint32_t raster[C128_VIC_W * C128_VIC_H];
+    uint8_t cbm_hold;                   /* the C= key is held for the Z80's start-up code, to make it start C64 mode */
     uint8_t mon80;                      /* the monitor is on the RGBI output (the VDC, 80 columns), not the composite one */
     kbd_t kbd;
     uint16_t key_matrix[12];            /* per line: the PB bits closed; lines 0-7 are PA bits, 8-10 the K lines, 11 RESTORE */
@@ -32,6 +33,8 @@ typedef struct c128 {
 static inline c128_t *C128(board_t *b) { return (c128_t *)b; }
 extern const machine_t machine_c128;
 static inline bool board_is_c128(const board_t *b) { return b->m == &machine_c128; }
+void c128_set_c64(board_t *b, bool on);
+bool c128_is_c64(board_t *b);
 void c128_set_monitor80(board_t *b, bool on);
 const char *c128_key_legend(int line, int col);
 #endif

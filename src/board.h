@@ -112,6 +112,10 @@ typedef struct machine {
      * switches it, which shows the input in use, and the switch. Optional. */
     const char *(*monitor_label)(board_t *b);
     void (*monitor_toggle)(board_t *b);
+    /* A machine with more than one mode of its own (the C128's C128 and C64 modes): the label of the button
+     * that switches it, which shows the mode, and the switch. Optional. */
+    const char *(*mode_label)(board_t *b);
+    void (*mode_toggle)(board_t *b);
     /* Files: the title of the browser, what a file is for this machine
      * (NULL if it isn't one it takes), with a line about it, and whether
      * it can't be used (bad). */
