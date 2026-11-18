@@ -3374,8 +3374,8 @@ void ui_event(const sapp_event *ev) {
     /* The handle between the board and the right column: drag it to resize. */
     {
         float split_x = sapp_widthf() - g_right_w;
-        bool near = ev->mouse_x >= split_x - 4 && ev->mouse_x <= split_x + 6;
-        if (ev->type == SAPP_EVENTTYPE_MOUSE_DOWN && ev->mouse_button == SAPP_MOUSEBUTTON_LEFT && near) {
+        bool on_edge = ev->mouse_x >= split_x - 4 && ev->mouse_x <= split_x + 6;
+        if (ev->type == SAPP_EVENTTYPE_MOUSE_DOWN && ev->mouse_button == SAPP_MOUSEBUTTON_LEFT && on_edge) {
             g_split_drag = true;
             return;
         }
@@ -3389,7 +3389,7 @@ void ui_event(const sapp_event *ev) {
                 float max = sapp_widthf() - BOARD_W_MIN;
                 g_right_w = w < RIGHT_W_MIN ? RIGHT_W_MIN : w > max ? max : w;
             }
-            sapp_set_mouse_cursor(g_split_drag || near ? SAPP_MOUSECURSOR_RESIZE_EW : SAPP_MOUSECURSOR_DEFAULT);
+            sapp_set_mouse_cursor(g_split_drag || on_edge ? SAPP_MOUSECURSOR_RESIZE_EW : SAPP_MOUSECURSOR_DEFAULT);
         }
     }
     /* Mouse moves only feed nuklear. Waiting on the simulation for each one
