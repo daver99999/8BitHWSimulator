@@ -133,7 +133,7 @@ const part_type_t PT_74LS74_128 = { "74LS74",
 
 typedef struct {
     uint8_t cr, pcr[4], mcr, rcr, p0l, p0h, p1l, p1h;
-    uint8_t phi0, was_reset, pend_v;
+    uint8_t phi0, was_reset, pend_v, quiet;
     int16_t pend_reg;
     int32_t cache_d;
 } mmu8722_t;
@@ -198,12 +198,15 @@ static unsigned mmu_hi_of(sim_t *s, part_t *p) {
     return v;
 }
 
+/* Set by the Z80 part while it does an I/O cycle: the MMU's registers answer the Z80's I/O instructions at any time. */
+static int g_z80_iorq;
+
 /* The register the address selects: 0-11 for $D500-$D50B, 0x100+n for the write only $FF00-$FF04, else -1. */
 static int mmu_reg(sim_t *s, part_t *p, const mmu8722_t *t) {
     if (pin_in(s, p, MMU_A47) || pin_in(s, p, MMU_A67)) return -1;      /* A4-A7 must be 0 */
     unsigned lo = 0, hi = mmu_hi_of(s, p);
     for (int i = 0; i < 4; i++) lo |= (unsigned)pin_in(s, p, mmu_a0[i]) << i;
-    if (hi == 0xD5 && lo <= 0x0B && (!(t->cr & 1) || !(t->mcr & 1))) return (int)lo;   /* the Z80 reaches them by I/O */
+    if (hi == 0xD5 && lo <= 0x0B && (!(t->cr & 1) || (!(t->mcr & 1) && g_z80_iorq))) return (int)lo;   /* the Z80 reaches them by I/O */
     if (hi == 0xFF && lo <= 4) return 0x100 + (int)lo;
     return -1;
 }
@@ -269,6 +272,7 @@ static void mmu_commit(sim_t *s, part_t *p) {
         t->pend_reg = wr ? (int16_t)mmu_reg(s, p, t) : -1;
         t->pend_v = (uint8_t)part_read_bus(s, p, mmu_d, 8);
     }
+    if (!phi0 && t->phi0 && t->quiet) { t->quiet--; t->pend_reg = -1; }   /* the bus is changing hands: its address lines float, nothing is written */
     if (!phi0 && t->phi0 && t->pend_reg >= 0) {                                    /* end of a write cycle */
         int reg = t->pend_reg;
         uint8_t v = t->pend_v;
@@ -280,7 +284,7 @@ static void mmu_commit(sim_t *s, part_t *p) {
             switch (reg) {
             case 0: t->cr = v; break;
             case 1: case 2: case 3: case 4: t->pcr[reg - 1] = v; break;
-            case 5: t->mcr = v & 0x79; break;
+            case 5: if ((t->mcr ^ v) & 1) t->quiet = 4; t->mcr = v & 0x79; break;
             case 6: t->rcr = v; break;
             case 7: t->p0l = v; break;
             case 8: t->p0h = v & 0x0F; break;
@@ -507,6 +511,7 @@ static void z80p_commit(sim_t *s, part_t *p) {
     if (!pin_in(s, p, 26)) pins |= Z80_RES;
     if (clk) pins |= Z80_CLK;
     z->pins = z80_tick(&z->cpu, pins);
+    g_z80_iorq = (z->pins & Z80_IORQ) != 0;
     z->edges++;
     sim_mark_dirty(s, (int)(p - s->parts));
 }
@@ -516,6 +521,7 @@ static void z80p_reset(sim_t *s, part_t *p) {
     z80p_t *z = p->state;
     memset(z, 0, sizeof(*z));
     z->pins = z80_init(&z->cpu);
+    g_z80_iorq = 0;
 }
 
 const part_type_t PT_Z80A = { "Z80A",
@@ -674,6 +680,7 @@ const part_type_t PT_6581_128 = { "6581 SID",
 static const int vdc_d[8] = { 18, 17, 16, 15, 14, 13, 11, 10 };
 typedef struct {
     uint8_t reg[38], idx, last_wr, dout_en, dout;
+    uint64_t last_cyc;
     uint8_t ram[65536];
     phi_t phi;
     uint32_t frame;
@@ -704,14 +711,15 @@ static void vdc_write(vdc_t *v, uint8_t d) {
         return;
     }
     v->reg[v->idx] = d;
-    if (v->idx == 30) {                                 /* block copy or fill of d + 1 bytes */
+    if (v->idx == 30) {                                 /* block copy or fill of d bytes (0 is 256) */
         uint16_t dst = vdc_addr(v), src = (uint16_t)(v->reg[32] << 8 | v->reg[33]);
         bool copy = (v->reg[24] & 0x80) != 0;
-        for (int i = 0; i <= d; i++) {
+        int n = d ? d : 256;
+        for (int i = 0; i < n; i++) {
             v->ram[(uint16_t)(dst + i)] = copy ? v->ram[(uint16_t)(src + i)] : v->last_wr;
         }
-        vdc_set_addr(v, (uint16_t)(dst + d + 1));
-        if (copy) { v->reg[32] = (uint8_t)((src + d + 1) >> 8); v->reg[33] = (uint8_t)(src + d + 1); }
+        vdc_set_addr(v, (uint16_t)(dst + n));
+        if (copy) { v->reg[32] = (uint8_t)((src + n) >> 8); v->reg[33] = (uint8_t)(src + n); }
     }
 }
 
@@ -726,6 +734,8 @@ static void vdc_commit(sim_t *s, part_t *p) {
     if (!level && v->dout_en) { v->dout_en = 0; sim_mark_dirty(s, (int)(p - s->parts)); }
     if (!phi_act(&v->phi, level)) return;
     if (pin_in(s, p, 7)) return;                         /* /CS */
+    if (s->cycle == v->last_cyc + 1) { return; }    /* the Z80's I/O cycle lasts two clocks: one access */
+    v->last_cyc = s->cycle;
     bool a0 = pin_in(s, p, 8) != 0;                      /* /RS: the register select (A0) */
     if (pin_in(s, p, 9)) {                               /* read */
         v->dout = a0 ? vdc_read(v) : (uint8_t)(0x80 | ((s->cycle % (63 * 312) >= 63 * 262) ? 0x20 : 0));   /* ready, vertical blank */
@@ -997,4 +1007,8 @@ const part_type_t PT_C128CHR = { "390059-01 ROM",
 uint8_t c128_vdc_peek(const part_t *p, uint16_t addr) { return ((const vdc_t *)p->state)->ram[addr]; }
 uint8_t c128_vdc_reg_of(const part_t *p, int r) { return ((const vdc_t *)p->state)->reg[r % 38]; }
 
+void c128_mmu_regs_of(const part_t *p, char *buf, int len) {
+    const mmu8722_t *t = p->state;
+    snprintf(buf, (size_t)len, "CR=%02X PCR=%02X,%02X,%02X,%02X MCR=%02X RCR=%02X P0=%02X%02X P1=%02X%02X", t->cr, t->pcr[0], t->pcr[1], t->pcr[2], t->pcr[3], t->mcr, t->rcr, t->p0h, t->p0l, t->p1h, t->p1l);
+}
 bool c128_mmu_c64_of(const part_t *p) { return (((const mmu8722_t *)p->state)->mcr & 0x40) != 0; }

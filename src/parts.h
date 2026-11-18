@@ -67,6 +67,7 @@ void c128_vdc_render(const sim_t *s, const part_t *p, uint32_t *out, int w, int 
 uint8_t c128_vdc_peek(const part_t *p, uint16_t addr);
 uint8_t c128_vdc_reg_of(const part_t *p, int r);
 bool c128_mmu_c64_of(const part_t *p);
+void c128_mmu_regs_of(const part_t *p, char *buf, int len);
 bool c128_vic_fast(const part_t *p);
 uint8_t c128_vic_reg_of(const part_t *p, int r);
 uint32_t c128_cpu_cycles_of(const part_t *p);
