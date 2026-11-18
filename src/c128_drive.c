@@ -562,6 +562,7 @@ static void tx_begin_bits(diskdrive_t *d, uint64_t now) {
 void drive_poll(diskdrive_t *d, int atn, int clk, int data, int srq, uint64_t now) {
     if (!d->enabled) return;
     int atn_fall = d->atn && !atn, atn_rise = !d->atn && atn, clk_low = !clk;
+    if (!atn || d->state != S_IDLE || d->burst_pending) d->active = now;
     d->atn = (uint8_t)atn;
     d->clk = (uint8_t)clk;
     d->data = (uint8_t)data;

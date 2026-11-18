@@ -13,6 +13,8 @@ enum { FILEDIALOG_PICKED, FILEDIALOG_CANCELLED, FILEDIALOG_NONE };
  * in PATH, FILEDIALOG_CANCELLED, or FILEDIALOG_NONE if this system has no
  * dialog to show. Blocks until the dialog is closed. */
 int filedialog_open_picture(char *path, int len);
+/* Ask for a disk image (.d64, .d71, .d81) for the drive. Same results. */
+int filedialog_open_disk(char *path, int len);
 /* The picture on the clipboard (a screenshot copied, or a picture file
  * copied in the file manager): FILEDIALOG_PICKED and its path in PATH (a
  * copied image is first written to a file in the temp folder),

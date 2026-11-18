@@ -36,6 +36,7 @@ extern const machine_t machine_c128;
 static inline bool board_is_c128(const board_t *b) { return b->m == &machine_c128; }
 bool c128_disk_insert(board_t *b, const char *path, char *msg, int msglen);
 void c128_disk_eject(board_t *b);
+bool c128_disk_active(board_t *b);      /* the drive is working on the bus: for its light */
 void c128_set_c64(board_t *b, bool on);
 bool c128_is_c64(board_t *b);
 void c128_set_monitor80(board_t *b, bool on);

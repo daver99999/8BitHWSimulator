@@ -539,6 +539,12 @@ bool c128_disk_insert(board_t *b, const char *path, char *msg, int msglen) {
     drive_reset(d);
     return true;
 }
+bool c128_disk_active(board_t *b) {
+    c128_t *z = C128(b);
+    if (z->p_cn6 < 0) return false;
+    const diskdrive_t *d = drive_of(&b->sim.parts[z->p_cn6]);
+    return d->enabled && b->sim.cycle - d->active < 150000;      /* the light stays on for a moment */
+}
 void c128_disk_eject(board_t *b) {
     c128_t *z = C128(b);
     if (z->p_cn6 < 0) return;

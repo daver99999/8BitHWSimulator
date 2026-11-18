@@ -29,6 +29,7 @@ struct diskdrive {
     uint8_t pull_clk, pull_data, pull_srq;  /* what the drive pulls low */
     int state;
     uint64_t t0;
+    uint64_t active;                /* the last time the bus was busy with this drive (microseconds) */
     uint8_t armed, nbits, shift, eoi, atn_cmd, listening, talking, sa, opening, last_cmd;
     uint8_t tx_byte, tx_eoi;
     /* the channels */

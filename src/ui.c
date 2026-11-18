@@ -13,6 +13,7 @@
 #include "ui_common.h"
 #include "atlas.h"
 #include "c64.h"
+#include "c128.h"
 #include "pet.h"
 #include "ts2068.h"
 #include "ts1000.h"
@@ -185,6 +186,7 @@ static struct {
     char focus_note[240];
     /* "Diagnose screenshot..." clicked: the system's dialog, after the frame. */
     bool want_pick;
+    bool want_disk;             /* "Disk...": the system's dialog for a disk image, after the frame */
     bool want_paste;            /* "Paste screenshot" or Ctrl+V: the clipboard's picture, after the frame */
     int want_records_file;      /* a repair records file to pick (diagnose_action_t.records_file) */
     char diag_status[300];      /* what the last diagnosis did */
@@ -2601,6 +2603,23 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
             if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, "Plug the monitor into the other video output: the 40/80 DISPLAY key is set to match and the machine restarts (switched off and on, memory is lost)");
             if (nk_button_label(ctx, M()->monitor_label(b))) M()->monitor_toggle(b);
         }
+        if (b->m == &machine_c128) {
+            /* The disk drive: a button for the file dialog, and its light. */
+            nk_layout_row_begin(ctx, NK_STATIC, 26, 3);
+            nk_layout_row_push(ctx, 140);
+            if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, "Put a disk image (.d64, .d71, .d81) in drive 8. A file dropped on the window does the same");
+            if (nk_button_label(ctx, "Disk...")) U.want_disk = true;
+            nk_layout_row_push(ctx, 26);
+            struct nk_rect led;
+            nk_widget(&led, ctx);
+            struct nk_command_buffer *cv = nk_window_get_canvas(ctx);
+            bool on = c128_disk_active(b);
+            nk_fill_rect(cv, nk_rect(led.x + 3, led.y + 3, led.w - 6, led.h - 6), 2, on ? nk_rgb(255, 40, 30) : nk_rgb(70, 30, 28));
+            nk_stroke_rect(cv, nk_rect(led.x + 3, led.y + 3, led.w - 6, led.h - 6), 2, 1, nk_rgb(20, 20, 20));
+            nk_layout_row_push(ctx, 150);
+            nk_label(ctx, on ? "drive busy" : (board_cart_name(b) ? "drive 8" : "drive 8: empty"), NK_TEXT_LEFT);
+            nk_layout_row_end(ctx);
+        }
         /* The save state slot: one, in memory. */
         nk_layout_row_begin(ctx, NK_STATIC, 26, 3);
         nk_layout_row_push(ctx, 140);
@@ -3290,6 +3309,16 @@ void ui_frame(void) {
         } else {
             snprintf(U.diag_status, sizeof(U.diag_status), "No picture on the clipboard: copy the screenshot first");
         }
+    }
+    if (U.want_disk) {
+        U.want_disk = false;
+        char path[4096];
+        set_stage(STAGE_DIALOG);
+        int got = filedialog_open_disk(path, sizeof(path));
+        set_stage(STAGE_IDLE);
+        if (got == FILEDIALOG_PICKED) load_prg(path, true);
+        else if (got == FILEDIALOG_NONE)
+            snprintf(U.diag_status, sizeof(U.diag_status), "No file dialog here (install zenity or kdialog): drop the disk image on the window");
     }
     if (U.want_pick) {
         U.want_pick = false;

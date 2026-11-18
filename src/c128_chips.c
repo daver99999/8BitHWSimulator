@@ -159,14 +159,15 @@ static void mmu_map(const mmu8722_t *t, unsigned hi, bool aec, mmu_map_t *m) {
         return;
     }
     if (z80) {                                      /* the Z80 has the start-up ROM at $0000 and the RAM where the 8502 sees it */
-        m->ta = (uint8_t)(hi < 0x10 ? hi + 0x10 : hi);   /* the BIOS ROM is read 4K up, the RAM where it is */
         m->block = (t->cr >> 6) & 3;
+        bool rom0 = hi < 0x10 && m->block == 0;      /* the start-up ROM covers the bottom 4K of bank 0 only: CP/M keeps its page zero in bank 1 */
+        m->ta = (uint8_t)(rom0 ? hi + 0x10 : hi);    /* the BIOS ROM is read 4K up, the RAM where it is */
         {                                           /* the common RAM works for the Z80 as it does for the 8502 */
             static const unsigned csizes[4] = { 0x400, 0x1000, 0x2000, 0x4000 };
             unsigned csize = csizes[t->rcr & 3];
             if (((t->rcr & 4) && addr < csize) || ((t->rcr & 8) && addr >= 0x10000 - csize)) m->block = 0;
         }
-        if (hi < 0x10) m->ms = 0;                   /* the start-up code stays visible while the Z80 runs */
+        if (rom0 && m->block == 0) m->ms = 0;       /* the start-up code stays visible while the Z80 runs */
     } else {
         if (hi == 0) { m->ta = t->p0l; m->block = t->p0h & 0x0F; }
         else if (hi == 1) { m->ta = t->p1l; m->block = t->p1h & 0x0F; }
@@ -222,7 +223,7 @@ static void mmu_eval(sim_t *s, part_t *p) {
     bool mode64 = (t->mcr & 0x40) != 0;
     pin_out(s, p, 15, DRV_BIT(m.ms & 1));
     pin_out(s, p, 14, DRV_BIT((m.ms >> 1) & 1));
-    pin_out(s, p, 13, DRV_BIT(t->cr & 1));
+    pin_out(s, p, 13, DRV_BIT((t->cr & 1) || !(t->mcr & 1)));   /* the Z80 sees RAM at $D000 whatever the CR says: it reaches the chips by I/O */
     pin_out(s, p, MMU_MS3, DRV_BIT(!mode64));
     pin_out(s, p, MMU_Z80EN, DRV_BIT(t->mcr & 1));
     pin_out(s, p, MMU_FSDIR, DRV_BIT(!(t->mcr & 8)));

@@ -41,6 +41,37 @@ static int run_dialog(const char *cmd, char *path, int len) {
 }
 #endif
 
+int filedialog_open_disk(char *path, int len) {
+#ifdef _WIN32
+    wchar_t file[MAX_PATH * 4] = L"";
+    OPENFILENAMEW ofn;
+    memset(&ofn, 0, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = GetActiveWindow();
+    ofn.lpstrFilter = L"Disk images (*.d64, *.d71, *.d81)\0*.d64;*.d71;*.d81\0All files\0*.*\0";
+    ofn.lpstrFile = file;
+    ofn.nMaxFile = sizeof(file) / sizeof(file[0]);
+    ofn.lpstrTitle = L"Put a disk in drive 8";
+    ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
+    if (!GetOpenFileNameW(&ofn)) return FILEDIALOG_CANCELLED;
+    if (!WideCharToMultiByte(CP_UTF8, 0, file, -1, path, len, NULL, NULL)) return FILEDIALOG_CANCELLED;
+    slashes(path);
+    return FILEDIALOG_PICKED;
+#elif defined(__APPLE__)
+    return run_dialog("osascript -e 'POSIX path of (choose file with prompt \"Put a disk in drive 8 (.d64, .d71, .d81)\")' 2>/dev/null",
+                      path, len);
+#else
+    return run_dialog("if command -v zenity >/dev/null 2>&1; then"
+                      " zenity --file-selection --title='Put a disk in drive 8'"
+                      " --file-filter='Disk images | *.d64 *.D64 *.d71 *.D71 *.d81 *.D81'"
+                      " --file-filter='All files | *' 2>/dev/null;"
+                      " elif command -v kdialog >/dev/null 2>&1; then"
+                      " kdialog --title 'Put a disk in drive 8' --getopenfilename . '*.d64 *.d71 *.d81' 2>/dev/null;"
+                      " else exit 127; fi",
+                      path, len);
+#endif
+}
+
 int filedialog_open_picture(char *path, int len) {
 #ifdef _WIN32
     wchar_t file[MAX_PATH * 4] = L"";
