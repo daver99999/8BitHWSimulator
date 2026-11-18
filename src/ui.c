@@ -2584,20 +2584,20 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
          * the CPU, the CIAs and the SID reset, the VIC (no reset pin) and
          * the RAM don't. */
         nk_layout_row_begin(ctx, NK_STATIC, 26, 4);
-        nk_layout_row_push(ctx, 140);
+        nk_layout_row_push(ctx, 112);
         if (nk_widget_is_hovered(ctx))
             nk_tooltip(ctx, M()->reset_help);
         nk_button_push_behavior(ctx, NK_BUTTON_REPEATER);
         bool down = nk_button_label(ctx, b->reset_button ? "RESET pressed" : "RESET");
         nk_button_pop_behavior(ctx);
-        nk_layout_row_push(ctx, 150);
+        nk_layout_row_push(ctx, 130);
         nk_bool hold = U.reset_hold;
         nk_checkbox_label(ctx, "keep it pressed", &hold);
         U.reset_hold = hold;
-        nk_layout_row_push(ctx, 140);
+        nk_layout_row_push(ctx, 60);
         if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, "How to use the board: mouse, faults, colors, keys");
         if (nk_button_label(ctx, "Help")) U.help_open = !U.help_open;
-        nk_layout_row_push(ctx, 140);
+        nk_layout_row_push(ctx, 80);
         if (nk_widget_is_hovered(ctx)) nk_tooltip(ctx, "The machine's keys, with the PC key that types each one");
         if (nk_button_label(ctx, "Keyboard")) U.kbd_open = !U.kbd_open;
         nk_layout_row_end(ctx);
