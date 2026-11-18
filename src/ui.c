@@ -186,6 +186,7 @@ static struct {
     char focus_note[240];
     /* "Diagnose screenshot..." clicked: the system's dialog, after the frame. */
     bool want_pick;
+    float mouse_x, mouse_y;     /* where the pointer was last */
     bool want_disk;             /* "Disk...": the system's dialog for a disk image, after the frame */
     bool want_paste;            /* "Paste screenshot" or Ctrl+V: the clipboard's picture, after the frame */
     int want_records_file;      /* a repair records file to pick (diagnose_action_t.records_file) */
@@ -3319,8 +3320,20 @@ void ui_frame(void) {
         set_stage(STAGE_DIALOG);
         int got = filedialog_open_disk(path, sizeof(path));
         set_stage(STAGE_IDLE);
-        if (got == FILEDIALOG_PICKED) load_prg(path, true);
-        else if (got == FILEDIALOG_NONE)
+        /* The dialog took the mouse button's release: tell nuklear, or it
+         * still thinks the button is down and the next click is a second one. */
+        sapp_event up;
+        memset(&up, 0, sizeof(up));
+        up.type = SAPP_EVENTTYPE_MOUSE_UP;
+        up.mouse_button = SAPP_MOUSEBUTTON_LEFT;
+        up.mouse_x = U.mouse_x;
+        up.mouse_y = U.mouse_y;
+        snk_handle_event(&up);
+        if (got == FILEDIALOG_PICKED) {
+            lock_board();
+            load_prg(path, true);
+            unlock_board();
+        } else if (got == FILEDIALOG_NONE)
             snprintf(U.diag_status, sizeof(U.diag_status), "No file dialog here (install zenity or kdialog): drop the disk image on the window");
     }
     if (U.want_pick) {
@@ -3348,6 +3361,8 @@ void ui_event(const sapp_event *ev) {
     /* Mouse moves only feed nuklear. Waiting on the simulation for each one
      * backs up the event queue and the pointer lags. */
     if (ev->type == SAPP_EVENTTYPE_MOUSE_MOVE) {
+        U.mouse_x = ev->mouse_x;
+        U.mouse_y = ev->mouse_y;
         snk_handle_event(ev);
         return;
     }

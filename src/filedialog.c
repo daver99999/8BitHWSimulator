@@ -42,8 +42,11 @@ static int run_dialog(const char *cmd, char *path, int len) {
 #endif
 
 int filedialog_open_disk(char *path, int len) {
+    char dir[1024];
+    if (!filedialog_exe_dir(dir, sizeof(dir))) dir[0] = 0;       /* it starts in the folder the program is in */
 #ifdef _WIN32
-    wchar_t file[MAX_PATH * 4] = L"";
+    wchar_t file[MAX_PATH * 4] = L"", wdir[MAX_PATH * 4] = L"";
+    if (dir[0]) MultiByteToWideChar(CP_UTF8, 0, dir, -1, wdir, sizeof(wdir) / sizeof(wdir[0]));
     OPENFILENAMEW ofn;
     memset(&ofn, 0, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
@@ -52,23 +55,27 @@ int filedialog_open_disk(char *path, int len) {
     ofn.lpstrFile = file;
     ofn.nMaxFile = sizeof(file) / sizeof(file[0]);
     ofn.lpstrTitle = L"Put a disk in drive 8";
+    if (wdir[0]) ofn.lpstrInitialDir = wdir;
     ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
     if (!GetOpenFileNameW(&ofn)) return FILEDIALOG_CANCELLED;
     if (!WideCharToMultiByte(CP_UTF8, 0, file, -1, path, len, NULL, NULL)) return FILEDIALOG_CANCELLED;
     slashes(path);
     return FILEDIALOG_PICKED;
 #elif defined(__APPLE__)
-    return run_dialog("osascript -e 'POSIX path of (choose file with prompt \"Put a disk in drive 8 (.d64, .d71, .d81)\")' 2>/dev/null",
-                      path, len);
+    char cmd[2048];
+    snprintf(cmd, sizeof(cmd), "osascript -e 'POSIX path of (choose file with prompt \"Put a disk in drive 8 (.d64, .d71, .d81)\"%s%s%s)' 2>/dev/null",
+             dir[0] ? " default location POSIX file \"" : "", dir, dir[0] ? "\"" : "");
+    return run_dialog(cmd, path, len);
 #else
-    return run_dialog("if command -v zenity >/dev/null 2>&1; then"
-                      " zenity --file-selection --title='Put a disk in drive 8'"
+    char cmd[4096];
+    snprintf(cmd, sizeof(cmd), "if command -v zenity >/dev/null 2>&1; then"
+                      " zenity --file-selection --title='Put a disk in drive 8' --filename='%s/'"
                       " --file-filter='Disk images | *.d64 *.D64 *.d71 *.D71 *.d81 *.D81'"
                       " --file-filter='All files | *' 2>/dev/null;"
                       " elif command -v kdialog >/dev/null 2>&1; then"
-                      " kdialog --title 'Put a disk in drive 8' --getopenfilename . '*.d64 *.d71 *.d81' 2>/dev/null;"
-                      " else exit 127; fi",
-                      path, len);
+                      " kdialog --title 'Put a disk in drive 8' --getopenfilename '%s/' '*.d64 *.d71 *.d81' 2>/dev/null;"
+                      " else exit 127; fi", dir, dir);
+    return run_dialog(cmd, path, len);
 #endif
 }
 
@@ -415,8 +422,8 @@ bool filedialog_exe_dir(char *dir, int len) {
     char real[PATH_MAX];
     ssize_t n = readlink("/proc/self/exe", real, sizeof(real) - 1);
     if (n <= 0 || n >= len) return false;
-    real[n] = 0;
-    snprintf(dir, (size_t)len, "%s", real);
+    memcpy(dir, real, (size_t)n);
+    dir[n] = 0;
 #else
     (void)dir;
     (void)len;
