@@ -2086,9 +2086,10 @@ static bool load_prg(const char *path, bool run) {
     if (fk && fk->role == ROLE_ROM) {       /* cartridges and ROMs go in with the power off */
         ok = board_load(U.b, path, run, U.status, sizeof(U.status));
         if (ok) select_pin(U.b->scope_pin);
-    } else if (U.b->sim.cycle < M()->ready_cycles) {
+    } else if (U.b->sim.cycle < M()->ready_cycles && !(fk && !strcmp(fk->type, "disk image"))) {
         /* Still booting: BASIC's cold start would wipe the program and
-         * the RUN typed for it. Load it when BASIC is up. */
+         * the RUN typed for it. Load it when BASIC is up. (A disk in a
+         * drive wipes nothing: it goes in at once.) */
         snprintf(U.autoload, sizeof(U.autoload), "%s", path);
         U.autoload_run = run;
         snprintf(U.status, sizeof(U.status), "%s: loading when BASIC is ready", path);
