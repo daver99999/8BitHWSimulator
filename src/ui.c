@@ -50,9 +50,16 @@
 #include <GL/gl.h>
 #endif
 
-#define RIGHT_W   470           /* width of the right column */
-#define MON_W     448           /* monitor picture size on screen */
-#define MON_H     311
+/* The right column is as wide as the user drags it (its left edge is the
+ * handle); the monitor picture follows it, in the same proportions. */
+#define RIGHT_W_DEFAULT 470
+#define RIGHT_W_MIN     340
+#define BOARD_W_MIN     320
+static float g_right_w = RIGHT_W_DEFAULT;
+static bool g_split_drag;
+#define RIGHT_W   g_right_w     /* width of the right column */
+#define MON_W     (g_right_w - 22)              /* monitor picture size on screen */
+#define MON_H     fminf(MON_W * 311.0f / 448.0f, sapp_heightf() * 0.45f)
 #define SCOPE_H   250
 
 typedef struct { float x0, y0, x1, y1; } box_t;
@@ -3117,6 +3124,7 @@ void ui_frame(void) {
     ctx->style.checkbox.cursor_normal = nk_style_item_color(ink(COL_TRACE));
     ctx->style.checkbox.cursor_hover = nk_style_item_color(ink(COL_TRACE));
     float W = sapp_widthf(), H = sapp_heightf();
+    if (g_right_w > W - BOARD_W_MIN) g_right_w = W - BOARD_W_MIN > RIGHT_W_MIN ? W - BOARD_W_MIN : RIGHT_W_MIN;
     float bw = W - RIGHT_W;
     board_window(ctx, bw, H);
     monitor_window(ctx, bw, 0);
@@ -3363,6 +3371,27 @@ void ui_frame(void) {
 static void handle_event(const sapp_event *ev);
 
 void ui_event(const sapp_event *ev) {
+    /* The handle between the board and the right column: drag it to resize. */
+    {
+        float split_x = sapp_widthf() - g_right_w;
+        bool near = ev->mouse_x >= split_x - 4 && ev->mouse_x <= split_x + 6;
+        if (ev->type == SAPP_EVENTTYPE_MOUSE_DOWN && ev->mouse_button == SAPP_MOUSEBUTTON_LEFT && near) {
+            g_split_drag = true;
+            return;
+        }
+        if (ev->type == SAPP_EVENTTYPE_MOUSE_UP && g_split_drag) {
+            g_split_drag = false;
+            return;
+        }
+        if (ev->type == SAPP_EVENTTYPE_MOUSE_MOVE) {
+            if (g_split_drag) {
+                float w = sapp_widthf() - ev->mouse_x;
+                float max = sapp_widthf() - BOARD_W_MIN;
+                g_right_w = w < RIGHT_W_MIN ? RIGHT_W_MIN : w > max ? max : w;
+            }
+            sapp_set_mouse_cursor(g_split_drag || near ? SAPP_MOUSECURSOR_RESIZE_EW : SAPP_MOUSECURSOR_DEFAULT);
+        }
+    }
     /* Mouse moves only feed nuklear. Waiting on the simulation for each one
      * backs up the event queue and the pointer lags. */
     if (ev->type == SAPP_EVENTTYPE_MOUSE_MOVE) {

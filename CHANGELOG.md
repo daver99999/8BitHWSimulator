@@ -10,6 +10,7 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 ## Unreleased
 
+- **The right column can be resized.** Drag its left edge (the pointer turns into a left-right arrow there) to make the Monitor, Controls and Oscilloscope column wider or narrower; the monitor picture scales with it. It stays between 340 pixels and the window width less 320 for the board.
 - **TS1000/ZX81: a RAM option, 2K or 1K.** The ZX81 had 1K and the TS1000 has 2K on the same board. The new *RAM* drop-down (next to the board choice) leaves A10 of the RAM chip out for 1K, so the 1K repeats at $4400 as on a real 1K machine; the ROM's own memory test then finds RAMTOP at $4400 (1K) or $4800 (2K). The default stays 2K. The change restarts the machine.
 - **The TS1000 is labelled TS1000/ZX81** in the Timex board drop-down, since it is the ZX81 circuit.
 - **Commodore 128: a Z80 I/O instruction no longer writes the RAM under the chip.** The Z80 core lets /IORQ go while the I/O address is still on the bus, so the DRAM took the tail of every `OUT` as a memory write: the start-up ROM's VDC writes (`OUT (C),A` with BC=$D600/$D601) wrote over CP/M's BIOS code at $D600, which made CP/M ask for "Insert Disk L in Drive A" and stop. The DRAM now ignores a write while the Z80 is between an I/O cycle and its next bus cycle. CP/M gets past that prompt and on to reading the directory; the A> prompt is not reached yet ("BIOS Err on A: No CCP.COM file").
