@@ -2524,7 +2524,7 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
         if (boards[i] == m) cur = i;
     }
     int pick = combo_tip(ctx, issues, nb, cur, 20, nk_vec2(150, 26.0f * nb + 20),
-                         tab == 2 ? "Which Timex is on the bench: the TS2068, the TS1000 (the American ZX81, Issue 3), the TS1500 or the Sinclair ZX80" :
+                         tab == 2 ? "Which Timex is on the bench: the TS2068, the TS1000/ZX81 (the American ZX81, Issue 3), the TS1500 or the Sinclair ZX80" :
                          tab == 0 ? "Which Commodore is on the bench: the PET (4032 with 40 columns and the graphics keyboard, 8032 with 80 columns and the business keyboard) the VIC-20 (the early 324001 board or the cost reduced 250403) the C16 (the 250443 board) the Plus/4 (the 310164 board, 64K with the 3-plus-1 ROMs) the C128 (the 310378 board, 40-column mode) or the C64 (the 250407 breadbin, the 250425, the 250469 C64C with the Super PLA)" :
                                     "Which issue of the board is on the bench");
     if (pick != cur) U.switch_to = boards[pick];

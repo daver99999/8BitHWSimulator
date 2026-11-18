@@ -405,7 +405,7 @@ static void t1_print_text(board_t *b) {
 const machine_t machine_ts1000 = {
     .id = "ts1000",
     .name = "Timex Sinclair 1000",
-    .issue = "TS1000",
+    .issue = "TS1000/ZX81",
     .board_name = "TS1000 Issue 3 (reconstructed netlist)",
     .size = sizeof(ts1000_t),
     .data = &bd_ts1000,
