@@ -35,6 +35,7 @@ extern const board_data_t bd_zx48i1;    /* zx48i1_board_data.c (Issue 1) */
 extern const board_data_t bd_zx48i4b;   /* zx48i4b_board_data.c (Issue 4B) */
 extern const board_data_t bd_zx48i6a;   /* zx48i6a_board_data.c (Issue 6A) */
 extern const board_data_t bd_pet4032;   /* pet4032_board_data.c (8032080-03, 40 columns) */
+extern const board_data_t bd_apple2plus; /* apple2plus_board_data.c (Apple ][+ rev 0) */
 extern const board_data_t bd_ts1000;   /* ts1000_board_data.c (Issue 3, reconstructed) */
 extern const board_data_t bd_ts1500;   /* ts1500_board_data.c (schematic, U5 pins inferred) */
 extern const board_data_t bd_zx80;     /* zx80_board_data.c (schematic) */

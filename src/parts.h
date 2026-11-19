@@ -52,6 +52,8 @@ extern const part_type_t PT_74LS74R, PT_74S74, PT_74177, PT_74LS164, PT_74166;
 extern const part_type_t PT_2316, PT_XTAL16, PT_LM555, PT_2114_PET;
 /* pet_chips.c: the PET's 6502, 6520 (x2), 6522 and 6545 around the cores in chips/ */
 extern const part_type_t PT_PET6502, PT_PET6520, PT_PET6522, PT_VIC6522, PT_PET6545;
+extern const part_type_t PT_A2ROM, PT_A2CHR, PT_A2KBD, PT_A2FLASH, PT_A2NPN, PT_NE558, PT_8T97, PT_DP8304;
+extern const part_type_t PT_74LS11, PT_74LS51, PT_74LS153, PT_74LS151, PT_74LS251, PT_74LS283, PT_74LS174, PT_74LS161, PT_74LS194, PT_74LS195, PT_74LS259;
 uint32_t pet_cpu_cycles_of(const part_t *p);
 void pet_cpu_regs_of(const part_t *p, char *buf, int len);
 uint8_t pet_crtc_reg_of(const part_t *p, int r);

@@ -2511,7 +2511,7 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
     static const machine_t *const zx_boards[] = { &machine_zx48i1, &machine_zx48i2, &machine_zx48,
                                                   &machine_zx48i4b, &machine_zx48i6a };
     static const machine_t *const cbm_boards[] = { &machine_pet4032, &machine_pet8032,
-                                                   &machine_c64, &machine_c64b, &machine_c64c, &machine_vic20a, &machine_vic20b, &machine_c16, &machine_plus4, &machine_c128 };
+                                                   &machine_c64, &machine_c64b, &machine_c64c, &machine_vic20a, &machine_vic20b, &machine_c16, &machine_plus4, &machine_c128, &machine_apple2plus };
     static const machine_t *const ts_boards[] = { &machine_ts2068, &machine_ts1000, &machine_ts1500, &machine_zx80 };
     const machine_t *m = b->m;
     if (!m->issue) return;
@@ -2525,7 +2525,7 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
     const char *issues[16];
     int cur = 0;
     for (int i = 0; i < nb; i++) {
-        if (tab == 0) snprintf(names[i], sizeof(names[i]), "%s %s", (boards[i] == &machine_pet4032 || boards[i] == &machine_pet8032) ? "PET" : (boards[i] == &machine_vic20a || boards[i] == &machine_vic20b) ? "VIC-20" : boards[i] == &machine_c16 ? "C16" : boards[i] == &machine_plus4 ? "Plus/4" : boards[i] == &machine_c128 ? "C128" : "C64", boards[i]->issue);
+        if (tab == 0) snprintf(names[i], sizeof(names[i]), "%s %s", (boards[i] == &machine_pet4032 || boards[i] == &machine_pet8032) ? "PET" : (boards[i] == &machine_vic20a || boards[i] == &machine_vic20b) ? "VIC-20" : boards[i] == &machine_c16 ? "C16" : boards[i] == &machine_plus4 ? "Plus/4" : boards[i] == &machine_c128 ? "C128" : boards[i] == &machine_apple2plus ? "Apple" : "C64", boards[i]->issue);
         else snprintf(names[i], sizeof(names[i]), "%s", boards[i]->issue);
         issues[i] = names[i];
         if (boards[i] == m) cur = i;
@@ -3481,7 +3481,7 @@ static void handle_event(const sapp_event *ev) {
 
 /* The kind of a board: 0 C64, 1 Spectrum, 2 PET, 3 Timex. */
 static int board_family(const board_t *b) {
-    return board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : (b->m == &machine_ts2068 || b->m == &machine_ts1000 || b->m == &machine_ts1500 || b->m == &machine_zx80) ? 3 : (b->m == &machine_vic20a || b->m == &machine_vic20b || b->m == &machine_c16 || b->m == &machine_plus4 || b->m == &machine_c128) ? 4 : 0;
+    return board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : (b->m == &machine_ts2068 || b->m == &machine_ts1000 || b->m == &machine_ts1500 || b->m == &machine_zx80) ? 3 : (b->m == &machine_vic20a || b->m == &machine_vic20b || b->m == &machine_c16 || b->m == &machine_plus4 || b->m == &machine_c128 || b->m == &machine_apple2plus) ? 4 : 0;
 }
 
 /* The tab of a board: 0 Commodore (the C64's boards, the PET), 1 Spectrum, 2 Timex. */

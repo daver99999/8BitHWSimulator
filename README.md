@@ -150,6 +150,7 @@ each one goes in:
 - `roms/plus4`: BASIC 3.5 `318006-01` (U23), KERNAL `318005-05` (U24, `-04` works too) and the 3-plus-1 function ROMs `317053-01` (U25) and `317054-01` (U26). Files are picked by their part numbers, or by `basic`/`kernal` in the name.
 - `roms/c128`: the 32K system ROM `252343-04` (U32, also holds the Z80 start-up code and the second KERNAL half), BASIC 7.0 `318018-04` (U33, $4000) and `318019-04` (U34, $8000), and the character ROM `390059-01` (U18). Files are picked by their part numbers.
 
+- `roms/apple2plus`: `apple2plus.rom` (the 12K of the Apple ][+ Autostart/Applesoft ROMs, $D000-$FFFF, split into the six 2K sockets) and `chargen.rom` (the 2K character generator, A5). `disk2.rom` (the Disk II card's 256 byte boot ROM) can be there too: the drive is not built yet.
 - `roms/zx48`: the Spectrum 48K ROM (16K, any `.rom` or `.bin` in that folder; for example `zx48.rom`).
 
 If one is missing the status line says which.
