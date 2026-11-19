@@ -212,6 +212,7 @@ static int mmu_reg(sim_t *s, part_t *p, const mmu8722_t *t) {
     return -1;
 }
 
+extern int g_mmu_ovr;
 static void mmu_eval(sim_t *s, part_t *p) {
     mmu8722_t *t = p->state;
     mmu_map_t m;
@@ -232,6 +233,7 @@ static void mmu_eval(sim_t *s, part_t *p) {
     /* a read of a register */
     int reg = mmu_reg(s, p, t);
     bool rd = ((reg >= 0 && reg < 12) || reg == 0x100) && pin_in(s, p, MMU_RW) && aec;   /* $FF00 reads back the CR */
+    g_mmu_ovr = rd && reg == 0x100;
     unsigned v = 0xFF;
     if (rd) switch (reg) {
         case 0: case 0x100: v = t->cr; break;

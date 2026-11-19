@@ -418,6 +418,9 @@ enum {
 /* Set by a CPU part while the address bus still carries an I/O address after
  * the cycle's /IORQ has ended: the PLA would not let /CAS through then. */
 int g_dram_inhibit;
+/* Set by the C128's MMU while it answers a read of $FF00 (the CR): the RAM at that address is read too, but the MMU's
+ * answer is the one that reaches the CPU, so the RAM does not drive the bus then. */
+int g_mmu_ovr;
 static void dram_cycle(sim_t *s, part_t *p, int bits, int half) {
     dram_state_t *st = p->state;
     int ras = pin_in(s, p, 4), cas = pin_in(s, p, 15);
@@ -434,7 +437,7 @@ static void dram_cycle(sim_t *s, part_t *p, int bits, int half) {
             if (!bad && !g_dram_inhibit) st->cells[cell] = (uint8_t)pin_in(s, p, 2);
             st->out_en = 0;
         } else {                        /* read: Q drives until /CAS rises */
-            st->out_en = 1;
+            st->out_en = g_mmu_ovr ? 0 : 1;
             st->out_bit = bad ? (uint8_t)(((unsigned)cell * 2654435761u) >> 31) : st->cells[cell];
             if (p->mfault) st->out_bit = (uint8_t)(mem_read(p, (unsigned)cell, st->out_bit) & 1);
             if (p->supply_weak && !(((unsigned)cell * 2654435761u) >> 26)) st->out_bit = 0;
