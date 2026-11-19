@@ -325,7 +325,7 @@ const machine_t machine_coco2 = {
     .id = "coco2",
     .name = "Color Computer 2",
     .board_name = "CoCo 2 26-3134B/3136B",
-    .issue = NULL,
+    .issue = "CoCo 2",
     .size = sizeof(coco2_t),
     .data = &bd_coco2,
     .sim = { .rail_of = cc2_rail_of, .kind_of = cc2_kind_of, .cycles_per_us = 0.894886 },
