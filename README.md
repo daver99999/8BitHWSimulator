@@ -152,6 +152,7 @@ each one goes in:
 
 - `roms/apple2plus`: `apple2plus.rom` (the 12K of the Apple ][+ Autostart/Applesoft ROMs, $D000-$FFFF, split into the six 2K sockets) and `chargen.rom` (the 2K character generator, A5). `disk2.rom` (the Disk II card's 256 byte boot ROM) can be there too: the drive is not built yet.
 - `roms/coco2`: `extbas11.rom` (Extended Color BASIC 1.1, 8K, $8000) and `bas12.rom` (Color BASIC 1.2, 8K, $A000), which share the one 27C128 on the CoCo 2 board. `disk11.rom` (Disk BASIC) can be there too: no disk controller is built.
+- `roms/dragon64`: `d64_1.rom` (the 1982 BASIC, 16K, in IC34) and `d64_2.rom` (the 1983 Dragon 64 ROM, 16K, in IC37). `ddos10.rom` (DragonDOS) can be there too: no disk controller is built.
 - `roms/zx48`: the Spectrum 48K ROM (16K, any `.rom` or `.bin` in that folder; for example `zx48.rom`).
 
 If one is missing the status line says which.

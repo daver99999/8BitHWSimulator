@@ -412,6 +412,8 @@ typedef struct {
     uint8_t ag, css, gm0, gm1, gm2;     /* the mode at the start of the line */
     uint8_t chr[32];
     int32_t cache_dd, cache_d;
+    uint8_t clk, took;                  /* the plain 6847: the CLK pin's level, the sample of this cycle is taken */
+    const uint8_t *sync;                /* the plain 6847: the SAM's step of the cycle (see vdg47_commit) */
 } vdg_t;
 
 static void vdg_draw_line(vdg_t *v, int line) {
@@ -544,7 +546,9 @@ static void vdg_commit(sim_t *s, part_t *p) {
 static void vdg_reset(sim_t *s, part_t *p) {
     (void)s;
     vdg_t *v = p->state;
+    const uint8_t *sync = v->sync;          /* set by the machine at its creation */
     memset(v, 0, sizeof(*v));
+    v->sync = sync;
     for (int i = 0; i < COCO_FB_W * COCO_FB_H; i++) v->fb[i] = 0xFF000000u;
 }
 
@@ -563,3 +567,217 @@ int coco_vdg_last_line(sim_t *s, int part, uint8_t *chr, int *nb) {
     *nb = v->nb;
     return v->line;
 }
+
+/* ------------------------------------------------------------------------ */
+/* MC6883 SAM (the Dragon 64's): as the 74LS785, with the VCLK output on pin 7 */
+/* ------------------------------------------------------------------------ */
+
+/* The 6883 divides its oscillator by 4 for the video chip: VCLK is 8 steps a period (the board gates it for the 6847). */
+static void sam6883_eval(sim_t *s, part_t *p) {
+    sam_eval(s, p);
+    const sam_t *c = p->state;
+    pin_out(s, p, 7, DRV_BIT((c->phase >> 2) & 1));
+}
+const part_type_t PT_SAM6883 = { "MC6883 SAM",
+    "A11:M A10:M A9:M A8:M OSCIN:m OSCOUT:A VCLK:O DA0:m /HS:m /W:O /CAS:O /RAS:O Q:O E:O R/W:M A0:M A1:M A2:M A3:M "
+    "VSS:P A4:M A5:M A6:M A7:M S2:O S1:O S0:O Z0:O Z1:O Z2:O Z3:O Z4:O Z5:O Z6:O Z7:O A15:M A14:M A13:M A12:M VDD:P",
+    sam6883_eval, sam_commit, sam_reset, sizeof(sam_t), TECH_NMOS };
+
+/* ------------------------------------------------------------------------ */
+/* MC6847 video display generator (the Dragon's)                             */
+/* ------------------------------------------------------------------------ */
+
+/* The plain 6847 has no bus transceiver: it reads the memories' data from the DD bus by itself and counts its own CLK pin, which
+ * the Dragon's board gates and stretches to get the PAL line and field. The chip reads DD at a fixed point after its address
+ * output DA0 changes; where that point is within the SAM's cycle is not something the chip knows by pins (it comes from the
+ * counting of its clock), so the machine tells the model the SAM's step (coco_vdg_sync): the data is taken while the latch
+ * that holds the RAM's byte (the board's 74LS273) is valid. */
+enum { V47_DA0 = 22, V47_GM2 = 27, V47_GM1 = 29, V47_GM0 = 30, V47_CLK = 33, V47_AG = 35, V47_FS = 37, V47_HS = 38, V47_CSS = 39 };
+static const int v47_dd[8] = { 3, 4, 5, 6, 7, 8, 2, 40 };           /* DD0..DD7 as the Dragon wires them */
+#define V47_LINE_CLKS 228
+#define V47_SAMPLE_STEP 20
+
+static void vdg47_eval(sim_t *s, part_t *p) {
+    vdg_t *v = p->state;
+    pin_out(s, p, V47_DA0, DRV_BIT(v->da0));
+    pin_out(s, p, V47_FS, DRV_BIT(!v->fs));
+    pin_out(s, p, V47_HS, DRV_BIT(!v->hs));
+}
+
+static void vdg47_commit(sim_t *s, part_t *p) {
+    vdg_t *v = p->state;
+    int part = (int)(p - s->parts);
+    bool dirty = false;
+    if (v->sync) {
+        if (*v->sync != V47_SAMPLE_STEP) v->took = 0;
+        else if (!v->took) {
+            v->took = 1;
+            if (v->fetching) {
+                v->chr[v->idx++] = (uint8_t)part_read_bus(s, p, v47_dd, 8);
+                if (v->idx >= v->nb) { v->fetching = 0; vdg_draw_line(v, v->line); }
+                else v->da0 = v->idx & 1;
+                dirty = true;
+            }
+        }
+    }
+    int clk = pin_in(s, p, V47_CLK);
+    if (clk && !v->clk) {
+        v->h++;
+        if (v->h >= V47_LINE_CLKS) {
+            v->h = 0;
+            v->line++;
+            if (v->line >= V_LINES) { v->line = 0; v->fs = 0; v->frames++; dirty = true; }
+            if (v->line == V_BOTTOM) { v->fs = 1; dirty = true; }
+            if ((v->line >= V_FB_TOP && v->line < V_FIRST_LINE) || (v->line >= V_BOTTOM && v->line < V_BOTTOM + 24))
+                vdg_border_line(v, v->line, pin_in(s, p, V47_AG), pin_in(s, p, V47_CSS));
+        }
+        if (v->h == 10) { v->hs = 1; dirty = true; }
+        else if (v->h == 26) { v->hs = 0; dirty = true; }
+        else if (v->h == 28 && v->da0) { v->da0 = 0; dirty = true; }
+        if (v->h == 32 && v->line >= V_FIRST_LINE && v->line < V_BOTTOM) {
+            v->ag = (uint8_t)pin_in(s, p, V47_AG);
+            v->css = (uint8_t)pin_in(s, p, V47_CSS);
+            v->gm0 = (uint8_t)pin_in(s, p, V47_GM0);
+            v->gm1 = (uint8_t)pin_in(s, p, V47_GM1);
+            v->gm2 = (uint8_t)pin_in(s, p, V47_GM2);
+            unsigned sub = (unsigned)(v->gm2 << 1 | v->gm1);
+            v->nb = 32;
+            if (v->ag && (v->gm0 ? sub < 3 : sub == 0)) v->nb = 16;
+            v->idx = 0;
+            v->fetching = 1;
+            v->da0 = 0;
+            dirty = true;
+        }
+    }
+    v->clk = (uint8_t)clk;
+    if (dirty) sim_mark_dirty(s, part);
+}
+
+const part_type_t PT_6847 = { "MC6847",
+    "VSS:P DD6:M DD0:M DD1:M DD2:M DD3:M DD4:M DD5:M CHB:A oB:A oA:A /MS:m DA5:A DA6:A DA7:A DA8:A VCC:P DA9:A DA10:A "
+    "DA11:A DA12:A DA0:O DA1:A DA2:A DA3:A DA4:A GM2:m Y:A GM1:m GM0:m INT/EXT:m INV:m CLK:M A/S:m A/G:m /RP:m /FS:O /HS:O "
+    "CSS:m DD7:M",
+    vdg47_eval, vdg47_commit, vdg_reset, sizeof(vdg_t), TECH_NMOS };
+
+void coco_vdg_sync(sim_t *s, int vdg, int sam) {
+    vdg_t *v = s->parts[vdg].state;
+    sam_t *c = s->parts[sam].state;
+    v->sync = &c->phase;
+}
+
+/* ------------------------------------------------------------------------ */
+/* 74LS273, 74LS393 and 74LS390 (the Dragon's RAM data latch and its PAL timing counters)     */
+/* ------------------------------------------------------------------------ */
+
+typedef struct { uint8_t q, clk; } ls273_t;
+static const int l273_d[8] = { 3, 4, 7, 8, 13, 14, 17, 18 }, l273_q[8] = { 2, 5, 6, 9, 12, 15, 16, 19 };
+static void ls273_eval(sim_t *s, part_t *p) {
+    const ls273_t *t = p->state;
+    for (int i = 0; i < 8; i++) pin_out(s, p, l273_q[i], DRV_BIT((t->q >> i) & 1));
+}
+static void ls273_commit(sim_t *s, part_t *p) {
+    ls273_t *t = p->state;
+    int clk = pin_in(s, p, 11);
+    uint8_t q = t->q;
+    if (!pin_in(s, p, 1)) q = 0;
+    else if (clk && !t->clk) q = (uint8_t)part_read_bus(s, p, l273_d, 8);
+    t->clk = (uint8_t)clk;
+    if (q != t->q) { t->q = q; sim_mark_dirty(s, (int)(p - s->parts)); }
+}
+static void ls273_reset(sim_t *s, part_t *p) { (void)s; memset(p->state, 0, sizeof(ls273_t)); }
+const part_type_t PT_74LS273 = { "74LS273",
+    "/MR:T Q0:O D0:T D1:T Q1:O Q2:O D2:T D3:T Q3:O GND:P CLK:T Q4:O D4:T D5:T Q5:O Q6:O D6:T D7:T Q7:O VCC:P",
+    ls273_eval, ls273_commit, ls273_reset, sizeof(ls273_t), TECH_TTL };
+
+/* 74LS393: two 4 bit ripple counters, counting on the falling edge of CP, MR clears. */
+typedef struct { uint8_t n[2], cp[2]; } ls393_t;
+static void ls393_eval(sim_t *s, part_t *p) {
+    const ls393_t *t = p->state;
+    static const int q[2][4] = { { 3, 4, 5, 6 }, { 11, 10, 9, 8 } };
+    for (int h = 0; h < 2; h++)
+        for (int i = 0; i < 4; i++) pin_out(s, p, q[h][i], DRV_BIT((t->n[h] >> i) & 1));
+}
+static void ls393_commit(sim_t *s, part_t *p) {
+    ls393_t *t = p->state;
+    static const int cp[2] = { 1, 13 }, mr[2] = { 2, 12 };
+    bool ch = false;
+    for (int h = 0; h < 2; h++) {
+        int c = pin_in(s, p, cp[h]);
+        uint8_t n = t->n[h];
+        if (pin_in(s, p, mr[h])) n = 0;
+        else if (!c && t->cp[h]) n = (uint8_t)((n + 1) & 15);
+        t->cp[h] = (uint8_t)c;
+        if (n != t->n[h]) { t->n[h] = n; ch = true; }
+    }
+    if (ch) sim_mark_dirty(s, (int)(p - s->parts));
+}
+static void ls393_reset(sim_t *s, part_t *p) { (void)s; memset(p->state, 0, sizeof(ls393_t)); }
+const part_type_t PT_74LS393 = { "74LS393",
+    "1CP:T 1MR:T 1Q0:O 1Q1:O 1Q2:O 1Q3:O GND:P 2Q3:O 2Q2:O 2Q1:O 2Q0:O 2MR:T 2CP:T VCC:P",
+    ls393_eval, ls393_commit, ls393_reset, sizeof(ls393_t), TECH_TTL };
+
+/* 74LS390: two decade counters, each a divide by 2 (CP0 -> Q0) and a divide by 5 (CP1 -> Q1 Q2 Q3), falling edge. */
+typedef struct { uint8_t two[2], five[2], cp0[2], cp1[2]; } ls390_t;
+static void ls390_eval(sim_t *s, part_t *p) {
+    const ls390_t *t = p->state;
+    static const int q[2][4] = { { 3, 5, 6, 7 }, { 13, 11, 10, 9 } };
+    for (int h = 0; h < 2; h++) {
+        pin_out(s, p, q[h][0], DRV_BIT(t->two[h]));
+        for (int i = 0; i < 3; i++) pin_out(s, p, q[h][i + 1], DRV_BIT((t->five[h] >> i) & 1));
+    }
+}
+static void ls390_commit(sim_t *s, part_t *p) {
+    ls390_t *t = p->state;
+    static const int cp0[2] = { 1, 15 }, cp1[2] = { 4, 12 }, mr[2] = { 2, 14 };
+    bool ch = false;
+    for (int h = 0; h < 2; h++) {
+        int c0 = pin_in(s, p, cp0[h]), c1 = pin_in(s, p, cp1[h]);
+        uint8_t two = t->two[h], five = t->five[h];
+        if (pin_in(s, p, mr[h])) two = five = 0;
+        else {
+            if (!c0 && t->cp0[h]) two ^= 1;
+            if (!c1 && t->cp1[h]) five = five >= 4 ? 0 : (uint8_t)(five + 1);
+        }
+        t->cp0[h] = (uint8_t)c0;
+        t->cp1[h] = (uint8_t)c1;
+        if (two != t->two[h] || five != t->five[h]) { t->two[h] = two; t->five[h] = five; ch = true; }
+    }
+    if (ch) sim_mark_dirty(s, (int)(p - s->parts));
+}
+static void ls390_reset(sim_t *s, part_t *p) { (void)s; memset(p->state, 0, sizeof(ls390_t)); }
+const part_type_t PT_74LS390 = { "74LS390",
+    "1CP0:T 1MR:T 1Q0:O 1CP1:T 1Q1:O 1Q2:O 1Q3:O GND:P 2Q3:O 2Q2:O 2Q1:O 2CP1:T 2Q0:O 2MR:T 2CP0:T VCC:P",
+    ls390_eval, ls390_commit, ls390_reset, sizeof(ls390_t), TECH_TTL };
+
+/* ------------------------------------------------------------------------ */
+/* 74LS74: two D flip-flops with preset and clear (the Dragon's)             */
+/* ------------------------------------------------------------------------ */
+
+typedef struct { uint8_t q[2], ck[2]; } ls74_t;
+static const int ls74_pin[2][6] = { { 1, 2, 3, 4, 5, 6 }, { 13, 12, 11, 10, 9, 8 } };       /* /CLR D CK /PR Q /Q */
+static void ls74_eval(sim_t *s, part_t *p) {
+    const ls74_t *t = p->state;
+    for (int h = 0; h < 2; h++) {
+        pin_out(s, p, ls74_pin[h][4], DRV_BIT(t->q[h]));
+        pin_out(s, p, ls74_pin[h][5], DRV_BIT(!t->q[h]));
+    }
+}
+static void ls74_commit(sim_t *s, part_t *p) {
+    ls74_t *t = p->state;
+    bool ch = false;
+    for (int h = 0; h < 2; h++) {
+        int clr = pin_in(s, p, ls74_pin[h][0]), d = pin_in(s, p, ls74_pin[h][1]), ck = pin_in(s, p, ls74_pin[h][2]),
+            pr = pin_in(s, p, ls74_pin[h][3]);
+        uint8_t q = t->q[h];
+        if (!pr) q = 1;                     /* both low: this chip gives both outputs high; the board never does it */
+        else if (!clr) q = 0;
+        else if (ck && !t->ck[h]) q = (uint8_t)d;
+        t->ck[h] = (uint8_t)ck;
+        if (q != t->q[h]) { t->q[h] = q; ch = true; }
+    }
+    if (ch) sim_mark_dirty(s, (int)(p - s->parts));
+}
+static void ls74_reset(sim_t *s, part_t *p) { (void)s; memset(p->state, 0, sizeof(ls74_t)); }
+const part_type_t PT_74LS74F = { "74LS74",
+    "/1CLR:T 1D:T 1CK:T /1PR:T 1Q:O /1Q:O GND:P /2Q:O 2Q:O /2PR:T 2CK:T 2D:T /2CLR:T VCC:P",
+    ls74_eval, ls74_commit, ls74_reset, sizeof(ls74_t), TECH_TTL };

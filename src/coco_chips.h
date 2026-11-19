@@ -3,7 +3,10 @@
 #include "parts.h"
 #include "../chips/m6809.h"
 
-extern const part_type_t PT_XTAL_COCO, PT_6809E, PT_SAM, PT_6847T1;
+extern const part_type_t PT_XTAL_COCO, PT_6809E, PT_SAM, PT_6847T1, PT_SAM6883, PT_6847, PT_74LS273, PT_74LS393, PT_74LS390, PT_74LS74F;
+
+/* The Dragon: tell the 6847 which SAM times its video cycles (vdg, sam are part numbers). */
+void coco_vdg_sync(sim_t *s, int vdg, int sam);
 
 /* The CPU core of a MC6809E part (registers, for the monitor and for tests). */
 const m6809_t *coco_cpu_core(sim_t *s, int part);
