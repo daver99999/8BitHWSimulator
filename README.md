@@ -755,6 +755,36 @@ Other things assumed or simplified on this board:
   an "Apply & Inspect" button (the 250407's U7 is the CPU, the 250469's
   the VIC); the probing guide then asks for the atlas to be rebuilt.
 
+## Commodore 128
+
+`--machine c128` (or the Commodore tab, board 310378 rev 7A): the Z80A starts
+the machine from the 4K start-up ROM and hands over to the 8502 through the
+8722 MMU, with the 8721 PLA, 128K of DRAM, the 8564 VIC-IIe, the 8563 VDC,
+two 6526 CIAs and the keyboard. Put the ROMs in `roms/c128` (see above).
+
+- **Screens.** The *Monitor: composite / RGBI* button plugs the monitor into
+  the VIC's 40-column output or the VDC's 80-column one, sets the 40/80 key
+  to match and restarts the machine. *Mode: C128 / C64* starts it the way a
+  real one starts with the C= key held down: the MMU goes to C64 mode and the
+  8502 runs the C64 BASIC and Kernal. `GO64` works too.
+- **A disk drive.** The serial connector has a drive 8 behind it, a 1541,
+  1571 or 1581 by the image you give it. Drop a `.d64`, `.d71` or `.d81` on
+  the window, give it on the command line, or press *Disk...* (C128 only) for
+  a file dialog that opens where the program is; the label next to it shows
+  the file's name. *Eject* takes the disk out. A small red box lights while
+  the drive is busy. `DIRECTORY`, `LOAD` and `RUN` work through the real
+  IEC bus (ATN, CLK, DATA and SRQ), with the Kernal's fast serial and the
+  1581's burst commands. The disk is read only: there is no `SAVE`, and no
+  file is written.
+- **CP/M Plus.** Put a CP/M Plus system disk (the ZPM3 `.d81` works) in the
+  drive, switch to the 80-column monitor, and type `BOOT`. The start-up ROM
+  loads the Z80 system by burst reads, and a minute or so of simulated time
+  later (the sector transfers are slow at pin level; give it a few real
+  minutes headless) the screen shows the "CP/M 3.0 on the C128" banner and
+  the `A>` prompt. Typing at the prompt is not checked yet.
+- **Not simulated:** SID sound, the expansion port, NTSC timing, the VDC's
+  smooth scrolling, interlace and light pen, and writing to a disk.
+
 ## ZX Spectrum 48K
 
 `--machine zx48` starts with the Spectrum, and so does a snapshot or a
