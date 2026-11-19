@@ -129,8 +129,12 @@ FIXUPS = [('RA2.2', '~{INH}'), ('B5.1', 'SOFT5'), ('B8.1', 'SOFT5')]
 
 def main():
     d = sys.argv[1]
+    topfile = 'AppleII+.kicad_sch'
+    if d.endswith('.kicad_sch'):        # any KiCad 6+ project: the top sheet's file
+        d, topfile = os.path.split(d)
+    fixups = FIXUPS if topfile == 'AppleII+.kicad_sch' else []
     out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(os.path.abspath(__file__)), 'apple2plus-netlist-src', 'apple2plus.net')
-    top = load_sheet(os.path.join(d, 'AppleII+.kicad_sch'))
+    top = load_sheet(os.path.join(d, topfile))
     sheets = {}
     for s in top.sheets:
         sheets[s['name']] = (s, load_sheet(os.path.join(d, s['file'])))
@@ -224,7 +228,7 @@ def main():
             for pin, nm in ((n, '+5V'), (n // 2, 'GND')):
                 if '%s.%d' % (ref, pin) not in have: nets[nm].append('%s.%d' % (ref, pin))
     # pins the drawing leaves unwired (the pull-up of /INH is a pin of RA2 that goes nowhere on the sheet)
-    for pin_, nm in FIXUPS:
+    for pin_, nm in fixups:
         for ms in nets.values():
             while pin_ in ms: ms.remove(pin_)
         nets[nm].append(pin_)
