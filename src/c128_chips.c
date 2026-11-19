@@ -699,7 +699,7 @@ const part_type_t PT_6581_128 = { "6581 SID",
 /* ------------------------------------------------------------------------ */
 static const int vdc_d[8] = { 18, 17, 16, 15, 14, 13, 11, 10 };
 typedef struct {
-    uint8_t reg[38], idx, last_wr, dout_en, dout;
+    uint8_t reg[38], idx, last_wr, dout_en, dout, by_z80;
     uint64_t last_cyc;
     uint8_t ram[65536];
     phi_t phi;
@@ -751,7 +751,9 @@ static void vdc_commit(sim_t *s, part_t *p) {
     vdc_t *v = p->state;
     if (p->dead) return;
     int level = pin_in(s, p, 4);
-    if (!level && v->dout_en) { v->dout_en = 0; sim_mark_dirty(s, (int)(p - s->parts)); }
+    /* a read's data goes at the next clock phase, or for the Z80 not until it has taken it: its I/O cycle is three
+     * clocks long, the chip answers in the second, and the Z80 latches in the third, after /CS has gone */
+    if (v->dout_en && (v->by_z80 ? s->cycle > v->last_cyc + 2 : !level)) { v->dout_en = 0; sim_mark_dirty(s, (int)(p - s->parts)); }
     if (!phi_act(&v->phi, level)) return;
     if (pin_in(s, p, 7)) return;                         /* /CS */
     if (s->cycle == v->last_cyc + 1) { return; }    /* the Z80's I/O cycle lasts two clocks: one access */
@@ -760,6 +762,7 @@ static void vdc_commit(sim_t *s, part_t *p) {
     if (pin_in(s, p, 9)) {                               /* read */
         v->dout = a0 ? vdc_read(v) : (uint8_t)(0x80 | ((s->cycle % (63 * 312) >= 63 * 262) ? 0x20 : 0));   /* ready, vertical blank */
         v->dout_en = 1;
+        v->by_z80 = g_z80_iorq != 0;
         sim_mark_dirty(s, (int)(p - s->parts));
     } else {
         uint8_t d = (uint8_t)part_read_bus(s, p, vdc_d, 8);
