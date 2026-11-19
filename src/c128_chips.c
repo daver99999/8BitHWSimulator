@@ -207,7 +207,7 @@ static int mmu_reg(sim_t *s, part_t *p, const mmu8722_t *t) {
     if (pin_in(s, p, MMU_A47) || pin_in(s, p, MMU_A67)) return -1;      /* A4-A7 must be 0 */
     unsigned lo = 0, hi = mmu_hi_of(s, p);
     for (int i = 0; i < 4; i++) lo |= (unsigned)pin_in(s, p, mmu_a0[i]) << i;
-    if (hi == 0xD5 && lo <= 0x0B && (!(t->cr & 1) || (!(t->mcr & 1) && g_z80_iorq))) return (int)lo;   /* the Z80 reaches them by I/O */
+    if (hi == 0xD5 && lo <= 0x0B && ((t->mcr & 1) ? !(t->cr & 1) : g_z80_iorq)) return (int)lo;   /* the 8502 sees them in the I/O page; the Z80 reaches them only by I/O, a memory read of $D5xx is RAM */
     if (hi == 0xFF && lo <= 4) return 0x100 + (int)lo;
     return -1;
 }
@@ -518,7 +518,9 @@ static void z80p_commit(sim_t *s, part_t *p) {
      * the next bus cycle starts the DRAM must not take that for a write. */
     if (z->pins & Z80_IORQ) z->io_tail = 1;
     else if (z->pins & (Z80_MREQ | Z80_RD)) z->io_tail = 0;
-    g_dram_inhibit = z->io_tail && (z->pins & Z80_AOE);
+    /* No write strobe without the Z80's /WR: the strobe from the PLA's latch can outlast the Z80's cycle by a step,
+     * and /CAS of the next cycle would write the byte again, into the next cycle's address. */
+    g_dram_inhibit = (z->pins & Z80_AOE) && (z->io_tail || !(z->pins & Z80_WR));
     g_z80_iorq = (z->pins & Z80_IORQ) != 0;
     z->edges++;
     sim_mark_dirty(s, (int)(p - s->parts));
@@ -555,6 +557,7 @@ typedef struct {
     phi_t phi;
     uint8_t irq, outs, dout_en, dout;
     int32_t cache_pa, cache_pb, cache_d;
+    uint8_t zread_done;     /* the Z80 holds /IORQ and /RD for more than one phi2: a read with side effects (the ICR) must happen once */
 } cia128_t;
 
 static void cia128_eval(sim_t *s, part_t *p) {
@@ -609,6 +612,12 @@ static void cia128_commit(sim_t *s, part_t *p) {
     if (pin_in(s, p, 19)) pins |= M6526_TOD;
     if (pin_in(s, p, 39)) pins |= M6526_SP;
     if (pin_in(s, p, 40)) pins |= M6526_CNT;
+    bool cs_read = (pins & (M6526_CS | M6526_RW)) == (M6526_CS | M6526_RW);
+    if (!g_z80_iorq) t->zread_done = 0;
+    else if (cs_read) {
+        if (t->zread_done) { pins &= ~M6526_CS; t->dout_en = 1; }   /* the same Z80 read again: the answer is already on its way */
+        else t->zread_done = 1;
+    }
     pins = m6526_tick(c, pins);
     t->irq = (pins & M6526_IRQ) != 0;
     if ((pins & (M6526_CS | M6526_RW)) == (M6526_CS | M6526_RW)) {

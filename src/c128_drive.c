@@ -480,6 +480,9 @@ enum {
     S_B_IDLE,               /* wait for the controller to toggle CLK: it wants the next byte */
     S_B_BIT_LO,             /* a byte goes out on DATA, clocked by SRQ: SRQ pulled */
     S_B_BIT_HI,             /* SRQ released: the rising edge is where the controller reads the bit */
+    S_F_ANN_LO,             /* fast serial: the announce byte (all zero bits) goes to the host: SRQ pulled */
+    S_F_ANN_HI,             /* ... SRQ released: the host takes the bit */
+    S_F_RX,                 /* fast serial: the host shifts a byte out on SRQ and DATA */
 };
 #define T_SRQ       4       /* microseconds SRQ is held each way */
 
@@ -493,6 +496,7 @@ void drive_reset(diskdrive_t *d) {
     d->state = S_IDLE;
     d->pull_clk = d->pull_data = d->pull_srq = 0;
     d->listening = d->talking = d->atn_cmd = d->opening = 0;
+    d->host_fast = d->fast_rx = d->srq_edges = 0;
     d->atn = d->clk = d->data = d->srq = 1;
     d->cmdlen = d->namelen = 0;
     d->burst_pending = d->bq_len = d->bq_pos = 0;
@@ -562,15 +566,23 @@ static void tx_begin_bits(diskdrive_t *d, uint64_t now) {
 void drive_poll(diskdrive_t *d, int atn, int clk, int data, int srq, uint64_t now) {
     if (!d->enabled) return;
     int atn_fall = d->atn && !atn, atn_rise = !d->atn && atn, clk_low = !clk;
+    int srq_was = d->srq;
     if (!atn || d->state != S_IDLE || d->burst_pending) d->active = now;
     d->atn = (uint8_t)atn;
     d->clk = (uint8_t)clk;
     d->data = (uint8_t)data;
     d->srq = (uint8_t)srq;
+    /* the host's fast serial sync byte: 8 pulses on SRQ while ATN is not asserted and the drive is not pulling it */
+    if (atn && !d->pull_srq && srq_was && !srq) {
+        if (now - d->srq_t > 400) d->srq_edges = 0;
+        d->srq_t = now;
+        if (++d->srq_edges >= 8) { d->host_fast = 1; d->srq_edges = 0; }
+    }
 
     if (atn_fall) {                                     /* attention: every device answers within 1 ms */
         if (d->listening) end_listen(d);
         d->pull_srq = 0;
+        d->fast_rx = 0;
         d->atn_cmd = 1;
         d->state = S_RX_READY;
         d->armed = (uint8_t)clk_low;
@@ -603,6 +615,13 @@ void drive_poll(diskdrive_t *d, int atn, int clk, int data, int srq, uint64_t no
     case S_RX_READY:
         if (clk_low) d->armed = 1;
         else if (d->armed) {                            /* the sender is ready: so are we */
+            if (d->host_fast && !d->atn_cmd && d->listening) {   /* the KERNAL's fast serial: say so first */
+                d->nbits = 0;
+                d->pull_srq = 1;
+                d->t0 = now;
+                d->state = S_F_ANN_LO;
+                break;
+            }
             d->pull_data = 0;
             d->state = S_RX_START;
             d->t0 = now;
@@ -610,7 +629,8 @@ void drive_poll(diskdrive_t *d, int atn, int clk, int data, int srq, uint64_t no
         }
         break;
     case S_RX_START:
-        if (clk_low) { d->state = S_RX_BIT_HI; d->nbits = 0; d->shift = 0; }
+        if (clk_low && d->fast_rx) { d->state = S_F_RX; d->nbits = 0; d->shift = 0; }
+        else if (clk_low) { d->state = S_RX_BIT_HI; d->nbits = 0; d->shift = 0; }
         else if (!d->eoi && now - d->t0 >= T_EOI) {     /* the sender waits: that is the last byte */
             d->eoi = 1;
             d->pull_data = 1;
@@ -713,6 +733,31 @@ void drive_poll(diskdrive_t *d, int atn, int clk, int data, int srq, uint64_t no
             d->pull_srq = 1;
             d->t0 = now;
             d->state = S_B_BIT_LO;
+        }
+        break;
+    case S_F_ANN_LO:
+        if (now - d->t0 >= T_SRQ) { d->pull_srq = 0; d->t0 = now; d->state = S_F_ANN_HI; }
+        break;
+    case S_F_ANN_HI:
+        if (now - d->t0 >= T_SRQ) {
+            if (++d->nbits >= 8) {                      /* 8 bits in: the host has seen the drive is fast. Ready for data. */
+                d->fast_rx = 1;
+                d->pull_data = 0;
+                d->state = S_RX_START;
+                d->t0 = now;
+                d->eoi = 0;
+            } else { d->pull_srq = 1; d->t0 = now; d->state = S_F_ANN_LO; }
+        }
+        break;
+    case S_F_RX:
+        if (!srq_was && srq) {                          /* a rising edge of SRQ: the host's bit is on DATA */
+            d->shift = (uint8_t)((d->shift << 1) | (data ? 1 : 0));
+            if (++d->nbits >= 8) {
+                d->pull_data = 1;                       /* the byte is taken */
+                rx_byte(d, d->shift);
+                d->state = S_RX_READY;
+                d->armed = 1;
+            }
         }
         break;
     default:

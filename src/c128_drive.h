@@ -32,6 +32,11 @@ struct diskdrive {
     uint64_t active;                /* the last time the bus was busy with this drive (microseconds) */
     uint8_t armed, nbits, shift, eoi, atn_cmd, listening, talking, sa, opening, last_cmd;
     uint8_t tx_byte, tx_eoi;
+    /* the fast serial of the C128's KERNAL: it sends 8 SRQ pulses before a command; a drive that has seen them
+     * answers each "ready for data" with a byte shifted in on SRQ (the KERNAL then knows the drive is fast) and
+     * takes the host's data bytes shifted out the same way */
+    uint8_t host_fast, fast_rx, srq_edges;
+    uint64_t srq_t;
     /* the channels */
     dchan_t ch[16];
     uint8_t name[64];
