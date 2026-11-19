@@ -308,8 +308,8 @@ static int a2_ram_part(board_t *b, uint16_t addr, int bit) {
     static const char rows[3] = { 'C', 'D', 'E' };
     int bank = addr >> 14;
     if (bank > 2) return -1;
-    char ref[8];
-    snprintf(ref, sizeof(ref), "%c%d", rows[bank], 3 + bit);
+    char ref[16];
+    snprintf(ref, sizeof(ref), "%c%d", rows[bank], 3 + (bit & 7));
     return sim_find_part(&b->sim, ref);
 }
 
