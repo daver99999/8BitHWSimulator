@@ -156,6 +156,7 @@ static void a2_key_down(board_t *b, int key) {
     if (key > 0 && key < 128 && z->keyq_n < (int)sizeof(z->keyq)) z->keyq[z->keyq_n++] = (uint8_t)key;
 }
 static void a2_key_up(board_t *b, int key) { (void)b; (void)key; }
+static void a2_frame_update(board_t *b, uint32_t us) { (void)b; (void)us; }
 
 static void a2_keys_tick(board_t *b) {
     apple2plus_t *z = A2(b);
@@ -384,6 +385,7 @@ const machine_t machine_apple2plus = {
     .joins = a2_joins,
     .key_down = a2_key_down,
     .key_up = a2_key_up,
+    .frame_update = a2_frame_update,
     .host_key = a2_host_key,
     .host_char = a2_host_char,
     .monitor = a2_monitor,
