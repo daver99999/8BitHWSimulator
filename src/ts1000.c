@@ -265,6 +265,8 @@ static void t1_power_on(board_t *b) {
     z->in_reset = true;
     z->clk = 0;
     z->reset_until = T1_FREQ / 20;      /* 50 ms */
+    z->seen_frames = 0;
+    z->last_frame_cycle = b->sim.cycle;
     for (int i = 0; i < ULA81_PIXELS_PER_LINE * ULA81_LINES; i++) b->screen[i] = 0xFF000000u;
 }
 
@@ -309,12 +311,21 @@ static int t1_host_key(int keycode) {
 }
 static int t1_host_char(int c) { return c; }
 
+/* What the monitor shows. No video signal at all (the ULA dead, or its TV pin or the modulator's video pin broken): snow.
+ * A ULA that makes no complete frame for a few frame times (the CPU is stopped, or runs without the display routine, as
+ * in FAST mode) still sends sync pulses but no vertical sync the set can lock to: a plain white screen, not the last
+ * picture. */
 static void t1_monitor(board_t *b, uint32_t *out) {
-    part_t *ula = &b->sim.parts[T1(b)->p_ula];
-    b->no_signal = ula->dead;
+    ts1000_t *z = T1(b);
+    sim_t *s = &b->sim;
+    part_t *ula = &s->parts[z->p_ula];
+    int tv = part_pin(ula, 16), mod = t1_pin_of(b, "MOD", 2);
+    bool signal = !ula->dead && s->pins[tv].fault == PF_OK && (mod < 0 || s->pins[mod].fault == PF_OK);
+    bool locked = s->cycle - z->last_frame_cycle < 4 * (uint64_t)T1_CYCLES_PER_FRAME;
+    b->no_signal = !signal;
     for (int i = 0; i < ULA81_PIXELS_PER_LINE * ULA81_LINES; i++) {
-        uint32_t c = b->screen[i];
-        if (ula->dead) {
+        uint32_t c = locked ? b->screen[i] : 0xFFFFFFFFu;
+        if (!signal) {
             b->snow_seed = b->snow_seed * 1103515245u + 12345u;
             uint32_t g = ((b->snow_seed >> 24) & 0xFF) * 3 / 4;
             c = 0xFF000000u | (g << 16) | (g << 8) | g;
@@ -351,6 +362,8 @@ static void t1_run(board_t *b, int cycles) {
         sim_drive(s, z->pin_reset_net, s->cycle < z->reset_until ? DRV_LO : DRV_Z);
         for (int k = 0; k < T1_STEPS_PER_CYCLE; k++) t1_step(b);
     }
+    ula81_state_t *u = s->parts[z->p_ula].state;
+    if (u->frames != z->seen_frames) { z->seen_frames = u->frames; z->last_frame_cycle = s->cycle; }
 }
 
 uint8_t ts1000_ram_peek(board_t *b, uint16_t addr) {

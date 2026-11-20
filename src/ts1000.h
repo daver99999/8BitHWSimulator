@@ -28,6 +28,8 @@ typedef struct ts1000 {
     int pin_row[8], pin_kb[5];  /* KB2 (the half rows A8-A15) and KB1 (KBD0-KBD4) */
     int pin_reset_net;
     uint64_t reset_until;
+    uint32_t seen_frames;       /* the ULA's frame count when last looked at, and the cycle it last changed (the monitor's sync) */
+    uint64_t last_frame_cycle;
 } ts1000_t;
 
 static inline ts1000_t *T1(board_t *b) { return (ts1000_t *)b; }
