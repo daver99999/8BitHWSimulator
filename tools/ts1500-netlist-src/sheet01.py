@@ -20,7 +20,7 @@ N.pins('U7', {1:'A11',2:'A12',3:'A13',4:'A14',5:'A15',6:'SYSCLK',7:'D4',8:'D3',9
               16:'A6',17:'NMI',18:'HALT',19:'MREQ',20:'IORQ',21:'RD',22:'WR',23:'BUSAK',24:'WAIT',25:'BUSRQ',26:'RESET',27:'M1',28:'RFSH',
               30:'A0',31:'A1',32:'A2',33:'A3',34:'A4',35:'A5',36:'A6',37:'A7',38:'A8',39:'A9',40:'A10'})
 N.note('/INT is wired to A6, as on the ZX81 (the edge connector has an INT contact: it is the A6 net).')
-N.chip('R24', 'RES'); N.pins('R24', {1: '+5V', 2: 'BUSRQ'})        # 680
+N.chip('R24', 'RES'); N.pins('R24', {1: '+5V', 2: 'BUSRQ'})        # 1M measured across it on a real board (998K); the schematic read 680
 # ---- U5, the gate array (NCR F811592): the pin numbers are the schematic's ----
 N.chip('U5', 'GA1500')
 N.pins('U5', {1:'KBD0', 2:'M1', 3:'NMI', 4:'IORQ', 5:'RD', 6:'WR', 7:'MREQ', 8:'HALT', 9:'WAIT', 10:'RESET', 11:'RAMRM', 12:'DEN',
