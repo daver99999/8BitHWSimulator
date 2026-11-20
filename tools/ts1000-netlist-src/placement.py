@@ -1,52 +1,59 @@
-"""Where the parts are drawn on the TS1000 board. From a scan of an Issue 3 ZX81 board (UK, 2114 RAMs, but the same board as
-the Timex's: the layout, the reference numbers and the silkscreen are the same) with the edge connector at the bottom, the
-jacks and the modulator at the right and the keyboard connectors at the top: that is how it is drawn here. The positions are
-pixels of that scan (about 5.4 per mm, from the length of the edge connector), converted to 4 per mm. They are good to a few mm.
+"""Where the parts are on the TS1000/ZX81 Issue 3 board, read from a top photo of an Issue 3 board ("Sinclair ZX81 PCB Top", the
+UK Issue 3 with the Ferranti 2C210E ULA, two 2114 RAMs and an Astec modulator: the same board as the Timex's, with the USA parts
+R31, R32, D9 and C11/C12 left unfitted but silkscreened). It is drawn as the photo shows it: the edge connector at the top right,
+the modulator and the three jacks at the left, the keyboard connectors at the bottom right, chips with pin 1 at the top left.
+The photo is 5.2 px per mm (from the length of the Z80, 52 mm) and the drawing 4 px per mm. Positions are good to a mm or two.
 
-Which resistor of a group is where is NOT read from the silkscreen (the pictures are not sharp enough): inside a group the
-references go in order. The groups are: R7-R14 (470 ohm) the two columns of 4 next to the ROM and above the Z80, R18-R26 (1K)
-the column of 9 below the ROM, R35-R42 (10K) the 8 right of the Z80, R43-R47 below KB1, D1-D8 below KB2. R16, R17, R1 and TR1
-are the group next to the edge connector, R2/R28 the pair of vertical resistors between the Z80 and the ULA, X1 and TR2 are
-the orange and the flat black part below the ULA's left side. The capacitors and a few resistors (C1-C4, C6-C12, R29, R30, R33)
-are not placed from the scan and go in a row below the board. The Timex board in the photos has a Forth ROM adapter over IC2,
-a switching regulator and a 32K RAM added: none is drawn."""
+Read from the silkscreen in the photo: the column of nine 1K resistors (R18-R26), the box of four 470 ohm (R8-R10, R14), the four 470 ohm
+below the Z80 (R12, R11, R7, R13), R43-R47 and D1-D8 along the bottom, C8/C9, and where R27/R34, R31/R32, D9, C10/C11/C12
+and the jacks are. NOT read (the labels are under the chips, off the photo or too small): which of the four 10K pull-ups under the Z80 is
+which (R40, R39, R42, R41 is the order the data lines D1, D0, D2, D3 and a continuity check give), which of the left four is R35-R38,
+and the names of the small resistors round the ULA and at the edge connector: those go by the circuit and are a guess.
+The 22 uF (C3) and the 100 uF (C5), the crystal and the two transistors are placed from the photo; the 7805 and the 2114 pair
+(drawn here as the one 6116 IC4 between them) are not what the netlist has."""
 ORIGIN = (0, 0)
 SCALE = 4.0
-SIZE = (603, 441)
-S = 4.0 / 5.4
+X0, Y0, PXMM = 80.0, 108.0, 5.2
+SIZE = (round((905 - X0) / PXMM * SCALE), round((640 - Y0) / PXMM * SCALE))
 
 def P(x, y):
-    """pixel of the scan -> pixel of the board drawing (the board's top left corner is at 30, 262 in the scan)"""
-    return (round((x - 30) * S), round((y - 262) * S))
+    """pixel of the photo -> pixel of the board drawing"""
+    return (round((x - X0) / PXMM * SCALE), round((y - Y0) / PXMM * SCALE))
 
-IC = {'IC1': P(603, 670), 'IC3': P(472, 567), 'IC2': P(331, 454), 'IC4': P(190, 563)}
+IC = {'IC1': P(343, 262), 'IC3': P(470, 348), 'IC2': P(608, 448), 'IC4': P(741, 350)}
 CONN = {
-    'J1': P(185, 826) + ('h', 2),
-    'KB2': P(111, 303) + ('h', 1), 'KB1': P(254, 295) + ('h', 1),
-    'DC': P(832, 348) + ('v', 1), 'MICJ': P(832, 438) + ('v', 1), 'EARJ': P(832, 527) + ('v', 1),
-    'MOD': P(775, 610) + ('h', 1),
+    'J1': P(718, 125) + ('h', 2),
+    'KB2': P(833, 582) + ('h', 1), 'KB1': P(693, 595) + ('h', 1),
+    'EARJ': P(115, 388) + ('v', 1), 'MICJ': P(115, 465) + ('v', 1), 'DC': P(115, 545) + ('v', 1),
+    'MOD': P(215, 345) + ('h', 1),
 }
 TWO_PAD = {}
 def put(ref, x, y, horizontal=False):
     px, py = P(x, y)
     TWO_PAD[ref] = (px, py, 'h') if horizontal else (px, py)
 
-for k, ref in enumerate(['R7', 'R8', 'R9', 'R10']):                        # the box of 4 next to the ROM
-    put(ref, 370, 300 + 15 * k, True)
-for k, ref in enumerate(['R11', 'R12', 'R13', 'R14']):                     # the top four of the column above the Z80
-    put(ref, 479, 298 + 15 * k, True)
-for k in range(9):                                                         # R18-R26: the column of 9 below the ROM
-    put('R%d' % (18 + k), 345, 617 + 15 * k, True)
-for k in range(8):                                                         # R35-R42: the 8 right of the Z80
-    put('R%d' % (35 + k), 595, 364 + 15 * k, True)
-for k, x in enumerate([174, 193, 214, 229, 243]):                          # R43-R47, below KB1
-    put('R%d' % (43 + k), x, 387)
-for k, x in enumerate([50, 65, 80, 95, 110, 125, 140, 153]):               # D1-D8, below KB2
-    put('D%d' % (1 + k), x, 391)
-put('R2', 535, 528); put('R28', 548, 523)                                  # the 680 ohm pair, vertical
-put('R4', 533, 635); put('R15', 551, 631)                                  # the second vertical pair
-put('R6', 470, 790, True); put('R5', 474, 806, True)                       # next to X1 and TR2
-put('R1', 95, 724, True); put('R16', 95, 763, True); put('R17', 88, 780, True)   # next to TR1 at the edge connector
-put('D9', 676, 615); put('R32', 683, 670); put('R31', 672, 720)            # the USA parts, right of the ULA
-put('R34', 749, 445, True); put('R27', 697, 491, True)                     # near the jacks
-OTHER = {'X1': P(505, 770), 'TR2': P(470, 752), 'TR1': P(93, 748), 'C5': P(329, 769), 'C3': P(725, 362)}
+for k, ref in enumerate(['R22', 'R26', 'R18', 'R19', 'R25', 'R24', 'R23', 'R20', 'R21']):   # the column of nine 1K, as labelled
+    put(ref, 588, 198 + 13.2 * k, True)
+for k, ref in enumerate(['R40', 'R39', 'R42', 'R41']):                      # the four 10K under the Z80 (order from the data lines)
+    put(ref, 462, 488 + 16 * k, True)
+for k, ref in enumerate(['R12', 'R11', 'R7', 'R13']):                       # the four 470 under them, as labelled
+    put(ref, 462, 553 + 16 * k, True)
+for k, ref in enumerate(['R8', 'R10', 'R14', 'R9']):                        # the box of four 470 left of the ROM
+    put(ref, 580, 543 + 15 * k, True)
+for k, ref in enumerate(['R35', 'R36', 'R37', 'R38']):                      # the four 10K left of the Z80, below R28/R29
+    put(ref, 343, 480 + 13.3 * k, True)
+for k in range(5):                                                          # R43-R47, under the label R43->47
+    put('R%d' % (43 + k), 700 + 13.2 * k, 511)
+for k in range(8):                                                          # D1-D8
+    put('D%d' % (1 + k), 767 + 14.3 * k, 508)
+put('R28', 343, 427, True); put('R29', 347, 449, True)                      # left of the Z80, above the four
+put('R27', 190, 448, True); put('R34', 242, 405, True)                      # by the jacks
+put('R6', 400, 300); put('R5', 395, 370); put('R33', 413, 377)              # the vertical ones between the ULA and the Z80
+put('R15', 532, 483); put('R30', 548, 488)                                  # the vertical pair left of the ROM
+put('R1', 455, 123, True); put('R2', 448, 133, True); put('R4', 443, 143, True)   # the cluster at the top (a fourth resistor there is R3, which the netlist does not have)
+put('R16', 810, 193, True); put('R17', 793, 172)                            # by TR1 at the edge connector
+put('R32', 270, 268); put('R31', 277, 298); put('D9', 272, 225)             # the USA parts, silkscreen only on this board
+put('C1', 418, 112, True); put('C6', 445, 158, True); put('C4', 273, 317); put('C7', 410, 335); put('C2', 395, 452)
+put('C10', 207, 421, True); put('C11', 217, 433, True); put('C12', 347, 436, True)
+put('C8', 690, 482); put('C9', 865, 478)
+OTHER = {'X1': P(408, 288), 'TR2': P(452, 175), 'TR1': P(820, 170), 'C5': P(525, 355), 'C3': P(580, 172)}
