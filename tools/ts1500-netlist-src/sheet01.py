@@ -5,7 +5,7 @@ READ FROM THE SCHEMATIC (all legible): every pin number of U5 (the 68 pin gate a
 (J5 columns KBD0-4, J6 half rows A8-A15 through D13 D17 D10 D16 D12 D14 D15 D11), the edge connector P1 (data lines on the
 primed bus D0'-D7', RAMRM, SYS CLK) and the video / tape / EAR corner.
 
-CHECKED ON A REAL BOARD (continuity): Z80 CLK (pin 6) is on U5 pin 58 (SYS Clk), not 57 as the schematic says; Z80 D0 (pin 14) is on U5 25 as the schematic says; Z80 -> U5: /M1 2, /NMI 3, /IORQ 4, /RD 5, /WR 6, /MREQ 7, /HALT 8, /WAIT 9, /RESET 10,
+CHECKED ON A REAL BOARD (continuity): Z80 CLK (pin 6) is on U5 pin 58 (SYS Clk), not 57 as the schematic says; Z80 D0-D7 (pins 14,15,12,8,7,9,10,13) are on U5 25,29,33,37,41,47,20,17 as the schematic says; Z80 -> U5: /M1 2, /NMI 3, /IORQ 4, /RD 5, /WR 6, /MREQ 7, /HALT 8, /WAIT 9, /RESET 10,
 /RFSH 16.  The schematic and the measurements agree on every one of these.
 
 OPEN: where U5 pin 57 (/CPU Clock) goes (nothing on the Z80's CLK: that is 58); whether the edge connector's clock contact is on the same net as the Z80's CLK,
