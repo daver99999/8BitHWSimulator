@@ -60,10 +60,12 @@ N.note('INFERRED: which of R43-R47 on which KBD line (the resistor packs are dra
 N.chip('R30', 'RES'); N.pins('R30', {1: 'UKUS', 2: 'GND'})       # 10 ohm, USA only: the UK/USA pin is low on this machine
 # ---- keyboard: KB1 (5 way, the ULA columns), KB2 (8 way, the half rows through D1-D8 from A8-A15) ----
 N.chip('KB1', 'CONN'); N.pins('KB1', {1:'KBD0',2:'KBD1',3:'KBD2',4:'KBD3',5:'KBD4'})
-N.chip('KB2', 'CONN'); N.pins('KB2', {i + 1: 'ROW%d' % i for i in range(8)})
+# KB2 pin n is on diode Dn (MEASURED on a real Issue 3: pin 1 to the diode at the left, the rest in order). The diodes are on the
+# address lines A11 A10 A12 A9 A13 A8 A14 A15 (D1..D8), so the half rows (ROW0 = A8 .. ROW7 = A15) are on KB2 pins 6 4 2 1 3 5 7 8.
+N.chip('KB2', 'CONN'); N.pins('KB2', {i + 1: 'ROW%d' % r for i, r in enumerate((3, 2, 4, 1, 5, 0, 6, 7))})
 for d, i in (('D6', 0), ('D4', 1), ('D2', 2), ('D1', 3), ('D3', 4), ('D5', 5), ('D7', 6), ('D8', 7)):         # A8..A15
     N.chip(d, 'DIODE'); N.pins(d, {1: 'ROW%d' % i, 2: 'A%d' % (8 + i)})
-N.note('INFERRED: the pin order of KB1 (KBD0-4) and KB2 (the half rows A8-A15 in order).')
+N.note('KB1 (R43-R47, KBD0-4) and the KB2 pin order were checked on a real Issue 3; which address line each diode D1-D8 is on is still from the schematic.')
 # ---- edge connector J1: pad 2k-1 is contact k on the component side (A), 2k on the underside (B) ----
 top = ['D7P','RAMCS',None,'D0P','D1P','D2P','D6P','D5P','D3P','D4P','A6','NMI','HALT','MREQ','IORQ','RD','WR','BUSAK','WAIT','BUSRQ','RESET','M1','RFSH']
 bot = ['+5V','+9V',None,'GND','GND','CPUCLK','A0','A1','A2','A3','A15','A14','A13','A12','A11','A10','A9','A8','A7','A6','A5','A4','ROMCS']

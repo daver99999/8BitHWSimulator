@@ -115,7 +115,7 @@ static const conn_def_t t1_conn_defs[] = {
                               "32=A10 33=/WR 34=A9 35=/BUSAK 36=A8 37=/WAIT 38=A7 39=/BUSRQ 40=A6 41=/RESET 42=A5 43=/M1 44=A4 "
                               "45=/RFSH 46=/ROMCS" },
     { "KB1", "Keyboard (columns)", "1=KBD0 2=KBD1 3=KBD2 4=KBD3 5=KBD4" },
-    { "KB2", "Keyboard (half rows)", "1=A8 2=A9 3=A10 4=A11 5=A12 6=A13 7=A14 8=A15" },
+    { "KB2", "Keyboard (half rows)", "1=D1 2=D2 3=D3 4=D4 5=D5 6=D6 7=D7 8=D8" },
     { "MICJ", "MIC jack", "1=MIC 2=GND" },
     { "EARJ", "EAR jack", "1=EAR 2=GND" },
     { "MOD", "Modulator", "1=UK2_video 2=USA3 3=GND 4=+5V" },
@@ -241,7 +241,11 @@ static void t1_create(board_t *b) {
     /* The keyboard diodes: the half row (pin 1) is the anode, the address line (pin 2) the cathode. */
     for (int i = 1; i <= 8; i++) { char ref[8]; snprintf(ref, sizeof(ref), "D%d", i); t1_make_element(b, ref, 1, 2, EL_DIODE); }
     t1_make_element(b, "TR2", 1, 2, EL_NPN);            /* the clock inverter: base to collector */
-    for (int c = 0; c < 8; c++) z->pin_row[c] = t1_pin_of(b, "KB2", 1 + c);
+    /* The KB2 pin of each half row (A8..A15). Issue 3: KB2 pin n is on diode Dn (measured on a real board), and D1-D8 are on A11 A10 A12 A9
+     * A13 A8 A14 A15. Issue 1: the pins run A15 A14 A8 A13 A9 A12 A10 A11 as the layout drawing shows (not checked on a real board). */
+    static const int kb2_i3[8] = { 6, 4, 2, 1, 3, 5, 7, 8 }, kb2_i1[8] = { 3, 5, 7, 8, 6, 4, 2, 1 };
+    const int *kb2 = b->m == &machine_ts1000i1 ? kb2_i1 : kb2_i3;
+    for (int c = 0; c < 8; c++) z->pin_row[c] = t1_pin_of(b, "KB2", kb2[c]);
     for (int l = 0; l < 5; l++) z->pin_kb[l] = t1_pin_of(b, "KB1", 1 + l);
     t1_init_keymap(z);
     memset(z->key_matrix, 0, sizeof(z->key_matrix));
