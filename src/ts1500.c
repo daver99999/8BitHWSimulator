@@ -204,9 +204,9 @@ static const part_def_t t5_part_defs[] = {
     { "U8", &PT_T5DRAM, "DRAM", ROLE_VRAM, "4116\nD2", "16K x 1 dynamic RAM, data bit 2" },
     { "U11", &PT_T5DRAM, "DRAM", ROLE_VRAM, "4116\nD3", "16K x 1 dynamic RAM, data bit 3" },
     { "U12", &PT_T5DRAM, "DRAM", ROLE_VRAM, "4116\nD4", "16K x 1 dynamic RAM, data bit 4" },
-    { "U13", &PT_T5DRAM, "DRAM", ROLE_VRAM, "4116\nD5", "16K x 1 dynamic RAM, data bit 5" },
+    { "U13", &PT_T5DRAM, "DRAM", ROLE_VRAM, "4116\nD7", "16K x 1 dynamic RAM, data bit 7 (checked on a real board: U13 and U15 are the other way round to the schematic)" },
     { "U14", &PT_T5DRAM, "DRAM", ROLE_VRAM, "4116\nD6", "16K x 1 dynamic RAM, data bit 6" },
-    { "U15", &PT_T5DRAM, "DRAM", ROLE_VRAM, "4116\nD7", "16K x 1 dynamic RAM, data bit 7" },
+    { "U15", &PT_T5DRAM, "DRAM", ROLE_VRAM, "4116\nD5", "16K x 1 dynamic RAM, data bit 5" },
 };
 
 static const conn_def_t t5_conn_defs[] = {
@@ -327,7 +327,7 @@ static void t5_create(board_t *b) {
     z->p_cpu = sim_find_part(s, "U7");
     z->p_ula = sim_find_part(s, "U5");
     z->p_rom = sim_find_part(s, "U2");
-    static const char *const dram_refs[8] = { "U10", "U9", "U8", "U11", "U12", "U13", "U14", "U15" };      /* D0'..D7' */
+    static const char *const dram_refs[8] = { "U10", "U9", "U8", "U11", "U12", "U15", "U14", "U13" };      /* D0'..D7' (U15 is D5', U13 D7': checked on a real board) */
     for (int i = 0; i < 8; i++) z->p_dram[i] = sim_find_part(s, dram_refs[i]);
     z->pin_clk = part_pin(&s->parts[z->p_cpu], T5Z_CLK);
     memset(z->rom, 0xFF, sizeof(z->rom));

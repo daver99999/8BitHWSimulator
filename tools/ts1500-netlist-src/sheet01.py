@@ -46,7 +46,8 @@ N.pins('U3', {1:'AEN',19:'AEN', 11:'A0',9:'A0P', 8:'A1',12:'A1P', 13:'A2',7:'A2P
 N.chip('U6', 'LS245')
 N.pins('U6', {1:'WR', 19:'DEN', **{2 + i: 'D%dP' % i for i in range(8)}, **{18 - i: 'D%d' % i for i in range(8)}})
 # ---- the eight DRAMs: one data bit each (U10 D0 ... U15 D7), D and Q on D0'..D7' ----
-for ref, i in (('U10', 0), ('U9', 1), ('U8', 2), ('U11', 3), ('U12', 4), ('U13', 5), ('U14', 6), ('U15', 7)):
+for ref, i in (('U10', 0), ('U9', 1), ('U8', 2), ('U11', 3), ('U12', 4), ('U15', 5), ('U14', 6), ('U13', 7)):   # CHECKED ON A REAL BOARD: U15 is bit 5 and U13 bit 7 (the schematic has them the other way)
+   
     N.chip(ref, 'DRAM4116')
     N.pins(ref, {1: '-5V', 2: 'D%dP' % i, 3: 'WRD', 4: 'RAS', 5: 'RA0', 6: 'RA2', 7: 'RA1', 8: '+12V', 10: 'RA5', 11: 'RA4',
                  12: 'RA3', 13: 'RA6', 14: 'D%dP' % i, 15: 'CAS'})
