@@ -9,7 +9,7 @@ CHECKED ON A REAL BOARD (continuity): Z80 CLK (pin 6) is on U5 pin 58 (SYS Clk),
 /RFSH 16.  The schematic and the measurements agree on every one of these.
 
 OPEN: where U5 pin 57 (/CPU Clock) goes (nothing on the Z80's CLK: that is 58); whether the edge connector's clock contact is on the same net as the Z80's CLK,
-pins 14, 18 (/RAMCS, "CONT? AT GND") and 21 (60/50 Hz).
+pins 14 (/RAMCS) and 21 (60/50 Hz).
 NOT transcribed: the power supplies (linear and switching), the transistor's pin order, L/C values. The DRAMs' VBB and VDD are
 tied to the -5V and +12V nets, which have no source here."""
 from netlib import N
@@ -24,12 +24,12 @@ N.chip('R24', 'RES'); N.pins('R24', {1: '+5V', 2: 'BUSRQ'})        # 1K: measure
 # ---- U5, the gate array (NCR F811592): the pin numbers are the schematic's ----
 N.chip('U5', 'GA1500')
 N.pins('U5', {1:'KBD0', 2:'M1', 3:'NMI', 4:'IORQ', 5:'RD', 6:'WR', 7:'MREQ', 8:'HALT', 9:'WAIT', 10:'RESET', 11:'RAMRM', 12:'DEN',
-              13:'AEN', 15:'ROMCS', 16:'RFSH', 17:'D7', 19:'A2P', 20:'D6', 22:'A10', 23:'RA2', 24:'A3P', 25:'D0', 26:'A11', 27:'RA3',
+              13:'AEN', 15:'ROMCS', 16:'RFSH', 17:'D7', 18:'GND', 19:'A2P', 20:'D6', 22:'A10', 23:'RA2', 24:'A3P', 25:'D0', 26:'A11', 27:'RA3',
               28:'A4P', 29:'D1', 30:'A12', 31:'RA4', 32:'A5P', 33:'D2', 34:'A13', 35:'RA5', 36:'A6P', 37:'D3', 38:'A14', 39:'RA6',
               40:'A7P', 41:'D4', 42:'A15', 43:'RA7', 44:'RA0', 46:'A0P', 47:'D5', 48:'A8P', 49:'A9', 50:'RA1', 51:'A1P',
               53:'TVTAPE', 54:'CHSEL', 55:'OSCOUT', 56:'OSCIN', 57:'CPUCLK', 58:'SYSCLK', 59:'TAPEIN',
               62:'CAS', 63:'RAS', 64:'WRD', 65:'KBD4', 66:'KBD3', 67:'KBD2', 68:'KBD1'})
-N.note('U5 pins 14 (/RAMCS), 18 ("CONT? AT GND") and 21 (60/50 Hz) are not connected here: the schematic draws them as stubs / a jumper to GND (50 Hz).')
+N.note('U5 pin 18 ("CONT? AT GND") is on GND (0.18 ohm to pin 60 on a real board); pins 14 (/RAMCS, not connected to the Z80 or the DRAMs on a real board) and 21 (60/50 Hz) are not connected here.')
 N.chip('X1', 'XTAL'); N.pins('X1', {1: 'OSCIN', 2: 'OSCOUT'})      # 6.5 MHz
 N.chip('C23', 'CAP'); N.pins('C23', {1: 'RESET', 2: 'GND'})        # the power-on reset RC (the board's C23)
 # ---- ROM U2 (8K): A0-A7 from U3 (A0'-A7'), A8 through R28 (1K) from the bus and U5's A8, A9-A12 straight from the bus ----
