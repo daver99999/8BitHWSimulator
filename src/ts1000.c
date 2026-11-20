@@ -313,7 +313,7 @@ static int t1_host_char(int c) { return c; }
 
 /* What the monitor shows. No video signal at all (the ULA dead, or its TV pin or the modulator's video pin broken): snow.
  * A ULA that makes no complete frame for a few frame times (the CPU is stopped, or runs without the display routine, as
- * in FAST mode) still sends sync pulses but no vertical sync the set can lock to: a plain white screen, not the last
+ * in FAST mode) leaves the set with nothing to lock to: a dark screen (a real TS1000 with the Z80, the ROM or the ULA out shows nothing), not the last
  * picture. */
 static void t1_monitor(board_t *b, uint32_t *out) {
     ts1000_t *z = T1(b);
@@ -324,7 +324,7 @@ static void t1_monitor(board_t *b, uint32_t *out) {
     bool locked = s->cycle - z->last_frame_cycle < 4 * (uint64_t)T1_CYCLES_PER_FRAME;
     b->no_signal = !signal;
     for (int i = 0; i < ULA81_PIXELS_PER_LINE * ULA81_LINES; i++) {
-        uint32_t c = locked ? b->screen[i] : 0xFFFFFFFFu;
+        uint32_t c = locked ? b->screen[i] : 0xFF000000u;
         if (!signal) {
             b->snow_seed = b->snow_seed * 1103515245u + 12345u;
             uint32_t g = ((b->snow_seed >> 24) & 0xFF) * 3 / 4;
