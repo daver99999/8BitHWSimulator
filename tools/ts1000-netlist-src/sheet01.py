@@ -49,11 +49,14 @@ for r, i in (('R26', 0), ('R18', 1), ('R19', 2), ('R25', 3), ('R24', 4), ('R23',
     N.chip(r, 'RES'); N.pins(r, {1: 'A%d' % i, 2: 'A%dP' % i})
 N.chip('R2', 'RES'); N.pins('R2', {1: 'RAMCS_U', 2: 'RAMCS'})    # 680 ohm after the ULA's chip selects
 N.chip('R28', 'RES'); N.pins('R28', {1: 'ROMCS_U', 2: 'ROMCS'})  # 680 ohm
-for i in range(8):                                        # R35-R42 (RP1 on the schematic): 10K pull-ups on the data bus
-    N.chip('R%d' % (35 + i), 'RES'); N.pins('R%d' % (35 + i), {1: '+5V', 2: 'D%d' % i})
+# R35-R42 (RP1 on the schematic): 10K pull-ups on the data bus. MEASURED on a real Issue 3 (continuity to the Z80's data pins) for
+# R35-R39 and R42; R40 and R41 are D1 and D3 in an order not read from the silkscreen (the pair is electrically the same).
+R_DLINE = {35: 6, 36: 5, 37: 4, 38: 7, 39: 0, 40: 1, 41: 3, 42: 2}
+for r, d in R_DLINE.items():
+    N.chip('R%d' % r, 'RES'); N.pins('R%d' % r, {1: '+5V', 2: 'D%d' % d})
 for i in range(5):                                        # R43-R47 (RP3): 10K pull-ups on the keyboard columns
     N.chip('R%d' % (43 + i), 'RES'); N.pins('R%d' % (43 + i), {1: '+5V', 2: 'KBD%d' % i})
-N.note('INFERRED: which of R35-R42 is on which data line, and R43-R47 on which KBD line (the resistor packs are drawn in line order).')
+N.note('INFERRED: which of R43-R47 on which KBD line (the resistor packs are drawn in line order).')
 N.chip('R30', 'RES'); N.pins('R30', {1: 'UKUS', 2: 'GND'})       # 10 ohm, USA only: the UK/USA pin is low on this machine
 # ---- keyboard: KB1 (5 way, the ULA columns), KB2 (8 way, the half rows through D1-D8 from A8-A15) ----
 N.chip('KB1', 'CONN'); N.pins('KB1', {1:'KBD0',2:'KBD1',3:'KBD2',4:'KBD3',5:'KBD4'})
