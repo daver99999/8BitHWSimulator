@@ -215,7 +215,7 @@ static const conn_def_t t5_conn_defs[] = {
                               "32=A10 33=/WR 34=A9 35=/BUSAK 36=A8 37=/WAIT 38=A7 39=/BUSRQ 40=A6 41=/RESET 42=A5 43=/M1 44=A4 "
                               "45=/RFSH 46=/ROMCS" },
     { "J5", "KBD COLS", "1=KBD0 2=KBD1 3=KBD2 4=KBD3 5=KBD4" },
-    { "J6", "KBD ROWS", "1=A8 2=A9 3=A10 4=A11 5=A12 6=A13 7=A14 8=A15" },
+    { "J6", "KBD ROWS", "1=A11 2=A10 3=A9 4=A12 5=A13 6=A8 7=A14 8=A15" },
     { "J2", "MIC jack", "1=MIC 2=sleeve" },
     { "J1", "EAR jack", "1=EAR 2=GND" },
     { "MOD", "Modulator", "1=video 2=CH_SEL 3=GND 4=+5V" },
@@ -347,7 +347,8 @@ static void t5_create(board_t *b) {
         if (p && p->state && ((resistor_state_t *)p->state)->nel) element_set_type(s, p, 0, EL_SERIES); }
     /* The keyboard diodes D10-D17: the half row (pin 1) is the anode, the address line (pin 2) the cathode. */
     for (int i = 10; i <= 17; i++) { char ref[8]; snprintf(ref, sizeof(ref), "D%d", i); t5_make_element(b, ref, 1, 2, EL_DIODE); }
-    for (int c = 0; c < 8; c++) z->pin_row[c] = t5_pin_of(b, "J6", 1 + c);      /* J6 pins 1..8: the half rows A8..A15 */
+    { static const int j6_of_half_row[8] = { 6, 3, 2, 1, 4, 5, 7, 8 };      /* the J6 pin of the half rows A8..A15 (checked on a real board) */
+      for (int c = 0; c < 8; c++) z->pin_row[c] = t5_pin_of(b, "J6", j6_of_half_row[c]); }
     for (int l = 0; l < 5; l++) z->pin_kb[l] = t5_pin_of(b, "J5", 1 + l);
     t5_init_keymap(z);
     memset(z->key_matrix, 0, sizeof(z->key_matrix));

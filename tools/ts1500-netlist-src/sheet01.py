@@ -2,7 +2,7 @@
 against continuity readings on a real board.
 
 READ FROM THE SCHEMATIC (all legible): every pin number of U5 (the 68 pin gate array), the Z80 U7, U2 (8K ROM), U3 74LS244, U6 74LS245 (DIR on /WR), the DRAMs U8-U15, X1 6.5 MHz, the keyboard
-(J5 columns KBD0-4, J6 half rows A8-A15 through D13 D17 D10 D16 D12 D14 D15 D11), the edge connector P1 (data lines on the
+(J5 columns KBD0-4, J6 pins 1-8 through D13 D17 D10 D16 D12 D14 D15 D11 to A11 A10 A9 A12 A13 A8 A14 A15 (checked on a real board)), the edge connector P1 (data lines on the
 primed bus D0'-D7', RAMRM, SYS CLK) and the video / tape / EAR corner.
 
 CHECKED ON A REAL BOARD (continuity): Z80 CLK (pin 6) is on U5 pin 58 (SYS Clk), not 57 as the schematic says; Z80 D0-D7 (pins 14,15,12,8,7,9,10,13) are on U5 25,29,33,37,41,47,20,17 as the schematic says; Z80 A8-A15 (pins 38,39,40,1,2,3,4,5) are on U5 48,49,22,26,30,34,38,42 as the schematic says; Z80 -> U5: /M1 2, /NMI 3, /IORQ 4, /RD 5, /WR 6, /MREQ 7, /HALT 8, /WAIT 9, /RESET 10,
@@ -50,12 +50,13 @@ for ref, i in (('U10', 0), ('U9', 1), ('U8', 2), ('U11', 3), ('U12', 4), ('U13',
     N.chip(ref, 'DRAM4116')
     N.pins(ref, {1: '-5V', 2: 'D%dP' % i, 3: 'WRD', 4: 'RAS', 5: 'RA0', 6: 'RA2', 7: 'RA1', 8: '+12V', 10: 'RA5', 11: 'RA4',
                  12: 'RA3', 13: 'RA6', 14: 'D%dP' % i, 15: 'CAS'})
-# ---- keyboard: J5 (5 way, KBD0-4), J6 (8 way, the half rows A8-A15 through the diodes D13 D17 D10 D16 D12 D14 D15 D11) ----
+# ---- keyboard: J5 (5 way, KBD0-4), J6 (8 way, pins 1-8 through the diodes D13 D17 D10 D16 D12 D14 D15 D11 to the address lines A11 A10 A9 A12 A13 A8 A14 A15) ----
 N.chip('J5', 'CONN'); N.pins('J5', {1: 'KBD0', 2: 'KBD1', 3: 'KBD2', 4: 'KBD3', 5: 'KBD4'})
 N.chip('J6', 'CONN')
 N.pins('J6', {i + 1: 'ROW%d' % i for i in range(8)})
-for d, i in (('D13', 0), ('D17', 1), ('D10', 2), ('D16', 3), ('D12', 4), ('D14', 5), ('D15', 6), ('D11', 7)):         # A8..A15
-    N.chip(d, 'DIODE'); N.pins(d, {1: 'ROW%d' % i, 2: 'A%d' % (8 + i)})
+# CHECKED ON A REAL BOARD: the diode on each J6 pin (1..8) and the Z80 address line it reaches (the schematic order differs)
+for j, (d, a) in enumerate((('D13', 11), ('D17', 10), ('D10', 9), ('D16', 12), ('D12', 13), ('D14', 8), ('D15', 14), ('D11', 15))):
+    N.chip(d, 'DIODE'); N.pins(d, {1: 'ROW%d' % j, 2: 'A%d' % a})
 # ---- edge connector P1: pad 2k-1 is contact k on the component side (A), 2k on the underside (B). The data lines are the primed bus ----
 top = ['D7P','RAMRM',None,'D0P','D1P','D2P','D6P','D5P','D3P','D4P','A6','NMI','HALT','MREQ','IORQ','RD','WR','BUSAK','WAIT','BUSRQ','RESET','M1','RFSH']
 bot = ['+5V','+9V',None,'GND','GND','SYSCLK','A0','A1','A2','A3','A15','A14','A13','A12','A11','A10','A9','A8','A7','A6','A5','A4','ROMCS']
