@@ -5,10 +5,10 @@ READ FROM THE SCHEMATIC (all legible): every pin number of U5 (the 68 pin gate a
 (J5 columns KBD0-4, J6 half rows A8-A15 through D13 D17 D10 D16 D12 D14 D15 D11), the edge connector P1 (data lines on the
 primed bus D0'-D7', RAMRM, SYS CLK) and the video / tape / EAR corner.
 
-CHECKED ON A REAL BOARD (continuity): Z80 -> U5: /M1 2, /NMI 3, /IORQ 4, /RD 5, /WR 6, /MREQ 7, /HALT 8, /WAIT 9, /RESET 10,
+CHECKED ON A REAL BOARD (continuity): Z80 CLK (pin 6) is on U5 pin 58 (SYS Clk), not 57 as the schematic says; Z80 -> U5: /M1 2, /NMI 3, /IORQ 4, /RD 5, /WR 6, /MREQ 7, /HALT 8, /WAIT 9, /RESET 10,
 /RFSH 16.  The schematic and the measurements agree on every one of these.
 
-OPEN: which of U5's pins 57 (/CPU Clock) and 58 (SYS Clk) is on the Z80's CLK (one reading says 58, the schematic says 57),
+OPEN: where U5 pin 57 (/CPU Clock) goes (nothing on the Z80's CLK: that is 58); whether the edge connector's clock contact is on the same net as the Z80's CLK,
 pins 14, 18 (/RAMCS, "CONT? AT GND") and 21 (60/50 Hz), the Z80 D0 reading (a reading of U5 33 would be D2, the schematic says D0 is 25).
 NOT transcribed: the power supplies (linear and switching), the transistor's pin order, L/C values. The DRAMs' VBB and VDD are
 tied to the -5V and +12V nets, which have no source here."""
@@ -16,7 +16,7 @@ from netlib import N
 N.sheet_is('01')
 # ---- Z80A U7 (the schematic's ref) ----
 N.chip('U7', 'Z80')
-N.pins('U7', {1:'A11',2:'A12',3:'A13',4:'A14',5:'A15',6:'CPUCLK',7:'D4',8:'D3',9:'D5',10:'D6',12:'D2',13:'D7',14:'D0',15:'D1',
+N.pins('U7', {1:'A11',2:'A12',3:'A13',4:'A14',5:'A15',6:'SYSCLK',7:'D4',8:'D3',9:'D5',10:'D6',12:'D2',13:'D7',14:'D0',15:'D1',
               16:'A6',17:'NMI',18:'HALT',19:'MREQ',20:'IORQ',21:'RD',22:'WR',23:'BUSAK',24:'WAIT',25:'BUSRQ',26:'RESET',27:'M1',28:'RFSH',
               30:'A0',31:'A1',32:'A2',33:'A3',34:'A4',35:'A5',36:'A6',37:'A7',38:'A8',39:'A9',40:'A10'})
 N.note('/INT is wired to A6, as on the ZX81 (the edge connector has an INT contact: it is the A6 net).')

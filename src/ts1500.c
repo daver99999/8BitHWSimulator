@@ -15,7 +15,7 @@
  * settles, the Z80 sees an edge of its clock if U5 made one, the memories see their strobes, the board settles again.
  *
  * ASSUMED where the schematic does not say: which U5 pins are inputs or outputs (RAMRM, RAMCS, pin 18), the keyboard pull-ups
- * (inside U5 here), which of pins 57 and 58 is on the Z80's CLK (both carry the clock here), the DRAM refresh (RAS only cycles are not made: the DRAM
+ * (inside U5 here), where pin 57 goes (the Z80's CLK is on 58, checked on a board; 57 carries the clock here but nothing is on it), the DRAM refresh (RAS only cycles are not made: the DRAM
  * model keeps its data), and the character bitmap path in a video fetch (read from the ROM's outputs here).
  * NOT modeled: the power supply, the modulator and the video signal levels, the tape circuits, the expansion pack. */
 #include "ts1500.h"
