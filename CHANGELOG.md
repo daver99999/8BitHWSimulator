@@ -10,6 +10,8 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 ## Unreleased
 
+- **TS1500: netlist checked against a real board.** The Z80's CLK is on U5 pin 58 (not 57), the keyboard diodes go to the address lines in a different order from the schematic (J6 pins 1-8 to A11 A10 A9 A12 A13 A8 A14 A15), DRAMs U15 and U13 are data bits 5 and 7, U5 pin 18 is on GND, R24 is 1K. The Z80, U6, U3, U2, J5 and the U5 outputs were beeped out; `docs/TS1500.md` lists what is checked and what is not. `tests/ts1500.sh` covers boot and typing.
+
 - **TS1000 Issue 3: keyboard connectors checked on a real board.** R43-R47 are on KB1 pins 1-5 in order, and KB2 pin n is on diode Dn (not in address order as assumed). The keyboard matrix now takes its KB2 pin per half row from a table (Issue 3: measured; Issue 1: from the layout drawing, not checked).
 
 - **TS1000/ZX81 Issue 3: parts placed from a photo, R35-R42 measured.** Every part (the resistors, capacitors, diodes, jacks, modulator and connectors) is now placed where a top photo of an Issue 3 board shows it, drawn in the photo's orientation. R35-R42 are on the data lines measured with a meter on a real board (R35 D6, R36 D5, R37 D4, R38 D7, R39 D0, R40 D1, R41 D3, R42 D2; R40/R41 are an assumed order).
