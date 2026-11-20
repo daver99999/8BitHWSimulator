@@ -2512,7 +2512,7 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
                                                   &machine_zx48i4b, &machine_zx48i6a };
     static const machine_t *const cbm_boards[] = { &machine_pet4032, &machine_pet8032,
                                                    &machine_c64, &machine_c64b, &machine_c64c, &machine_vic20a, &machine_vic20b, &machine_c16, &machine_plus4, &machine_c128 };
-    static const machine_t *const ts_boards[] = { &machine_ts2068, &machine_ts1000, &machine_ts1500, &machine_zx80 };
+    static const machine_t *const ts_boards[] = { &machine_ts2068, &machine_ts1000, &machine_ts1000i1, &machine_ts1500, &machine_zx80 };
     static const machine_t *const apple_boards[] = { &machine_apple2plus };
     static const machine_t *const rs_boards[] = { &machine_coco2, &machine_mc10 };
     static const machine_t *const tano_boards[] = { &machine_dragon64 };
@@ -2539,7 +2539,7 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
     int pick = combo_tip(ctx, issues, nb, cur, 20, nk_vec2(150, 26.0f * nb + 20),
                          tab == 5 ? "Which Tano is on the bench: the Dragon 64 (issue 6 board, PAL timing: the Tano Dragon was an NTSC Dragon 64)" :
                          tab == 4 ? "Which Radio Shack is on the bench: the Color Computer 2 (the 26-3134B/3136B board) or the MC-10 (the Micro Color Computer: a 6803 and a 6847, netlist from the Eagle schematic, parts placed from a photo of the board)" :
-                         tab == 2 ? "Which Timex is on the bench: the TS2068, the TS1000/ZX81 (the American ZX81, Issue 3), the TS1500 or the Sinclair ZX80" :
+                         tab == 2 ? "Which Timex is on the bench: the TS2068, the TS1000/ZX81 (the American ZX81, Issue 3 or Issue 1), the TS1500 or the Sinclair ZX80" :
                          tab == 0 ? "Which Commodore is on the bench: the PET (4032 with 40 columns and the graphics keyboard, 8032 with 80 columns and the business keyboard) the VIC-20 (the early 324001 board or the cost reduced 250403) the C16 (the 250443 board) the Plus/4 (the 310164 board, 64K with the 3-plus-1 ROMs) the C128 (the 310378 board, 40-column mode) or the C64 (the 250407 breadbin, the 250425, the 250469 C64C with the Super PLA)" :
                                     "Which issue of the board is on the bench");
     if (pick != cur) U.switch_to = boards[pick];
@@ -3489,7 +3489,7 @@ static void handle_event(const sapp_event *ev) {
 
 /* The kind of a board: 0 C64, 1 Spectrum, 2 PET, 3 Timex, 4 VIC-20 and the other Commodores, 5 Apple, 6 Radio Shack, 7 Tano. */
 static int board_family(const board_t *b) {
-    return b->m == &machine_dragon64 ? 7 : (b->m == &machine_coco2 || b->m == &machine_mc10) ? 6 : b->m == &machine_apple2plus ? 5 : board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : (b->m == &machine_ts2068 || b->m == &machine_ts1000 || b->m == &machine_ts1500 || b->m == &machine_zx80) ? 3 : (b->m == &machine_vic20a || b->m == &machine_vic20b || b->m == &machine_c16 || b->m == &machine_plus4 || b->m == &machine_c128) ? 4 : 0;
+    return b->m == &machine_dragon64 ? 7 : (b->m == &machine_coco2 || b->m == &machine_mc10) ? 6 : b->m == &machine_apple2plus ? 5 : board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : (b->m == &machine_ts2068 || b->m == &machine_ts1000 || b->m == &machine_ts1000i1 || b->m == &machine_ts1500 || b->m == &machine_zx80) ? 3 : (b->m == &machine_vic20a || b->m == &machine_vic20b || b->m == &machine_c16 || b->m == &machine_plus4 || b->m == &machine_c128) ? 4 : 0;
 }
 
 /* The tab of a board: 0 Commodore (the C64's boards, the PET), 1 Spectrum, 2 Timex, 3 Apple, 4 Radio Shack, 5 Tano. */

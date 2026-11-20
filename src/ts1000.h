@@ -33,8 +33,8 @@ typedef struct ts1000 {
 } ts1000_t;
 
 static inline ts1000_t *T1(board_t *b) { return (ts1000_t *)b; }
-extern const machine_t machine_ts1000;
-static inline bool board_is_ts1000(const board_t *b) { return b->m == &machine_ts1000; }
+extern const machine_t machine_ts1000, machine_ts1000i1;     /* the Issue 3 and the Issue 1 */
+static inline bool board_is_ts1000(const board_t *b) { return b->m == &machine_ts1000 || b->m == &machine_ts1000i1; }
 
 /* The byte at a RAM address ($4000-$7FFF, mirrored) in the 2K RAM chip (for tests). */
 uint8_t ts1000_ram_peek(board_t *b, uint16_t addr);

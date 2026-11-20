@@ -21,4 +21,6 @@ TYPE='P2+3
 ' check "PRINT 2+3, 1K (ZX81)"    "5" --machine ts1000 --option ram=1k
 TYPE='P"HI"
 ' check "PRINT \"HI\""            "HI" --machine ts1000
+TYPE='P2+3
+' check "PRINT 2+3, Issue 1" "5" --machine ts1000i1
 exit $fail

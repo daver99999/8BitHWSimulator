@@ -98,7 +98,7 @@ static bool is_spectrum(const machine_t *m) {
     return m == &machine_ts2068 || m == &machine_zx48 || m == &machine_zx48i2 || m == &machine_zx48i1 ||
            m == &machine_zx48i4b || m == &machine_zx48i6a;
 }
-static bool is_ts1000(const machine_t *m) { return m == &machine_ts1000 || m == &machine_ts1500 || m == &machine_zx80; }   /* the TS1500 has the same 40 key keyboard */
+static bool is_ts1000(const machine_t *m) { return m == &machine_ts1000 || m == &machine_ts1000i1 || m == &machine_ts1500 || m == &machine_zx80; }   /* the TS1500 has the same 40 key keyboard */
 static bool is_c64(const machine_t *m) { return m == &machine_c64 || m == &machine_c64b || m == &machine_c64c; }
 /* The VIC-20 keyboard has the C64's layout (and the same PC keys). */
 static bool is_vic20(const machine_t *m) { return m == &machine_vic20a || m == &machine_vic20b; }

@@ -132,7 +132,7 @@ static int t1_kind_of(const char *ref) {
     if (!strcmp(ref, "X1") || !strcmp(ref, "MICJ") || !strcmp(ref, "EARJ") || !strcmp(ref, "MOD") || !strcmp(ref, "DC") ||
         !strncmp(ref, "KB", 2) || ref[0] == 'J') return PART_CONNECTOR;
     if (!strncmp(ref, "IC", 2) || !strcmp(ref, "TR1")) return PART_IC;
-    if (ref[0] == 'R' && (ref[1] >= '0' && ref[1] <= '9')) return PART_RESISTOR;
+    if (ref[0] == 'R' && ((ref[1] >= '0' && ref[1] <= '9') || ref[1] == 'P')) return PART_RESISTOR;     /* RP1, RP3: the Issue 1's packs */
     return PART_OTHER;      /* the diodes and TR2 (made elements in t1_create) */
 }
 
@@ -433,43 +433,46 @@ static void t1_set_option(board_t *b, int option, int value) {
     board_power_on(b);
 }
 
-const machine_t machine_ts1000 = {
-    .id = "ts1000",
-    .name = "Timex Sinclair 1000",
-    .issue = "TS1000/ZX81",
-    .board_name = "TS1000 Issue 3 (reconstructed netlist)",
-    .size = sizeof(ts1000_t),
-    .data = &bd_ts1000,
-    .sim = { .rail_of = t1_rail_of, .kind_of = t1_kind_of, .cycles_per_us = 3.25 },
-    .cpu_hz = T1_FREQ,
-    .cycles_per_frame = T1_CYCLES_PER_FRAME,
-    .steps_per_cycle = T1_STEPS_PER_CYCLE,
-    .screen_w = ULA81_PIXELS_PER_LINE, .screen_h = ULA81_LINES,
-    .ready_cycles = 2 * T1_FREQ,
-    .parts = t1_part_defs, .nparts = sizeof(t1_part_defs) / sizeof(t1_part_defs[0]),
-    .conns = t1_conn_defs, .nconns = sizeof(t1_conn_defs) / sizeof(t1_conn_defs[0]),
-    .link_resistors = "R6 R1", .crystals = "X1",
-    .diodes = "D", .jumpers = "", .supplies = "",
-    .keys_help = "Keys: type; Left Shift = SHIFT, Enter = NEWLINE, Backspace = RUBOUT (= DELETE), arrows = cursor, Esc = BREAK",
-    .reset_help = "Hold to press RESET: shorts the Z80 /RESET (IC3 pin 26) to GND",
-    .options = t1_options, .noptions = 1,
-    .get_option = t1_get_option,
-    .set_option = t1_set_option,
-    .create = t1_create,
-    .destroy = t1_destroy,
-    .power_on = t1_power_on,
-    .run = t1_run,
-    .joins = t1_joins,
-    .key_down = t1_key_down,
-    .key_up = t1_key_up,
-    .frame_update = t1_frame_update,
-    .host_key = t1_host_key,
-    .host_char = t1_host_char,
-    .monitor = t1_monitor,
-    .files_title = "Open a program",
-    .file_kind = t1_file_kind,
-    .load = t1_load,
-    .cpu_status = t1_cpu_status,
-    .cpu_regs = t1_cpu_regs,
-    .print_text = t1_print_text,
-};
+#define T1_MACHINE(ID, ISSUE, BOARD, DATA) { \
+    .id = ID, \
+    .name = "Timex Sinclair 1000", \
+    .issue = ISSUE, \
+    .board_name = BOARD, \
+    .size = sizeof(ts1000_t), \
+    .data = DATA, \
+    .sim = { .rail_of = t1_rail_of, .kind_of = t1_kind_of, .cycles_per_us = 3.25 }, \
+    .cpu_hz = T1_FREQ, \
+    .cycles_per_frame = T1_CYCLES_PER_FRAME, \
+    .steps_per_cycle = T1_STEPS_PER_CYCLE, \
+    .screen_w = ULA81_PIXELS_PER_LINE, .screen_h = ULA81_LINES, \
+    .ready_cycles = 2 * T1_FREQ, \
+    .parts = t1_part_defs, .nparts = sizeof(t1_part_defs) / sizeof(t1_part_defs[0]), \
+    .conns = t1_conn_defs, .nconns = sizeof(t1_conn_defs) / sizeof(t1_conn_defs[0]), \
+    .link_resistors = "R6 R1", .crystals = "X1", \
+    .diodes = "D", .jumpers = "", .supplies = "", \
+    .keys_help = "Keys: type; Left Shift = SHIFT, Enter = NEWLINE, Backspace = RUBOUT (= DELETE), arrows = cursor, Esc = BREAK", \
+    .reset_help = "Hold to press RESET: shorts the Z80 /RESET (IC3 pin 26) to GND", \
+    .options = t1_options, .noptions = 1, \
+    .get_option = t1_get_option, \
+    .set_option = t1_set_option, \
+    .create = t1_create, \
+    .destroy = t1_destroy, \
+    .power_on = t1_power_on, \
+    .run = t1_run, \
+    .joins = t1_joins, \
+    .key_down = t1_key_down, \
+    .key_up = t1_key_up, \
+    .frame_update = t1_frame_update, \
+    .host_key = t1_host_key, \
+    .host_char = t1_host_char, \
+    .monitor = t1_monitor, \
+    .files_title = "Open a program", \
+    .file_kind = t1_file_kind, \
+    .load = t1_load, \
+    .cpu_status = t1_cpu_status, \
+    .cpu_regs = t1_cpu_regs, \
+    .print_text = t1_print_text, \
+}
+
+const machine_t machine_ts1000 = T1_MACHINE("ts1000", "TS1000/ZX81", "TS1000 Issue 3 (reconstructed netlist)", &bd_ts1000);
+const machine_t machine_ts1000i1 = T1_MACHINE("ts1000i1", "TS1000/ZX81 Issue 1", "ZX81/TS1000 Issue 1 (SRC 049 circuit, placed from the Issue 1 layout)", &bd_ts1000i1);

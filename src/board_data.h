@@ -40,6 +40,7 @@ extern const board_data_t bd_coco2;   /* coco2_board_data.c (Color Computer 2, 2
 extern const board_data_t bd_dragon64;   /* dragon64_board_data.c (Dragon 64 issue 6) */
 extern const board_data_t bd_mc10;   /* mc10_board_data.c (MC-10, from the Eagle schematic, parts placed in rows) */
 extern const board_data_t bd_ts1000;   /* ts1000_board_data.c (Issue 3, reconstructed) */
+extern const board_data_t bd_ts1000i1; /* ts1000i1_board_data.c (Issue 1, placed from the Issue 1 layout) */
 extern const board_data_t bd_ts1500;   /* ts1500_board_data.c (schematic, U5 pins inferred) */
 extern const board_data_t bd_zx80;     /* zx80_board_data.c (schematic) */
 extern const board_data_t bd_ts2068;   /* ts2068_board_data.c (335-850001 rev 03) */
