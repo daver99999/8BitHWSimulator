@@ -478,5 +478,5 @@ static void t1_set_option(board_t *b, int option, int value) {
     .print_text = t1_print_text, \
 }
 
-const machine_t machine_ts1000 = T1_MACHINE("ts1000", "TS1000/ZX81", "TS1000 Issue 3 (reconstructed netlist)", &bd_ts1000);
-const machine_t machine_ts1000i1 = T1_MACHINE("ts1000i1", "TS1000/ZX81 Issue 1", "ZX81/TS1000 Issue 1 (SRC 049 circuit, placed from the Issue 1 layout)", &bd_ts1000i1);
+const machine_t machine_ts1000 = T1_MACHINE("ts1000", "TS1000/ZX81-3", "TS1000 Issue 3 (reconstructed netlist, placed from a photo)", &bd_ts1000);
+const machine_t machine_ts1000i1 = T1_MACHINE("ts1000i1", "TS1000/ZX81-1", "ZX81/TS1000 Issue 1 (SRC 049 circuit, placed from photos of a US board)", &bd_ts1000i1);
