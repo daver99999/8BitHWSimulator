@@ -40,5 +40,5 @@ put('R28', 660, 944, True); put('R29', 440, 944, True); put('R33', 525, 783, Tru
 put('R30', 590, 893, True); put('R31', 449, 911, True); put('R32', 440, 879, True); put('D9', 425, 838, True)
 put('R27', 248, 887, True); put('C10', 357, 707); put('C11', 373, 806, True); put('C12', 375, 778, True)
 put('C8', 1210, 898, True); put('C9', 1690, 758, True)
-for k, ref in enumerate(['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D8', 'D7']): put(ref, 1553 + 32 * k, 1005)
+for k, ref in enumerate(['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8']): put(ref, 1553 + 32 * k, 1005)
 OTHER = {'X1': P(783, 340), 'TR1': P(720, 112), 'TR2': P(883, 297), 'C3': P(915, 128), 'C5': P(848, 232)}
