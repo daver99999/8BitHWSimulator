@@ -414,6 +414,9 @@ typedef struct {
     int32_t cache_dd, cache_d;
     uint8_t clk, took;                  /* the plain 6847: the CLK pin's level, the sample of this cycle is taken */
     const uint8_t *sync;                /* the plain 6847: the SAM's step of the cycle (see vdg47_commit) */
+    uint8_t lcount, lpr;                /* the MC-10's 6847 (it makes its own addresses): the line of the row, lines in a row */
+    uint16_t abase, addr;               /* the start of the row, the address on DA0..DA11 */
+    int32_t cache_da;
 } vdg_t;
 
 static void vdg_draw_line(vdg_t *v, int line) {
@@ -658,6 +661,80 @@ const part_type_t PT_6847 = { "MC6847",
     "DA11:A DA12:A DA0:O DA1:A DA2:A DA3:A DA4:A GM2:m Y:A GM1:m GM0:m INT/EXT:m INV:m CLK:M A/S:m A/G:m /RP:m /FS:O /HS:O "
     "CSS:m DD7:M",
     vdg47_eval, vdg47_commit, vdg_reset, sizeof(vdg_t), TECH_NMOS };
+
+/* The MC-10's 6847: no SAM and no 74LS273 here, the chip makes the video RAM's addresses itself (DA0..DA11, which it lets go
+ * of while /MS is low, the CPU's access) and reads the byte from the RAM bus a few clocks later. A row of the picture is
+ * repeated for 12 lines of text, 3, 2 or 1 line(s) of graphics (by the mode); the address counter starts at 0 each frame. */
+static const int v10_da[12] = { 22, 23, 24, 25, 26, 13, 14, 15, 16, 18, 19, 20 };
+enum { V10_MS = 12 };
+/* The board's /HS circuit (74LS74 + 74LS76) locks the 6847's clock so that /HS falls in the CPU's write window, in the first
+ * half of an E cycle; the address then goes out a whole number of cells after that in the E low half and the byte is read half a
+ * cell later, still in the E low half, where the CPU leaves the RAM bus alone. */
+#define V10_FETCH_AT 34
+
+static void vdg10_eval(sim_t *s, part_t *p) {
+    vdg_t *v = p->state;
+    part_drive_bus_cached(s, p, v10_da, 12, v->addr, pin_in(s, p, V10_MS), &v->cache_da);
+    pin_out(s, p, V47_FS, DRV_BIT(!v->fs));
+    pin_out(s, p, V47_HS, DRV_BIT(!v->hs));
+}
+
+static void vdg10_commit(sim_t *s, part_t *p) {
+    vdg_t *v = p->state;
+    int part = (int)(p - s->parts);
+    bool dirty = false;
+    int clk = pin_in(s, p, V47_CLK);
+    if (clk && !v->clk) {
+        v->h++;
+        if (v->h >= V47_LINE_CLKS) {
+            v->h = 0;
+            v->line++;
+            if (v->line >= V_LINES) { v->line = 0; v->fs = 0; v->frames++; dirty = true; }
+            if (v->line == V_BOTTOM) { v->fs = 1; dirty = true; }
+            if ((v->line >= V_FB_TOP && v->line < V_FIRST_LINE) || (v->line >= V_BOTTOM && v->line < V_BOTTOM + 24))
+                vdg_border_line(v, v->line, pin_in(s, p, V47_AG), pin_in(s, p, V47_CSS));
+        }
+        if (v->h == 10) { v->hs = 1; dirty = true; }
+        else if (v->h == 26) { v->hs = 0; dirty = true; }
+        if (v->h == V10_FETCH_AT && v->line >= V_FIRST_LINE && v->line < V_BOTTOM) {
+            v->ag = (uint8_t)pin_in(s, p, V47_AG);
+            v->css = (uint8_t)pin_in(s, p, V47_CSS);
+            v->gm0 = (uint8_t)pin_in(s, p, V47_GM0);
+            v->gm1 = (uint8_t)pin_in(s, p, V47_GM1);
+            v->gm2 = (uint8_t)pin_in(s, p, V47_GM2);
+            unsigned sub = (unsigned)(v->gm2 << 1 | v->gm1);
+            v->nb = 32;
+            if (v->ag && (v->gm0 ? sub < 3 : sub == 0)) v->nb = 16;
+            static const uint8_t lines_per_row[8] = { 3, 3, 3, 2, 2, 1, 1, 1 };      /* G1C G1R G2C G2R G3C G3R G6C G6R */
+            v->lpr = v->ag ? lines_per_row[v->gm2 << 2 | v->gm1 << 1 | v->gm0] : 12;
+            if (v->line == V_FIRST_LINE) { v->abase = 0; v->lcount = 0; }
+            v->idx = 0;
+            v->fetching = 1;
+            dirty = true;
+        }
+        if (v->fetching && v->h >= V10_FETCH_AT) {
+            unsigned cell = v->nb == 32 ? 4u : 8u, rel = (unsigned)(v->h - V10_FETCH_AT), k = rel / cell, ph = rel % cell;
+            if (k < v->nb && ph == 0) { v->addr = (uint16_t)((v->abase + k) & 0xFFF); dirty = true; }
+            else if (k < v->nb && ph == cell / 2) {
+                v->chr[k] = (uint8_t)part_read_bus(s, p, v47_dd, 8);
+                if (k + 1 == v->nb) {
+                    v->fetching = 0;
+                    vdg_draw_line(v, v->line);
+                    if (++v->lcount >= v->lpr) { v->lcount = 0; v->abase = (uint16_t)(v->abase + v->nb); }
+                    dirty = true;
+                }
+            }
+        }
+    }
+    v->clk = (uint8_t)clk;
+    if (dirty) sim_mark_dirty(s, part);
+}
+
+const part_type_t PT_6847_MC10 = { "MC6847",
+    "VSS:P DD6:M DD0:M DD1:M DD2:M DD3:M DD4:M DD5:M CHB:A oB:A oA:A /MS:T DA5:O DA6:O DA7:O DA8:O VCC:P DA9:O DA10:O DA11:O "
+    "DA12:O DA0:O DA1:O DA2:O DA3:O DA4:O GM2:m Y:A GM1:m GM0:m INT/EXT:m INV:m CLK:M A/S:m A/G:m /RP:m /FS:O /HS:O "
+    "CSS:m DD7:M",
+    vdg10_eval, vdg10_commit, vdg_reset, sizeof(vdg_t), TECH_NMOS };
 
 void coco_vdg_sync(sim_t *s, int vdg, int sam) {
     vdg_t *v = s->parts[vdg].state;
