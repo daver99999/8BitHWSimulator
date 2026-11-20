@@ -60,7 +60,15 @@ def mm(px, py):
     return ((px - placement.ORIGIN[0]) / placement.SCALE, (py - placement.ORIGIN[1]) / placement.SCALE)
 
 def pads_at(ref, typ, n):
-    """pads of a part at its place on the real board (placement.py), or None if it has none"""
+    """pads of a part at its place on the real board (placement.py), or None if it has none. With ROT180 the whole part is turned half a
+    turn about its centre (pin 1 moves to the opposite corner), as the board is."""
+    pads = _pads_at(ref, typ, n)
+    if pads is None or not getattr(placement, 'ROT180', False): return pads
+    cx = sum(p[1] for p in pads) / len(pads); cy = sum(p[2] for p in pads) / len(pads)
+    return [(name, 2 * cx - x, 2 * cy - y, w, h) for (name, x, y, w, h) in pads]
+
+def _pads_at(ref, typ, n):
+    """the pads of a part, upright (pin 1 at the top left for a chip)"""
     P = placement
     if footprint(ref, typ, n).startswith('DIP') and ref in P.IC:
         cx, cy = mm(*P.IC[ref])

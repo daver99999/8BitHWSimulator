@@ -14,10 +14,12 @@ ORIGIN = (0, 0)
 SCALE = 4.0
 SIZE = (830, 535)
 K = 4.0 / 5.3
+ROT180 = True      # the drawing is turned half a turn from the photo's quarter turn: edge connector at the top, as on the TS1000 boards
 
 def P(px, py):
     """pixel of the photo (as reduced in tools notes: board interior 95..790 across, 40..1125 down) -> pixel of the drawing"""
-    return (round((1125 - py) * K), round((px - 95) * K))
+    x, y = round((1125 - py) * K), round((px - 95) * K)
+    return (SIZE[0] - x, SIZE[1] - y) if ROT180 else (x, y)
 
 IC = {'U8': P(232, 95), 'U9': P(232, 185), 'U10': P(232, 280), 'U11': P(232, 375), 'U12': P(232, 465), 'U13': P(232, 560),
       'U14': P(232, 650), 'U15': P(232, 745), 'U2': P(610, 405), 'U3': P(615, 490), 'U6': P(490, 650), 'U7': P(505, 800)}
