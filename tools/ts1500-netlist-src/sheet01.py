@@ -9,7 +9,7 @@ CHECKED ON A REAL BOARD (continuity): Z80 CLK (pin 6) is on U5 pin 58 (SYS Clk),
 /RFSH 16.  The schematic and the measurements agree on every one of these.
 
 OPEN: where U5 pin 57 (/CPU Clock) goes (nothing on the Z80's CLK: that is 58); whether the edge connector's clock contact is on the same net as the Z80's CLK,
-pins 14 (/RAMCS) and 21 (60/50 Hz).
+the pad parts for pins 14 and 21.
 NOT transcribed: the power supplies (linear and switching), the transistor's pin order, L/C values. The DRAMs' VBB and VDD are
 tied to the -5V and +12V nets, which have no source here."""
 from netlib import N
@@ -29,7 +29,7 @@ N.pins('U5', {1:'KBD0', 2:'M1', 3:'NMI', 4:'IORQ', 5:'RD', 6:'WR', 7:'MREQ', 8:'
               40:'A7P', 41:'D4', 42:'A15', 43:'RA7', 44:'RA0', 46:'A0P', 47:'D5', 48:'A8P', 49:'A9', 50:'RA1', 51:'A1P',
               53:'TVTAPE', 54:'CHSEL', 55:'OSCOUT', 56:'OSCIN', 57:'CPUCLK', 58:'SYSCLK', 59:'TAPEIN',
               62:'CAS', 63:'RAS', 64:'WRD', 65:'KBD4', 66:'KBD3', 67:'KBD2', 68:'KBD1'})
-N.note('U5 pin 18 ("CONT? AT GND") is on GND (0.18 ohm to pin 60 on a real board); pins 14 (/RAMCS, not connected to the Z80 or the DRAMs on a real board) and 21 (60/50 Hz) are not connected here.')
+N.note('U5 pin 18 ("CONT? AT GND") is on GND (0.18 ohm to pin 60 on a real board); pin 14 (/RAMCS) is not connected to the Z80 or the DRAMs on a real board, and pin 21 (60/50 Hz) goes to the board's "50 60" jumper pad (open on a US board; it reads 4.1K to GND and 2.75K to +5V in circuit, inside U5); neither is modeled here (the pad is not placed yet).')
 N.chip('X1', 'XTAL'); N.pins('X1', {1: 'OSCIN', 2: 'OSCOUT'})      # 6.5 MHz
 N.chip('C23', 'CAP'); N.pins('C23', {1: 'RESET', 2: 'GND'})        # the power-on reset RC (the board's C23)
 # ---- ROM U2 (8K): A0-A7 from U3 (A0'-A7'), A8 through R28 (1K) from the bus and U5's A8, A9-A12 straight from the bus ----
