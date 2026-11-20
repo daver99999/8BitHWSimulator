@@ -2538,7 +2538,7 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
     }
     int pick = combo_tip(ctx, issues, nb, cur, 20, nk_vec2(150, 26.0f * nb + 20),
                          tab == 5 ? "Which Tano is on the bench: the Dragon 64 (issue 6 board, PAL timing: the Tano Dragon was an NTSC Dragon 64)" :
-                         tab == 4 ? "Which Radio Shack is on the bench: the Color Computer 2 (the 26-3134B/3136B board) or the MC-10 (the Micro Color Computer: a 6803 and a 6847, netlist from the Eagle schematic, parts placed in rows)" :
+                         tab == 4 ? "Which Radio Shack is on the bench: the Color Computer 2 (the 26-3134B/3136B board) or the MC-10 (the Micro Color Computer: a 6803 and a 6847, netlist from the Eagle schematic, parts placed from a photo of the board)" :
                          tab == 2 ? "Which Timex is on the bench: the TS2068, the TS1000/ZX81 (the American ZX81, Issue 3), the TS1500 or the Sinclair ZX80" :
                          tab == 0 ? "Which Commodore is on the bench: the PET (4032 with 40 columns and the graphics keyboard, 8032 with 80 columns and the business keyboard) the VIC-20 (the early 324001 board or the cost reduced 250403) the C16 (the 250443 board) the Plus/4 (the 310164 board, 64K with the 3-plus-1 ROMs) the C128 (the 310378 board, 40-column mode) or the C64 (the 250407 breadbin, the 250425, the 250469 C64C with the Super PLA)" :
                                     "Which issue of the board is on the bench");
