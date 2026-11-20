@@ -10,6 +10,8 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 ## Unreleased
 
+- **TS1000/ZX81 and TS1500: a bad crystal stops the clock.** X1 was assumed to always oscillate. A removed X1, a bad X1 (open, short) or an open leg of X1 now stops the ULA clock, so the CPU stops and the picture is lost, as on the real boards. `tests/ts1500-faults.sh` lists the TS1500's likely faults with the symptoms expected from the circuit; they were not all checked on a real board (several cannot be made on one).
+
 - **TS1500: netlist checked against a real board.** The Z80's CLK is on U5 pin 58 (not 57), the keyboard diodes go to the address lines in a different order from the schematic (J6 pins 1-8 to A11 A10 A9 A12 A13 A8 A14 A15), DRAMs U15 and U13 are data bits 5 and 7, U5 pin 18 is on GND, R24 is 1K. The Z80, U6, U3, U2, J5 and the U5 outputs were beeped out; `docs/TS1500.md` lists what is checked and what is not. `tests/ts1500.sh` covers boot and typing. The parts are placed by silkscreen label from close-up photos of the board.
 
 - **TS1000 Issue 3: keyboard connectors checked on a real board.** R43-R47 are on KB1 pins 1-5 in order, and KB2 pin n is on diode Dn (not in address order as assumed). The keyboard matrix now takes its KB2 pin per half row from a table (Issue 3: measured; Issue 1: from the layout drawing, not checked).

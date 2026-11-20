@@ -225,7 +225,7 @@ static void t1_create(board_t *b) {
     t1_find_roms(b);
     ((rom_state_t *)s->parts[z->p_rom].state)->data = z->rom;
     ((ula81_state_t *)s->parts[z->p_ula].state)->fb = b->screen;
-    ((ula81_state_t *)s->parts[z->p_ula].state)->running = true;     /* X1 is not simulated: it always oscillates */
+    ((ula81_state_t *)s->parts[z->p_ula].state)->running = true;     /* t1_xtal stops it when X1 is bad, removed or open */
     /* Resistors that do logic: the buffers (470 ohm on the data bus, 1K on the ROM address lines, 680 ohm on the chip
      * selects) let each side drive its own half of the bus; R6 and R1 are base resistors, wires here. */
     for (int i = 7; i <= 14; i++) { char ref[8]; snprintf(ref, sizeof(ref), "R%d", i); part_t *p = t1_find(b, ref);
@@ -297,7 +297,18 @@ static void t1_sync_keys(board_t *b) {
 }
 static void t1_key_down(board_t *b, int key) { kbd_key_down(&T1(b)->kbd, key); t1_sync_keys(b); }
 static void t1_key_up(board_t *b, int key) { kbd_key_up(&T1(b)->kbd, key); t1_sync_keys(b); }
-static void t1_frame_update(board_t *b, uint32_t us) { kbd_update(&T1(b)->kbd, us); t1_sync_keys(b); }
+/* The 6.5 MHz oscillator runs while the crystal X1 is there, good, and both its legs are down: otherwise the ULA gets no clock. */
+static void t1_xtal(board_t *b) {
+    sim_t *s = &b->sim; ts1000_t *z = T1(b);
+    int x = sim_find_part(s, "X1");
+    bool ok = true;
+    if (x >= 0) {
+        ok = s->parts[x].rfault == RF_OK && !s->parts[x].removed;
+        for (int n = 1; n <= 2; n++) { int pi = part_pin(&s->parts[x], n); if (pi >= 0 && s->pins[pi].fault == PF_OPEN) ok = false; }
+    }
+    ((ula81_state_t *)s->parts[z->p_ula].state)->running = ok;
+}
+static void t1_frame_update(board_t *b, uint32_t us) { kbd_update(&T1(b)->kbd, us); t1_sync_keys(b); t1_xtal(b); }
 
 static int t1_host_key(int keycode) {
     switch (keycode) {

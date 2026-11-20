@@ -337,7 +337,7 @@ static void t5_create(board_t *b) {
     t5_ga_t *g = s->parts[z->p_ula].state;
     g->ula.pm = &t5_ga_pins;
     g->ula.fb = b->screen;
-    g->ula.running = true;                               /* X1 is not simulated: it always oscillates */
+    g->ula.running = true;                               /* t5_xtal stops it when X1 is bad, removed or open */
     t5_ga_bitmap_part = z->p_rom;
     t5_ga_bitmap_sim = s;
     /* R28 (1K) is in the ROM's A8 line, a series resistor: the gate array and the CPU side drive their own halves. R25 (680) is in
@@ -397,7 +397,18 @@ static void t5_sync_keys(board_t *b) {
 }
 static void t5_key_down(board_t *b, int key) { kbd_key_down(&T5(b)->kbd, key); t5_sync_keys(b); }
 static void t5_key_up(board_t *b, int key) { kbd_key_up(&T5(b)->kbd, key); t5_sync_keys(b); }
-static void t5_frame_update(board_t *b, uint32_t us) { kbd_update(&T5(b)->kbd, us); t5_sync_keys(b); }
+/* The 6.5 MHz oscillator runs while the crystal X1 is there, good, and both its legs are down: otherwise U5 gets no clock. */
+static void t5_xtal(board_t *b) {
+    sim_t *s = &b->sim; ts1500_t *z = T5(b);
+    int x = sim_find_part(s, "X1");
+    bool ok = true;
+    if (x >= 0) {
+        ok = s->parts[x].rfault == RF_OK && !s->parts[x].removed;
+        for (int n = 1; n <= 2; n++) { int pi = part_pin(&s->parts[x], n); if (pi >= 0 && s->pins[pi].fault == PF_OPEN) ok = false; }
+    }
+    ((t5_ga_t *)s->parts[z->p_ula].state)->ula.running = ok;
+}
+static void t5_frame_update(board_t *b, uint32_t us) { kbd_update(&T5(b)->kbd, us); t5_sync_keys(b); t5_xtal(b); }
 
 static int t5_host_key(int keycode) {
     switch (keycode) {
