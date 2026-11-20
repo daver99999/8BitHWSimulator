@@ -4,7 +4,7 @@ The circuit is the Issue 3's (tools/ts1000-netlist-src/ts1000_netlist.json: both
 resistor packs the Issue 1 has instead of R35-R47: RP1 (SIP9, 10K x 8: pin 1 the +5V common, pins 2-9 the data lines D0-D7) and RP3
 (SIP6, 10K x 5: pin 1 the +5V common, pins 2-6 the keyboard columns KBD0-KBD4). Parts are placed from "ZX81 Issue 1 Layout" by
 Dave 'Steamy' Briggs (tools/ts1000-netlist-src/placement_i1.py), the edge connector at the top.
-Which pack pin is on which line is INFERRED (the drawing shows the packs in line order only); the keyboard connector KB2's pins
+RP1's pins were checked on a real Issue 1 (pin 9 by elimination); RP3's are INFERRED (the drawing shows the packs in line order only); the keyboard connector KB2's pins
 are read off the layout drawing, where its eight pins run 8 to 1 under the diodes' address lines A11 A10 A12 A9 A13 A8 A14 A15.
 Usage: tools/ts1000i1_netlist2c.py [outdir]  (default: src)"""
 import os, re, sys
@@ -51,7 +51,8 @@ def transform(chips, nets):
     for name in list(nets):
         nets[name] = [m for m in nets[name] if m.split('.')[0] in chips]
     nets['+5V'] += ['RP1.1', 'RP3.1']
-    for i in range(8): nets['D%d' % i].append('RP1.%d' % (2 + i))
+    # RP1 pins 2-9, measured on a real Issue 1 to the Z80 pins 15 14 13 12 10 9 8 = D1 D0 D7 D2 D6 D5 D3; pin 9 (Z80 pin 7, D4) is the one left
+    for k, d in enumerate((1, 0, 7, 2, 6, 5, 3, 4)): nets['D%d' % d].append('RP1.%d' % (2 + k))
     for i in range(5): nets['KBD%d' % i].append('RP3.%d' % (2 + i))
     # KB2: the layout drawing runs its pins 8..1 under A11 A10 A12 A9 A13 A8 A14 A15 (the pin 1 at the right is A15)
     order = ['A15', 'A14', 'A8', 'A13', 'A9', 'A12', 'A10', 'A11']        # pin 1..8
