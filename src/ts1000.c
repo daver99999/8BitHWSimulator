@@ -99,7 +99,7 @@ static void t1_tr1_eval(sim_t *s, part_t *p) {
     bool on = pin_in(s, p, 1) && !pin_in(s, p, 3);
     pin_out(s, p, 2, on ? DRV_LO : DRV_Z);
 }
-static const part_type_t PT_T1TR1 = { "ZTX313", "B:m C:O E:m", t1_tr1_eval, 0, 0, 0, TECH_TTL };
+static const part_type_t PT_T1TR1 = { "ZTX313", "B:M C:O E:M", t1_tr1_eval, 0, 0, 0, TECH_TTL };
 
 static const part_def_t t1_part_defs[] = {
     { "IC1", &PT_ULA81, "ULA", ROLE_CHIP, "ULA\n2C210E", "Sinclair logic array (Ferranti ULA): clock, chip selects, video, sync, NMI generator, keyboard and tape port" },

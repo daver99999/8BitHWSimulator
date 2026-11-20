@@ -32,6 +32,8 @@
  *       --flashes counts the series of full screen flashes (how Dead Test
  *       reports a bad RAM chip), and says if the screen is lit at the end.
  *       C64HW_TYPE="text"  type this after boot (\n is RETURN)
+ *       C64HW_KEYFRAMES=N  frames between two typed keys (default 4; the ZX81's ROM drops a key
+ *                          that comes less than about 15 frames after the one before: use 16)
  *       C64HW_CHECK=1      self-check oracle for the healthy board
  *
  *   --load-state FILE
@@ -370,6 +372,8 @@ static int run_headless(void) {
     if (!args.fault_after) apply_faults();
     clock_t t0 = clock();
     const char *type = getenv("C64HW_TYPE");     /* text to type after boot */
+    int keyframes = getenv("C64HW_KEYFRAMES") ? atoi(getenv("C64HW_KEYFRAMES")) : 4;
+    if (keyframes < 4) keyframes = 4;
     int typed = 0, next_type = 0;
     const machine_t *m = board->m;
     int ready = (int)(m->ready_cycles / (uint64_t)m->cycles_per_frame);
@@ -409,7 +413,7 @@ static int run_headless(void) {
          * release for the same key held down. */
         if (type && f >= ready + 10 && f >= next_type && f % 4 == 0 && type[typed]) {
             int c = type[typed++];
-            next_type = f + (type[typed] == c ? 12 : 4);
+            next_type = f + (type[typed] == c ? 3 : 1) * keyframes;
             if (c == '\n') c = m->host_key(SAPP_KEYCODE_ENTER);
             else if (c >= 'a' && c <= 'z') c = m->host_char(c);
             board_key_down(board, c);
