@@ -8,7 +8,7 @@ primed bus D0'-D7', RAMRM, SYS CLK) and the video / tape / EAR corner.
 CHECKED ON A REAL BOARD (continuity): Z80 CLK (pin 6) is on U5 pin 58 (SYS Clk), not 57 as the schematic says; Z80 D0-D7 (pins 14,15,12,8,7,9,10,13) are on U5 25,29,33,37,41,47,20,17 as the schematic says; Z80 A8-A15 (pins 38,39,40,1,2,3,4,5) are on U5 48,49,22,26,30,34,38,42 as the schematic says; Z80 -> U5: /M1 2, /NMI 3, /IORQ 4, /RD 5, /WR 6, /MREQ 7, /HALT 8, /WAIT 9, /RESET 10,
 /RFSH 16.  The schematic and the measurements agree on every one of these.
 
-OPEN: where U5 pin 57 (/CPU Clock) goes (nothing on the Z80's CLK: that is 58); whether the edge connector's clock contact is on the same net as the Z80's CLK,
+OPEN: where U5 pin 57 (/CPU Clock) goes (nothing on the Z80's CLK: that is 58); the edge connector SYS Clk contact (6th on the underside counting the key gap from the +5V end) beeps to Z80 pin 6 (checked),
 the pad parts for pins 14 and 21.
 NOT transcribed: the power supplies (linear and switching), the transistor's pin order, L/C values. The DRAMs' VBB and VDD are
 tied to the -5V and +12V nets, which have no source here."""
