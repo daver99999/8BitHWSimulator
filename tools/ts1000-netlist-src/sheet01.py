@@ -65,7 +65,7 @@ N.chip('KB1', 'CONN'); N.pins('KB1', {1:'KBD0',2:'KBD1',3:'KBD2',4:'KBD3',5:'KBD
 N.chip('KB2', 'CONN'); N.pins('KB2', {i + 1: 'ROW%d' % r for i, r in enumerate((3, 2, 4, 1, 5, 0, 6, 7))})
 for d, i in (('D6', 0), ('D4', 1), ('D2', 2), ('D1', 3), ('D3', 4), ('D5', 5), ('D7', 6), ('D8', 7)):         # A8..A15
     N.chip(d, 'DIODE'); N.pins(d, {1: 'ROW%d' % i, 2: 'A%d' % (8 + i)})
-N.note('KB1 (R43-R47, KBD0-4) and the KB2 pin order were checked on a real Issue 3; which address line each diode D1-D8 is on is still from the schematic.')
+N.note('KB1 (R43-R47, KBD0-4) and the KB2 pin order were checked on a real Issue 3; the diode address lines (D1-D8 on A11 A10 A12 A9 A13 A8 A14 A15, so D7/D8 = A14/A15) were checked too.')
 # ---- edge connector J1: pad 2k-1 is contact k on the component side (A), 2k on the underside (B) ----
 top = ['D7P','RAMCS',None,'D0P','D1P','D2P','D6P','D5P','D3P','D4P','A6','NMI','HALT','MREQ','IORQ','RD','WR','BUSAK','WAIT','BUSRQ','RESET','M1','RFSH']
 bot = ['+5V','+9V',None,'GND','GND','CPUCLK','A0','A1','A2','A3','A15','A14','A13','A12','A11','A10','A9','A8','A7','A6','A5','A4','ROMCS']
