@@ -173,9 +173,15 @@ static const part_def_t ts_part_defs[] = {
 };
 
 static const conn_def_t ts_conn_defs[] = {
-    { "J4", "Cartridge dock", "1=A14 2=+5V 3=A12 4=A13 5=D0 6=D7 7=D1 8=A0 9=D2 10=A1 11=D6 12=A2 13=D5 14=A3 15=D3 16=A15 "
-                              "17=D4 18=/MREQ 19=/IORQ 20=A7 21=/RD 22=/M1 23=/WR 24=A8 25=A7 26=A9 27=A6 28=A10 29=A5 "
-                              "30=A11 31=A4 32=/RFSH 33=/BE 34=/EXROM 35=/ROSCS 36=GND" },
+    { "J4", "Cartridge dock (pins 1, 3, 5... are the B side, 2, 4, 6... the A side)",
+                              "1=Sig_GND_(1B) 2=Sig_GND_(1A) 3=SPK/TAPE_(2B) 4=EAR_(2A) 5=+15V_(3B) 6=A7RB_(3A) 7=+5V_(4B) 8=D7_(4A) "
+                              "9=Unused_(5B) 10=DZIN_(5A) 11=Slot_(6B) 12=Slot_(6A) 13=Pow_GND_(7B) 14=D0_(7A) 15=Pow_GND_(8B) 16=D1_(8A) "
+                              "17=0_(9B) 18=D2_(9A) 19=A0_(10B) 20=D6_(10A) 21=A1_(11B) 22=D5_(11A) 23=A2_(12B) 24=D3_(12A) 25=A3_(13B) "
+                              "26=D4_(13A) 27=A15B_(14B) 28=INT_(14A) 29=A14B_(15B) 30=NMI_(15A) 31=A13B_(16B) 32=HALT_(16A) 33=A12_(17B) "
+                              "34=/MREQ_(17A) 35=A11_(18B) 36=/IORQ_(18A) 37=A10_(19B) 38=/RD_(19A) 39=A9_(20B) 40=/WR_(20A) 41=A8_(21B) "
+                              "42=BUSAK_(21A) 43=A7_(22B) 44=WAIT_(22A) 45=A6_(23B) 46=BUSRQ_(23A) 47=A5_(24B) 48=RESET_(24A) 49=A4_(25B) "
+                              "50=/M1_(25A) 51=DZOUT_(26B) 52=/RFSH_(26A) 53=R_(27B) 54=EXROM_(27A) 55=G_(28B) 56=ROSCS_(28A) 57=B_(29B) "
+                              "58=BE_(29A) 59=BUSISO_(30B) 60=IOA5_(30A) 61=VIDEO_(31B) 62=SOUND_(31A) 63=Sig_GND_(32B) 64=Sig_GND_(32A)" },
     { "J5", "Joystick 1", "1=UP 2=DOWN 3=LEFT 4=RIGHT 6=FIRE 7=+5V 8=STROBE 9=GND" },
     { "J6", "Joystick 2", "1=UP 2=DOWN 3=LEFT 4=RIGHT 6=FIRE 7=+5V 8=STROBE 9=GND" },
     { "J9", "Keyboard", "1=GND 2=KB0 3=KB1 4=KB2 5=KB3 6=KB4 7=A11 8=A10 9=A9 10=A12 11=A13 12=A8 13=A14 14=A15" },

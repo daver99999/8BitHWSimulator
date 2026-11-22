@@ -30,13 +30,19 @@ for q, rb, addr, strobe in (('Q8', 'R45', 'A8', 'STROBE1'), ('Q7', 'R44', 'A9', 
     N.pins(rb, {1: addr, 2: q + '_B'})
     N.pins(q, {1: q + '_B', 2: strobe, 3: 'GND'})
 N.note('The strobe transistors are modelled as an inverter (base high -> strobe low); the schematic shows L5/L8 ferrite beads in the strobe lines, ignored.')
-# ---- cartridge dock J4 (2x18): pin numbers as on the schematic, 1-36 ----
+# ---- cartridge dock J4: 64 contacts, 32 positions with a B (solder) side and an A (component) side ----
+# Pin list from the Timex Technical Manual, given by David Green. The simulator's pin number is 2n-1 for position nB and 2n for nA,
+# so pins 1 and 2 are 1B and 1A, pins 3 and 4 are 2B and 2A, and so on up to 63 and 64 (32B, 32A); both ends of both sides are ground.
+# Signals that are not in the netlist (the analog and video circuits, the power supply, the tape input) are left unconnected.
+dockB = {1:'GND', 2:'SPKR_TAPE_OUT', 4:'+5V', 7:'GND', 8:'GND', 10:'A0', 11:'A1', 12:'A2', 13:'A3', 14:'A15B', 15:'A14B', 16:'A13B',
+         17:'A12', 18:'A11', 19:'A10', 20:'A9', 21:'A8', 22:'A7', 23:'A6', 24:'A5', 25:'A4', 32:'GND'}
+dockA = {1:'GND', 3:'A7P', 4:'D7', 7:'D0', 8:'D1', 9:'D2', 10:'D6', 11:'D5', 12:'D3', 13:'D4', 14:'INT', 15:'NMI', 16:'HALT',
+         17:'MREQB', 18:'IORQB', 19:'RDB', 20:'WRB', 21:'BUSAK', 22:'WAIT', 23:'BUSRQ', 24:'RESET', 25:'M1', 26:'RFSHB',
+         27:'EXROM', 28:'ROSCS', 29:'BE', 32:'GND'}
 N.chip('J4', 'CONN')
-dock = {1:'A14B', 2:'+5V', 3:'A12', 4:'A13B', 5:'D0', 6:'D7', 7:'D1', 8:'A0', 9:'D2', 10:'A1', 11:'D6', 12:'A2', 13:'D5', 14:'A3',
-        15:'D3', 16:'A15B', 17:'D4', 18:'MREQB', 19:'IORQB', 20:'A7P', 21:'RDB', 22:'M1', 23:'WRB', 24:'A8', 25:'A7', 26:'A9',
-        27:'A6', 28:'A10', 29:'A5', 30:'A11', 31:'A4', 32:'RFSHB', 33:'BE', 34:'EXROM', 35:'ROSCS', 36:'GND'}
-N.pins('J4', dock)
-N.note('J4 odd-numbered pins (1-35) read from a 300 dpi crop; 1, 31 and 33 less sure. Pin 20 (A7RB) is the muxed A7 of U11 (A7P).')
+N.pins('J4', {**{2 * n - 1: net for n, net in dockB.items()}, **{2 * n: net for n, net in dockA.items()}})
+N.pins('U19', {18: 'HALT', 23: 'BUSAK'})        # the Z80's /HALT and /BUSAK go to the dock
+N.note('J4 (64 contacts, 1B-32B and 1A-32A) is from the Technical Manual pin list. Not connected here: +15V (3B), tape EAR in (2A), R G B and VIDEO (27B-29B, 31B), SOUND (31A), DZIN and DZOUT, BUSISO (30B), IOA5 (30A), pin 9B ("0" in the list) and the two Slot and one Unused positions. A7RB (3A) is the muxed A7 of U11 (A7P).')
 # pull-ups on the dock-facing active-low lines the SCLD only receives
 N.chip('R75', 'RES'); N.pins('R75', {1: '+5V', 2: 'BE'})
 N.note('R75: pull-up on /BE (INFERRED: the schematic has a diode and the P1/J4 BE wires there; reference R75 is in its list of numbers that do not exist).')
