@@ -6,7 +6,9 @@ they are good to a few mm, which doesn't matter for the pin-level netlist.
 Placed from the photo: every IC, the SCLD U3, the dock J4, the connectors J5, J6 and J9, the crystal Y1, the diodes CR6-CR23 and
 the resistors R41, R42, R44 and the transistor Q7 (read from the silkscreen). R40, R43, R45, Q8 are not found on the photos:
 they keep the places they had from the Technical Manual's component layout drawing (Appendix D, page 353), moved to this
-frame. U5 and U21 are on the 03D's patch daughterboard (335-80006), R75 is not on the drawing: they go in a row below the board.
+frame. U5 and U21 are on the 03D's daughterboard (335-80006, top right, over the SCLD's right side): their positions are read from the
+solder side of that board, CR27, CR28 and R74 are put on its spare pads (a guess, the parts themselves are on the other side).
+R75 is not on the drawing: it goes in a row below the board.
 ICs are drawn notch up (pin 1 top left). The board outline is not a rectangle (the lower right corner is cut out for the dock);
 the generator uses the bounding box.
 """
@@ -26,6 +28,7 @@ IC = {
     'U9': P(763, 1051), 'U14': P(642, 1078), 'U15': P(799, 780),
     'U10': P(1560, 691), 'U11': P(1598, 857),
     'U16': P(1477, 868), 'U19': P(963, 830), 'U20': P(1778, 727),
+    'U21': P(1422, 531), 'U5': P(1426, 660),             # on the daughterboard
 }
 # the 68 pin SCLD in its square socket: centre
 SQUARE = {'U3': P(1197, 747)}
@@ -50,6 +53,7 @@ for ref, y in zip(['CR22', 'CR21', 'CR20', 'CR19', 'CR23'], [810, 823, 837, 850,
     put(ref, 2062, y, True)
 put('R41', 1045, 917, True); put('R42', 1045, 927, True)
 put('R44', 1830, 690, True)
+put('CR27', 1339, 502, True); put('CR28', 1340, 576, True); put('R74', 1307, 526)    # daughterboard spare pads
 # not found on the photos: the places from the manual's drawing
 put('R40', 698, 947, True); put('R43', 533, 976, True); put('R45', 533, 990, True)
 OTHER = {'Y1': P(1362, 640), 'Q7': P(1858, 712), 'Q8': P(455, 990)}
