@@ -1,47 +1,49 @@
-"""Where the parts are drawn on the ZX80 board. From a top-down scan of an Issue 3 ZX80 board (886 x 1203 pixels, about 6.0 per
-mm, from the length of the Z80 (52 mm)) with the edge connector at the top, the modulator and the jacks at the top right and the
-keyboard below: that is how it is drawn here. The positions are pixels of that scan, converted to 4 per mm; they are good to a
-few mm. Every IC is drawn with pin 1 at the top left (the notch is not readable on the scan).
+"""Where the parts are drawn on the ZX80 board. From a photo of an Issue 2 board seen from above, with the edge connector at the top,
+the modulator and the three jacks at the top right and the keyboard membrane below: that is how it is drawn here. The positions are
+pixels of that photo (about 8.8 per mm, from the Z80's length), converted to 4 per mm; they are good to a few mm.
 
-Not read from the silkscreen (too small): the order inside the groups. R4-R8 are the five diagonal resistors left of the Z80 and
-R9-R11 the three horizontal ones below them (R12 is the fourth of that column); D3-D10 are the row of 8 diodes above the keyboard;
-R13-R15 and R16-R18 are the groups at the lower left, and R19, R20, R24, R25 are placed near the chips they serve (their silkscreen
-is not legible). The two keyboard connectors (KB1, KB2) are under the keyboard membrane, drawn below the board. The power supply,
-modulator, jacks and the edge connector are not placed (they are not simulated)."""
+Every IC is drawn with pin 1 at the top left (the notches are at the top on the photo). Parts are placed by the silkscreen labels read
+from close-up photos: R1-R3, R9-R12 (the horizontal ones left of the Z80), R4-R8 (the five tilted ones), R13-R15, R16-R17, R18-R19,
+R20, R21-R23, R24, R25, R27, R28, R29-R33, R34-R35, the diodes D3-D10 (the row above the keyboard, left to right) and D11, the
+capacitors C9, C10 (the electrolytic), C11, C15 and the crystal X1. Not placed: the keyboard (it is a membrane ribbon, there are no
+connectors on the board), the power supply, the modulator, the jacks and the edge connector (not simulated); R36, R37, R26 and
+D1, D2 are empty footprints on this board."""
 ORIGIN = (0, 0)
 SCALE = 4.0
-SIZE = (580, 560)
-S = 4.0 / 6.0
+X0, Y0 = 270, 140          # the photo's pixel that is the drawing's top left
+PXMM = 8.8                 # pixels of the photo per mm
+SIZE = (640, 540)
 
 def P(x, y):
-    """pixel of the scan -> pixel of the board drawing (the board's top left corner is at 10, 10 in the scan)"""
-    return (round((x - 10) * S), round((y - 10) * S))
+    """pixel of the photo -> pixel of the drawing (4 per mm)"""
+    return (round((x - X0) / PXMM * SCALE), round((y - Y0) / PXMM * SCALE))
 
-IC = {'IC1': P(362, 412), 'IC2': P(767, 358), 'IC3': P(82, 310), 'IC4': P(162, 310), 'IC5': P(515, 496),
-      'IC6': P(622, 330), 'IC7': P(622, 488), 'IC8': P(510, 332), 'IC9': P(162, 478), 'IC10': P(82, 480),
-      'IC11': P(507, 680), 'IC12': P(597, 680), 'IC13': P(332, 680), 'IC14': P(97, 685), 'IC15': P(165, 685),
-      'IC16': P(262, 685), 'IC17': P(412, 680), 'IC18': P(675, 680), 'IC19': P(810, 522), 'IC20': P(753, 682),
-      'IC21': P(733, 522)}
-CONN = {'KB2': P(330, 850) + ('h', 1), 'KB1': P(620, 850) + ('h', 1)}
+IC = {'IC1': P(801, 652), 'IC2': P(1430, 578), 'IC3': P(360, 497), 'IC4': P(492, 497), 'IC5': P(1042, 775),
+      'IC6': P(1193, 540), 'IC7': P(1205, 782), 'IC8': P(1038, 540), 'IC9': P(482, 743), 'IC10': P(348, 745),
+      'IC11': P(1028, 1057), 'IC12': P(1176, 1057), 'IC13': P(750, 1065), 'IC14': P(348, 1065), 'IC15': P(478, 1065),
+      'IC16': P(628, 1065), 'IC17': P(877, 1065), 'IC18': P(1298, 1057), 'IC19': P(1494, 807), 'IC20': P(1408, 1057),
+      'IC21': P(1372, 807)}
+CONN = {}
 TWO_PAD = {}
 def put(ref, x, y, horizontal=False):
+    """a two lead part at (x, y) of the photo, lying along x (horizontal) or along y"""
     px, py = P(x, y)
     TWO_PAD[ref] = (px, py, 'h') if horizontal else (px, py)
 
-for k, y in enumerate([322, 340, 358, 376, 394]):                           # R4-R8: the five tilted ones left of the Z80
-    put('R%d' % (4 + k), 252, y, True)
-for k, y in enumerate([455, 478, 505]):                                     # R9-R11, then R12 (1K pull-up of /NMI)
-    put('R%d' % (9 + k), 250, y, True)
-put('R12', 250, 535, True)
-put('R1', 80, 400, True)
-put('R2', 95, 563, True); put('R3', 95, 596, True)
-put('R13', 70, 762, True); put('R14', 70, 779, True); put('R15', 70, 797, True)   # the three at the lower left
-put('R16', 185, 763, True); put('R17', 130, 780, True); put('R18', 270, 765, True)
-put('R19', 440, 745, True); put('R20', 212, 660); put('R24', 458, 710); put('R25', 550, 655)
-put('R21', 430, 520); put('R22', 445, 530); put('R23', 468, 543)
-put('R27', 815, 675); put('R28', 832, 405)
-put('R30', 700, 740, True); put('R32', 715, 757, True)
-for k, x in enumerate([315, 380, 450, 515, 590, 655, 725, 795]):             # D3-D10: the row above the keyboard
-    put('D%d' % (3 + k), x, 800, True)
-put('D11', 118, 463)
-OTHER = {'X1': P(815, 740), 'C9': P(155, 555), 'C10': P(468, 435), 'C11': P(555, 705), 'C15': P(800, 718)}
+for k, (x, y) in enumerate([(625, 525), (633, 555), (643, 582), (650, 612), (657, 645)]):    # R4-R8: the five tilted ones
+    put('R%d' % (4 + k), x, y, True)
+put('R9', 612, 713, True); put('R10', 612, 745, True); put('R11', 612, 780, True); put('R12', 612, 828, True)
+put('R1', 372, 635, True); put('R2', 370, 878, True); put('R3', 368, 908, True)
+put('R13', 348, 1193, True); put('R14', 348, 1225, True); put('R15', 348, 1256, True)
+put('R16', 505, 1200, True); put('R17', 505, 1227, True); put('R18', 670, 1192, True); put('R19', 660, 1231, True)
+put('R20', 550, 1033); put('R24', 950, 1138); put('R25', 1105, 1105)
+put('R21', 915, 828); put('R22', 945, 825); put('R23', 972, 845)
+put('R27', 1510, 1030); put('R28', 1507, 645)
+for k, y in enumerate([285, 310, 333]): put('R%d' % (29 + k), 1300, y, True)               # R29-R31, R32 and R33 below
+put('R32', 1292, 362, True); put('R33', 1292, 385, True)
+put('R34', 1425, 302, True); put('R35', 1425, 327, True)
+for ref, x in zip(['D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10'], [715, 825, 955, 1050, 1170, 1275, 1390, 1485]):
+    put(ref, x, 1252, True)                                                                  # the row above the keyboard
+put('D11', 418, 715)
+put('C10', 940, 665)                                                                         # the electrolytic, standing
+OTHER = {'X1': P(1520, 1120), 'C9': P(488, 958), 'C11': P(1122, 1000), 'C15': P(1518, 1178)}

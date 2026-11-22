@@ -345,7 +345,12 @@ static void z8_step(board_t *b) {
     zx80_t *z = Z8(b);
     sim_t *s = &b->sim;
     part_t *x1 = z->p_x1 >= 0 ? &s->parts[z->p_x1] : NULL;
-    if (!(x1 && (x1->dead || x1->removed))) {       /* the crystal oscillates */
+    bool xtal_ok = true;                            /* a bad, removed or open crystal does not oscillate */
+    if (x1) {
+        xtal_ok = !x1->dead && x1->rfault == RF_OK && !x1->removed;
+        for (int n = 1; n <= 2; n++) { int pi = part_pin(x1, n); if (pi >= 0 && s->pins[pi].fault == PF_OPEN) xtal_ok = false; }
+    }
+    if (xtal_ok) {                                  /* the crystal oscillates */
         ((uint8_t *)s->parts[z->p_osc].state)[0] ^= 1;
         sim_mark_dirty(s, z->p_osc);
     }
@@ -481,7 +486,7 @@ const machine_t machine_zx80 = {
     .id = "zx80",
     .name = "Sinclair ZX80",
     .issue = "ZX80",
-    .board_name = "ZX80 (schematic)",
+    .board_name = "ZX80 Issue 2",
     .size = sizeof(zx80_t),
     .data = &bd_zx80,
     .sim = { .rail_of = z8_rail_of, .kind_of = z8_kind_of, .cycles_per_us = 3.25 },
@@ -492,7 +497,7 @@ const machine_t machine_zx80 = {
     .ready_cycles = 2 * Z8_FREQ,
     .parts = z8_part_defs, .nparts = sizeof(z8_part_defs) / sizeof(z8_part_defs[0]),
     .conns = z8_conn_defs, .nconns = sizeof(z8_conn_defs) / sizeof(z8_conn_defs[0]),
-    .link_resistors = "", .crystals = "",
+    .link_resistors = "", .crystals = "X1",
     .diodes = "D", .jumpers = "", .supplies = "",
     .keys_help = "Keys: type; Left Shift = SHIFT, Enter = NEWLINE, Backspace = RUBOUT (= DELETE), arrows = cursor, Esc = BREAK",
     .reset_help = "Hold to press RESET: shorts the Z80 /RESET (IC1 pin 26) to GND",
