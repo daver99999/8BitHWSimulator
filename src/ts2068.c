@@ -168,7 +168,7 @@ static const part_def_t ts_part_defs[] = {
     { "U5", &PT_74LS244, "74LS244", ROLE_GLUE, "buffer", "Address buffer onto the DRAM address bus MA0-MA7" },
     { "U10", &PT_74LS157, "74LS157", ROLE_GLUE, "mux", "Upper RAM address multiplexer (row/column)" },
     { "U11", &PT_74LS157, "74LS157", ROLE_GLUE, "mux", "Upper RAM address multiplexer (row/column)" },
-    { "U21", &PT_74LS00, "74LS00", ROLE_GLUE, "NAND gates", "Spare gates (the patch board of the 03D replaces what was here)" },
+    { "U21", &PT_74LS00, "74LS00", ROLE_GLUE, "NAND gates", "Gates on the daughterboard: with CR27, CR28 and R74 they make U5's /OE (off during a write to the dock or with BE)" },
     { "U14", &PT_TS_AY, "AY", ROLE_CHIP, "AY-3-8912\nsound", "General Instrument AY-3-8912 sound chip with the joystick port" },
 };
 
@@ -213,7 +213,7 @@ static int ts_pin_of(board_t *b, const char *ref, int number) {
     return p ? part_pin(p, number) : -1;
 }
 
-static void ts_make_diode(board_t *b, const char *ref, int anode, int cathode) {
+static void ts_make_element(board_t *b, const char *ref, int anode, int cathode, int type) {
     part_t *p = ts_find(b, ref);
     if (!p || part_pin(p, anode) < 0 || part_pin(p, cathode) < 0) return;
     resistor_state_t *st = p->state;
@@ -221,8 +221,9 @@ static void ts_make_diode(board_t *b, const char *ref, int anode, int cathode) {
     p->kind = PART_RESISTOR;
     st->nel = 1;
     st->el[0] = (element_t){ part_pin(p, anode), part_pin(p, cathode), EL_ANALOG };
-    element_set_type(&b->sim, p, 0, EL_DIODE);
+    element_set_type(&b->sim, p, 0, type);
 }
+static void ts_make_diode(board_t *b, const char *ref, int anode, int cathode) { ts_make_element(b, ref, anode, cathode, EL_DIODE); }
 
 static void ts_init_keymap(ts2068_t *z) {
     /* The same 8 x 5 matrix as the Spectrum's: column = address line A8+n, line = KB0..KB4. */
@@ -307,6 +308,10 @@ static void ts_create(board_t *b) {
         snprintf(ref, sizeof(ref), "CR%d", i);
         ts_make_diode(b, ref, 2, 1);
     }
+    /* U5's /OE node: CR27 (from TS) and CR28 (from U21 pin 11) are a diode OR with R74 pulling the node low: the cathode (pin 2)
+     * follows a high anode (pin 1), which the follower element does (the keyboard's diode element pulls the anode low instead). */
+    ts_make_element(b, "CR27", 1, 2, EL_FOLLOWER);
+    ts_make_element(b, "CR28", 1, 2, EL_FOLLOWER);
     /* J9: the rows are A8-A15 (pins 12 9 8 7 10 11 13 14), the lines KB0-KB4 are pins 2-6. */
     static const int rows[8] = { 12, 9, 8, 7, 10, 11, 13, 14 };
     for (int c = 0; c < 8; c++) z->pin_row[c] = ts_pin_of(b, "J9", rows[c]);

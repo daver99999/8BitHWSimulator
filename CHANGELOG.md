@@ -10,6 +10,8 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 ## Unreleased
 
+- **TS2068: U5's output enable and U21 follow the schematic.** U5's /OE was tied to TS and U21 was a spare. Now U5's /OE is the diode OR of TS (CR27) and U21 pin 11 (CR28) with R74 pulling it low, and U21 is wired as on the schematic: U5 is also turned off by a write with /ROSCS or /BE active. The healthy machine is unchanged (same boot, same screen). A bad CR27 now leaves U5 on all the time and spoils the display; the other faults on that node (CR28, U21) only matter when the dock bank is written. Taken from the schematic only (pages 360 and 361), nothing beeped on a board; the H and G links are taken as fitted.
+
 - **TS2068: parts placed from a photo of a real 03D board.** The ICs, the SCLD, J4-J6, J9, Y1, the diodes CR6-CR23, R41, R42, R44 and Q7 are placed where the photo shows them (before: the manual's layout drawing). The netlist is unchanged; the machine boots as before.
 
 - **TS2068: the cartridge dock J4 is the real 64 contact connector.** It was a 36 pin connector read from a crop of the schematic. It is now the dock's 32 positions on a B (solder) and an A (component) side, from the Technical Manual pin list (both ends of both sides are ground): the address and data buses, /MREQ /IORQ /RD /WR /M1 /RFSH, INT, NMI, HALT, BUSAK, WAIT, BUSRQ, RESET, EXROM, ROSCS, BE, +5V, ground and the speaker/tape line. The Z80's /HALT and /BUSAK are now wired to it. The analog and video pins are not connected. The SCLD (U3) pins were beeped out on a real 03D board (noted in `docs/TS2068.md`).
