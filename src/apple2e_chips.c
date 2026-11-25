@@ -71,7 +71,7 @@ const part_type_t PT_A2E_MMU = { "MMU 344-0010",
 /* ------------------------------------------------------------------------ */
 #include "apple2e_iou.inc"
 
-typedef struct { iou_t m; uint32_t in[11]; uint8_t valid; } a2e_iou_t;
+typedef struct { iou_t m; uint32_t in[18]; uint8_t valid; } a2e_iou_t;
 static const int iou_ra_pin[8] = { 17, 18, 19, 20, 21, 22, 23, 24 };
 static const int iou_ra_sig[8] = { IOU_ORA0, IOU_ORA1, IOU_ORA2, IOU_ORA3, IOU_ORA4, IOU_ORA5, IOU_ORA6, IOU_ORA7 };
 
@@ -102,7 +102,7 @@ static void iou_eval(sim_t *s, part_t *p) {
 }
 static void iou_commit(sim_t *s, part_t *p) {
     a2e_iou_t *t = p->state;
-    uint32_t in[11];
+    uint32_t in[18];
     in[0] = (uint32_t)pin_in(s, p, 26);     /* PHI0 */
     in[1] = (uint32_t)pin_in(s, p, 27);     /* Q3 */
     in[2] = (uint32_t)pin_in(s, p, 25);     /* PRAS' */
@@ -114,10 +114,12 @@ static void iou_commit(sim_t *s, part_t *p) {
     in[8] = (uint32_t)pin_in(s, p, 32);     /* KSTRB */
     in[9] = (uint32_t)pin_in(s, p, 31);     /* AKD */
     in[10] = (uint32_t)pin_in(s, p, 15);    /* RESET' (also an output: the IOU holds it low at power on) */
+    for (int i = 0; i < 7; i++) in[11 + i] = (uint32_t)pin_in(s, p, iou_ra_pin[i]);    /* RA0-RA6: the chip reads the address the MMU puts on them */
     if (t->valid && !memcmp(in, t->in, sizeof(in))) return;
     memcpy(t->in, in, sizeof(in));
     t->valid = 1;
     iou_t *m = &t->m;
+    for (int i = 0; i < 7; i++) m->c[iou_ra_sig[i]] = in[11 + i];
     m->c[IOU_PHI_0] = in[0]; m->c[IOU_Q3] = in[1]; m->c[IOU_PRAS_N] = in[2]; m->c[IOU_R_W_N] = in[3];
     m->c[IOU_C0XX_N] = in[4]; m->c[IOU_VID6] = in[5]; m->c[IOU_VID7] = in[6]; m->c[IOU_A6] = in[7];
     m->c[IOU_IKSTRB] = in[8]; m->c[IOU_IAKD] = in[9]; m->c[IOU_RESET_N] = in[10];

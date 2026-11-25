@@ -142,7 +142,7 @@ static void ae_joins(board_t *b) {
 /* ------------------------------------------------------------------------ */
 
 #define STROBE_CYCLES 200
-#define AKD_CYCLES    8000
+#define AKD_CYCLES    600
 #define KEY_GAP       25000
 #define KEY_GAP_CR    300000
 
