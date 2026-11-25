@@ -2513,7 +2513,7 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
     static const machine_t *const cbm_boards[] = { &machine_pet4032, &machine_pet8032,
                                                    &machine_c64, &machine_c64b, &machine_c64c, &machine_vic20a, &machine_vic20b, &machine_c16, &machine_plus4, &machine_c128 };
     static const machine_t *const ts_boards[] = { &machine_ts2068, &machine_ts1000, &machine_ts1000i1, &machine_ts1500, &machine_zx80 };
-    static const machine_t *const apple_boards[] = { &machine_apple2plus };
+    static const machine_t *const apple_boards[] = { &machine_apple2plus, &machine_apple2e };
     static const machine_t *const rs_boards[] = { &machine_coco2, &machine_mc10 };
     static const machine_t *const tano_boards[] = { &machine_dragon64 };
     const machine_t *m = b->m;
@@ -3489,7 +3489,7 @@ static void handle_event(const sapp_event *ev) {
 
 /* The kind of a board: 0 C64, 1 Spectrum, 2 PET, 3 Timex, 4 VIC-20 and the other Commodores, 5 Apple, 6 Radio Shack, 7 Tano. */
 static int board_family(const board_t *b) {
-    return b->m == &machine_dragon64 ? 7 : (b->m == &machine_coco2 || b->m == &machine_mc10) ? 6 : b->m == &machine_apple2plus ? 5 : board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : (b->m == &machine_ts2068 || b->m == &machine_ts1000 || b->m == &machine_ts1000i1 || b->m == &machine_ts1500 || b->m == &machine_zx80) ? 3 : (b->m == &machine_vic20a || b->m == &machine_vic20b || b->m == &machine_c16 || b->m == &machine_plus4 || b->m == &machine_c128) ? 4 : 0;
+    return b->m == &machine_dragon64 ? 7 : (b->m == &machine_coco2 || b->m == &machine_mc10) ? 6 : (b->m == &machine_apple2plus || b->m == &machine_apple2e) ? 5 : board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : (b->m == &machine_ts2068 || b->m == &machine_ts1000 || b->m == &machine_ts1000i1 || b->m == &machine_ts1500 || b->m == &machine_zx80) ? 3 : (b->m == &machine_vic20a || b->m == &machine_vic20b || b->m == &machine_c16 || b->m == &machine_plus4 || b->m == &machine_c128) ? 4 : 0;
 }
 
 /* The tab of a board: 0 Commodore (the C64's boards, the PET), 1 Spectrum, 2 Timex, 3 Apple, 4 Radio Shack, 5 Tano. */

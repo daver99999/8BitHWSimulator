@@ -131,7 +131,7 @@ POWER = {'GND': 'GND', '+5V': '+5V', '-5V': '-5V', '+12V': '+12V', '-12V': '-12V
 FIXUPS = [('RA2.2', '~{INH}'), ('B5.1', 'SOFT5'), ('B8.1', 'SOFT5')]
 # Apple IIe (Bit Preserve capture of 050-0051-D): the 2732 symbol numbers pin 20 as a second pin 22, so the video ROM UF4's /CE
 # (WNDW on the Sams schematic, page 53 of CC10) lands on pin 22 with RA9
-FIXUPS_IIE = [('UF4.22', '~{RA9}'), ('UF4.20', '~{WNDW}')]
+FIXUPS_IIE = [('UF4.22', '~{RA9}'), ('UF4.20', '~{WNDW}'), ('UF8.2', 'MD2'), ('UF8.14', 'MD2')]
 
 
 def main():
