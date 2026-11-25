@@ -148,7 +148,15 @@ Against the real 8032080-03 board (by its owner, with a meter): the terminal
 order of the bridges CR2 and CR4 (the two DC terminals are 1 and 4, the AC ones 2
 and 3), that CR2's negative output feeds the middle pin of the 7905 (its input;
 the left pin is ground and the right one the output), and that pin 12 of the
-connectors J2 and J8 is ground. Against the
+connectors J2 and J8 is ground. On a 4032 board wired as an 8032, without the 40/80 column
+daughterboard (J1-J4 all open, as expected), by the same owner with a meter: UE12 pins 18 and 19 (G1, G2) on ground and
+not joined to the NO ROM line, the memory size jumpers W and Z closed (UD1 pins 5 and 6 on ground), the RAM-type block
+carrying BA5 to UE9 pin 15 and BA13 to UE10 pin 2, jumper M open (UE13 pin 5 not on SEL9), the 6502's pin 35 pad open, the CRTC's E pin (UB13 pin 23) on BPHI2, UC8 pin 1 on
+CLK1B, UE3 pin 1 on CLK1, the dot counter chain UD3 pin 6 to pin 5, UE6 pin 8 on CLK1_N, UE7 pin 8 on UE6 pin 12 (RA4),
+UD5 pin 12 on CASTIM (UE2 pin 12) and UD1 pin 10 to R7. The keyboard connector (J8 in the netlist, J5 on the owner's
+board silkscreen): pin 1 to UC11 pin 1 (KROW0), pin 10 to UC11 pin 11 (KROW9), and the lettered pins A, H and J to UB11 pins 13,
+6 and 7 (KIN0, KIN6, KIN7), all as the netlist has them. The board's J8 is the power connector; the netlist's power
+connector is J7, and the netlist's J8 pin 12 ground note above has not been repeated on the board's J5. Against the
 logic diagram, a second reading of the uncertain parts: the keyboard connector
 and the KIN0 to KIN7 order, the PIA pairing of the IEEE-488 lines, the CA1, CA2,
 CB1 and CB2 assignments and the cassette lines, the chip select polarity of the
