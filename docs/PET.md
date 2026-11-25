@@ -153,10 +153,10 @@ daughterboard (J1-J4 all open, as expected), by the same owner with a meter: UE1
 not joined to the NO ROM line, the memory size jumpers W and Z closed (UD1 pins 5 and 6 on ground), the RAM-type block
 carrying BA5 to UE9 pin 15 and BA13 to UE10 pin 2, jumper M open (UE13 pin 5 not on SEL9), the 6502's pin 35 pad open, the CRTC's E pin (UB13 pin 23) on BPHI2, UC8 pin 1 on
 CLK1B, UE3 pin 1 on CLK1, the dot counter chain UD3 pin 6 to pin 5, UE6 pin 8 on CLK1_N, UE7 pin 8 on UE6 pin 12 (RA4),
-UD5 pin 12 on CASTIM (UE2 pin 12) and UD1 pin 10 to R7. The keyboard connector (J8 in the netlist, J5 on the owner's
-board silkscreen): pin 1 to UC11 pin 1 (KROW0), pin 10 to UC11 pin 11 (KROW9), and the lettered pins A, H and J to UB11 pins 13,
-6 and 7 (KIN0, KIN6, KIN7), all as the netlist has them. The netlist names the keyboard connector J8, but on the board J8 is the power connector (it feeds the
-bridges CR2 and CR4) and the keyboard is J5; the netlist has not been renamed. The cassette 1 motor line (PIA UB12 pin 19 to R26),
+UD5 pin 12 on CASTIM (UE2 pin 12) and UD1 pin 10 to R7. The keyboard connector (J5 on the owner's board, J8 on the logic diagram): pin 1 to UC11 pin 1 (KROW0), pin 10 to UC11 pin 11 (KROW9), and the lettered pins A, H and J to UB11 pins 13,
+6 and 7 (KIN0, KIN6, KIN7), all as the netlist has them. The logic diagram names the keyboard connector J8, but on the board J8 is the power connector (it brings the
+raw AC to the bridges CR2 and CR4) and the keyboard is J5, so the netlist and the simulator call it J5. The supply
+connector J7 stays a pseudo connector of the simulator, not the board's J8. The cassette 1 motor line (PIA UB12 pin 19 to R26),
 the cassette 2 motor line (VIA UB15 pin 14, PB4, to R22) and the sound line (UB15 pin 19, CB2, to UD5 pin 1) are as the netlist has
 them. Against the
 logic diagram, a second reading of the uncertain parts: the keyboard connector

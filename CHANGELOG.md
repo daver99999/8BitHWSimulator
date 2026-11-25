@@ -10,6 +10,7 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 ## Unreleased
 
+- **PET: the keyboard connector is J5.** On David Green's board the keyboard is J5 and J8 is the power connector; the logic diagram calls the keyboard J8. The netlist, the board drawing and the part list now say J5. The supply connector J7 stays a pseudo connector. `docs/PET.md` also lists the continuity checks made on his 4032 wired as an 8032.
 - **TS2068: the daughterboard is drawn where it is.** U5 and U21 are placed on the daughterboard (top right of the 03D, over the SCLD's right side) instead of in the row below the board, and CR27, CR28 and R74 sit on its spare pads (a guess). Positions are read from a photo and good to a few mm; only R75 is still below the board.
 - **TS2068: U5's output enable and U21 follow the schematic.** U5's /OE was tied to TS and U21 was a spare. Now U5's /OE is the diode OR of TS (CR27) and U21 pin 11 (CR28) with R74 pulling it low, and U21 is wired as on the schematic: U5 is also turned off by a write with /ROSCS or /BE active. The healthy machine is unchanged (same boot, same screen). A bad CR27 now leaves U5 on all the time and spoils the display; the other faults on that node (CR28, U21) only matter when the dock bank is written. Taken from the schematic only (pages 360 and 361), nothing beeped on a board; the H and G links are taken as fitted.
 

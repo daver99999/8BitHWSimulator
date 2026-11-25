@@ -28,7 +28,7 @@ typedef struct pet {
     int beam_x, beam_y;
     int pin_video, pin_hsync, pin_vsync, pin_shift_clk;
     int vsync_prev, hsync_prev, shift_clk_prev;
-    /* The keyboard: J8's rows (the 74145 UC11 drives them low one at a time)
+    /* The keyboard: J5's rows (the 74145 UC11 drives them low one at a time)
      * and KIN0-7 (PIA1 port B); a closed key joins its row to its column. */
     kbd_t kbd;
     uint16_t key_matrix[10];    /* per row: the columns closed */

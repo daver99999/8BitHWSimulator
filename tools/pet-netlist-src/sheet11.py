@@ -6,7 +6,7 @@ N.note('S11: 4116 pins: -5V pin1, +12V pin8, +5V pin9 supplied by these rails.')
 # are regulated on the board). The simulator drives these three nets through this pseudo connector.
 N.chip('J7','CONN')
 N.pins('J7', {1:'+12V', 2:'-5V', 3:'+9V_UNREG'})
-N.note('J7 is a pseudo connector added for the simulator: it drives +12V, -5V and +9V_UNREG (the real board makes them from J10/J11 raw power with VR1, VR2, ...).')
+N.note('J7 is a pseudo connector added for the simulator (it is not the power connector J8 of the board, which brings the raw AC to the bridges): it drives +12V, -5V and +9V_UNREG (the real board makes them from J10/J11 raw power with VR1, VR2, ...).')
 
 # ---- the real power section (sheet 11), as breakable parts: rails still come from J7, but pet.c derives them from these ----
 # VR3/VR4 LM340-5 (1 IN, 2 OUT, 3 GND) make +5V from +9V UNREG; VR2 7812 (1 IN, 2 OUT, 3 GND) makes +12V from the CR4 bridge;

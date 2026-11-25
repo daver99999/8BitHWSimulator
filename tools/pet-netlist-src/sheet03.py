@@ -26,11 +26,11 @@ for n, pin in enumerate((1,2,3,4,5,6,7,9,10,11)):
 N.chip('UB11','RNET14')
 N.pins('UB11', {14:'+5V'})
 N.pins('UB11', {13:'KIN0', 12:'KIN1', 11:'KIN2', 10:'KIN3', 9:'KIN4', 8:'KIN5', 6:'KIN6', 7:'KIN7'})
-# ---------------- keyboard connector J8 ----------------
-N.chip('J8','CONN')
-N.pins('J8', {n+1:'KROW%d'%n for n in range(10)})
-N.pins('J8', {LET[c]:'KIN%d'%i for i,c in enumerate('ABCDEFHJ')})
-N.pins('J8', {12:'GND'})      # pin 12 is grounded on the schematic
+# ---------------- keyboard connector J5 (J8 on the logic diagram; J5 on the owner's board, where J8 is the power connector) ----------------
+N.chip('J5','CONN')
+N.pins('J5', {n+1:'KROW%d'%n for n in range(10)})
+N.pins('J5', {LET[c]:'KIN%d'%i for i,c in enumerate('ABCDEFHJ')})
+N.pins('J5', {12:'GND'})      # pin 12 is grounded on the schematic
 # ---------------- user port J2 ----------------
 N.chip('J2','CONN')
 N.pins('J2', {LET['B']:'UP_CA1'})

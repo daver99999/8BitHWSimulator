@@ -115,9 +115,9 @@ static const conn_def_t pet_conn_defs[] = {
                          "17=SEL9 18=SELA 19=SELB 20=NO_ROM 22=RES 23=RDY 24=NMI" },
     { "J9", "BUS", "2=BA0 3=BA1 4=BA2 5=BA3 6=BA4 7=BA5 8=BA6 9=BA7 10=BA8 11=BA9 12=BA10 13=BA11 14=BA12 15=BA13 "
                    "16=BA14 17=BA15 18=SYNC 19=IRQ 20=DIAG 21=PHI2 22=R/W 23=R/W_N" },
-    { "J8", "KEYBOARD", "1=ROW0 2=ROW1 3=ROW2 4=ROW3 5=ROW4 6=ROW5 7=ROW6 8=ROW7 9=ROW8 10=ROW9 12=GND 13=KIN0 14=KIN1 "
+    { "J5", "KEYBOARD", "1=ROW0 2=ROW1 3=ROW2 4=ROW3 5=ROW4 6=ROW5 7=ROW6 8=ROW7 9=ROW8 10=ROW9 12=GND 13=KIN0 14=KIN1 "
                         "15=KIN2 16=KIN3 17=KIN4 18=KIN5 19=KIN6 20=KIN7" },
-    { "J7", "POWER", "1=+12V 2=-5V 3=+9V" },
+    { "J7", "SUPPLY (simulator)", "1=+12V 2=-5V 3=+9V" },
 };
 
 static int pet_rail_of(const char *name) {
@@ -273,8 +273,8 @@ static void pet_create(board_t *b) {
     z->pin_hsync = pet_pin_of(b, "UB13", 39);
     z->pin_vsync = pet_pin_of(b, "UB13", 40);
     z->pin_shift_clk = pet_pin_of(b, "UA2", 7);     /* the video shift register's clock */
-    for (int r = 0; r < 10; r++) z->pin_krow[r] = pet_pin_of(b, "J8", r + 1);
-    for (int c = 0; c < 8; c++) z->pin_kin[c] = pet_pin_of(b, "J8", 13 + c);
+    for (int r = 0; r < 10; r++) z->pin_krow[r] = pet_pin_of(b, "J5", r + 1);
+    for (int c = 0; c < 8; c++) z->pin_kin[c] = pet_pin_of(b, "J5", 13 + c);
     for (int bit = 0; bit < 8; bit++) {     /* UA4/UA5 hold D7 ... UA18/UA19 D0; the odd ones are the lower 16K */
         char ref[8];
         snprintf(ref, sizeof(ref), "UA%d", 18 - 2 * bit);
