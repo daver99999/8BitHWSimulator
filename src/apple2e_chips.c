@@ -289,7 +289,7 @@ const part_type_t PT_74LS109 = { "74LS109",
 
 /* 74LS374: eight D flip-flops on the rising edge of CLK (11), three-state outputs enabled by /OC (1). D on pins 3 4 7 8 13 14 17 18,
  * Q on 2 5 6 9 12 15 16 19. */
-typedef struct { uint8_t q, ck; } ls374_t;
+typedef struct { uint8_t q, ck, dprev; } ls374_t;
 static const int ls374_d[8] = { 3, 4, 7, 8, 13, 14, 17, 18 }, ls374_q[8] = { 2, 5, 6, 9, 12, 15, 16, 19 };
 static void ls374_eval(sim_t *s, part_t *p) {
     const ls374_t *t = p->state;
@@ -300,7 +300,12 @@ static void ls374_commit(sim_t *s, part_t *p) {
     ls374_t *t = p->state;
     int ck = pin_in(s, p, 11);
     uint8_t q = t->q;
-    if (ck && !t->ck) q = (uint8_t)part_read_bus(s, p, ls374_d, 8);
+    uint8_t d = (uint8_t)part_read_bus(s, p, ls374_d, 8);
+    /* The clock here is often a signal made by another part (PHI0 for the video latch). A gate sees the edge before the logic it
+     * starts has moved the data, but the step loop only sees the edge a half-cycle later, after it has. The data is therefore taken
+     * from the previous commit, which is what was on the pins when the edge really happened. */
+    if (ck && !t->ck) q = t->dprev;
+    t->dprev = d;
     t->ck = (uint8_t)ck;
     if (q != t->q) { t->q = q; sim_mark_dirty(s, (int)(p - s->parts)); }
 }

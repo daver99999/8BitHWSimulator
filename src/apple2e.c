@@ -301,12 +301,19 @@ static void ae_monitor(board_t *b, uint32_t *out) {
 /* RAM                                                                       */
 /* ------------------------------------------------------------------------ */
 
-/* Eight 6664s (UF6-UF13, data bit 0-7): the row address is RA0-RA7 at /RAS (CPU A0-A7), the column RA0-RA7 at /CAS (A8-A15); the board wires
- * RA0 to the chip's A7 ... RA7 to A0 (pins 9 13 10 11 12 6 7 5), so a chip's address is the RA byte reversed. */
+/* Eight 6664s (UF6-UF13, data bit 0-7). */
 static int ae_rev8(int v) { int r = 0; for (int i = 0; i < 8; i++) r |= ((v >> i) & 1) << (7 - i); return r; }
+/* The MMU puts A0-A5, A7, A8 on RA0-RA7 at /RAS and A9, A6, A10-A15 on RA0-RA7 at /CAS (MMU_RA of the chip), and the board wires RA0
+ * to the 6664's A7 ... RA7 to A0: a chip's address is the RA byte reversed. */
+static int ae_cell(uint16_t a) {
+    int row = (a & 0x3F) | (a >> 7 & 1) << 6 | (a >> 8 & 1) << 7;
+    int col = (a >> 9 & 1) | (a >> 6 & 1) << 1 | (a >> 10 & 1) << 2 | (a >> 11 & 1) << 3 | (a >> 12 & 1) << 4 | (a >> 13 & 1) << 5 |
+              (a >> 14 & 1) << 6 | (a >> 15 & 1) << 7;
+    return ae_rev8(row) << 8 | ae_rev8(col);
+}
 uint8_t apple2e_ram_peek(board_t *b, uint16_t addr) {
     uint8_t v = 0;
-    int cell = (ae_rev8(addr & 0xFF) << 8) | ae_rev8(addr >> 8);
+    int cell = ae_cell(addr);
     for (int bit = 0; bit < 8; bit++) {
         char ref[8];
         snprintf(ref, sizeof(ref), "UF%d", 6 + bit);
