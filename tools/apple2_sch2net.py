@@ -122,7 +122,10 @@ def on_seg(pt, a, b):
 PKG = {'74LS00': 14, '74LS02': 14, '74LS04': 14, '74LS08': 14, '74LS11': 14, '74LS20': 14, '74LS32': 14, '74LS51': 14, '74LS74': 14,
        '74LS86': 14, '74LS138': 16, '74LS139': 16, '74LS151': 16, '74LS153': 16, '74LS161': 16, '74LS166': 16, '74LS174': 16,
        '74LS175': 16, '74LS194': 16, '74LS195': 16, '74LS251': 16, '74LS257': 16, '74LS259': 16, '74LS283': 16, '8T97': 16, 'DP8304': 20,
-       '7402': 14, '74LS10': 14, '74LS109': 16, '74LS125': 14}   # the last four: Apple IIe
+       '7402': 14, '74LS10': 14, '74LS109': 16, '74LS125': 14,
+       'PAL_HAL': 20, '74LS244': 20, '74LS245': 20, '74LS374': 20, '74LS154': 24}   # the last nine: Apple IIe (the PAL's symbol stops at pin 18; pin 10 is GND and 20 is +5V)
+# the IIe's custom chips and ROMs whose symbols leave out the last pins (supply pins of these are drawn, so they are not in PKG)
+PINS_IIE = {'MMU': 40, 'IOU': 40, '3600PRO': 40, '6502A': 40, '2716': 24, '2732': 24}
 POWER = {'GND': 'GND', '+5V': '+5V', '-5V': '-5V', '+12V': '+12V', '-12V': '-12V', 'VCC': '+5V'}
 
 FIXUPS = [('RA2.2', '~{INH}'), ('B5.1', 'SOFT5'), ('B8.1', 'SOFT5')]
@@ -257,7 +260,7 @@ def main():
     for ref in sorted(chips, key=lambda r: (re.match(r'[A-Za-z#]+', r).group(0), int(re.search(r'\d+', r).group(0)) if re.search(r'\d+', r) else 0)):
         if ref.startswith('#') or ref not in pins_of: continue
         lib, val, fp = chips[ref]
-        npin = PKG.get(lib.split(':')[-1]) or len({p[2] for sh in [top] + [x[1] for x in sheets.values()] if lib in sh.libs for p in sh.libs[lib]})
+        npin = PINS_IIE.get(lib.split(':')[-1]) or PKG.get(lib.split(':')[-1]) or len({p[2] for sh in [top] + [x[1] for x in sheets.values()] if lib in sh.libs for p in sh.libs[lib]})
         lines.append('chip %s %s|%s|%d' % (ref, lib.split(':')[-1], val, npin))
     for nm in sorted(nets):
         mem = sorted(set(nets[nm]), key=lambda m: (m.rsplit('.', 1)[0], m.rsplit('.', 1)[1]))
