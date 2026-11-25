@@ -685,9 +685,9 @@ resistors) are still the 250407's places. It boots to READY like the 250407.
 
 Checked with a meter on David Green's 250425 (board unpowered): the 8701 U31's DOT CLOCK (pin 6) to the VIC's pin 22 and its
 COLOR CLOCK (pin 8) to the VIC's pin 21, pin 13 to the trimmer CT1, pins 13 and 14 not joined, pins 12 and 15 on the clock
-supply, pins 2, 4 and 9 on ground; and the 74LS08 U27: pins 1 and 4 on AEC, pins 2 and 13 on
+supply, pins 2, 4 and 9 on ground, pin 7 on the PAL/NTSC jumper pads (E2, E3); and the 74LS08 U27: pins 1 and 4 on AEC, pins 2 and 13 on
 DMA, pin 11 on the CPU's RDY (U7 pin 2), pin 12 on the VIC's BA (U19 pin 12) and pin 8 on the CIA's TOD (U1 pin 19), all as the
-netlist has them. Not checked: pin 7, the PAL/NTSC select (the netlist has it on the jumper pads E2 and E3; an earlier reading is unconfirmed), R31's value (180 ohms on the 251469; the part was not found on the board), the U27 CAEC and color
+netlist has them. Not checked: R31's value (180 ohms on the 251469; the part was not found on the board), the U27 CAEC and color
 RAM select gates (pins 3 and 5), the crystal's own leads, and the rest of the board, which is the 250407's netlist.
 
 ### The 250469 board
