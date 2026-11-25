@@ -121,10 +121,14 @@ def on_seg(pt, a, b):
 # DIP size of the ICs whose symbols leave the supply pins out (VCC on the last pin, GND on the middle one)
 PKG = {'74LS00': 14, '74LS02': 14, '74LS04': 14, '74LS08': 14, '74LS11': 14, '74LS20': 14, '74LS32': 14, '74LS51': 14, '74LS74': 14,
        '74LS86': 14, '74LS138': 16, '74LS139': 16, '74LS151': 16, '74LS153': 16, '74LS161': 16, '74LS166': 16, '74LS174': 16,
-       '74LS175': 16, '74LS194': 16, '74LS195': 16, '74LS251': 16, '74LS257': 16, '74LS259': 16, '74LS283': 16, '8T97': 16, 'DP8304': 20}
+       '74LS175': 16, '74LS194': 16, '74LS195': 16, '74LS251': 16, '74LS257': 16, '74LS259': 16, '74LS283': 16, '8T97': 16, 'DP8304': 20,
+       '7402': 14, '74LS10': 14, '74LS109': 16, '74LS125': 14}   # the last four: Apple IIe
 POWER = {'GND': 'GND', '+5V': '+5V', '-5V': '-5V', '+12V': '+12V', '-12V': '-12V', 'VCC': '+5V'}
 
 FIXUPS = [('RA2.2', '~{INH}'), ('B5.1', 'SOFT5'), ('B8.1', 'SOFT5')]
+# Apple IIe (Bit Preserve capture of 050-0051-D): the 2732 symbol numbers pin 20 as a second pin 22, so the video ROM UF4's /CE
+# (WNDW on the Sams schematic, page 53 of CC10) lands on pin 22 with RA9
+FIXUPS_IIE = [('UF4.22', '~{RA9}'), ('UF4.20', '~{WNDW}')]
 
 
 def main():
@@ -132,7 +136,7 @@ def main():
     topfile = 'AppleII+.kicad_sch'
     if d.endswith('.kicad_sch'):        # any KiCad 6+ project: the top sheet's file
         d, topfile = os.path.split(d)
-    fixups = FIXUPS if topfile == 'AppleII+.kicad_sch' else []
+    fixups = FIXUPS if topfile == 'AppleII+.kicad_sch' else FIXUPS_IIE if topfile.startswith('Apple IIe') else []
     out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(os.path.abspath(__file__)), 'apple2plus-netlist-src', 'apple2plus.net')
     top = load_sheet(os.path.join(d, topfile))
     sheets = {}
@@ -232,6 +236,16 @@ def main():
         for ms in nets.values():
             while pin_ in ms: ms.remove(pin_)
         nets[nm].append(pin_)
+    # a unit drawn twice (the Apple IIe's POWER_CONNECTORS sheet repeats UB8, UC1, UC5 and UE1 units with nothing wired to them):
+    # the copy's pin sits alone on an unnamed net, the real one is on the net the other unit has
+    owners = defaultdict(list)
+    for nm, ms in nets.items():
+        for m in set(ms): owners[m].append(nm)
+    for m, nms in owners.items():
+        if len(nms) > 1:
+            for nm in nms:
+                if nm.startswith('N$') and len(set(nets[nm])) == 1 and len(nms) > 1:
+                    nets[nm] = [x for x in nets[nm] if x != m]; nms.remove(nm)
     # a pin on two nets is a drawing mistake
     seen = {}
     for nm, ms in nets.items():
