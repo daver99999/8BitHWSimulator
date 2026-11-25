@@ -150,7 +150,7 @@ each one goes in:
 - `roms/plus4`: BASIC 3.5 `318006-01` (U23), KERNAL `318005-05` (U24, `-04` works too) and the 3-plus-1 function ROMs `317053-01` (U25) and `317054-01` (U26). Files are picked by their part numbers, or by `basic`/`kernal` in the name.
 - `roms/c128`: the 32K system ROM `252343-04` (U32, also holds the Z80 start-up code and the second KERNAL half), BASIC 7.0 `318018-04` (U33, $4000) and `318019-04` (U34, $8000), and the character ROM `390059-01` (U18). Files are picked by their part numbers.
 
-- `roms/apple2plus`: `apple2plus.rom` (the 12K of the Apple ][+ Autostart/Applesoft ROMs, $D000-$FFFF, split into the six 2K sockets) and `chargen.rom` (the 2K character generator, A5). `disk2.rom` (the Disk II card's 256 byte boot ROM) can be there too: the drive is not built yet.
+- `roms/apple2e`: the four ROMs of the unenhanced Apple IIe (board 820-0064-B) under the part numbers: `342-0135-B.bin` (CD, 8K, socket UE8), `342-0134-A.bin` (EF, 8K, socket UE10), `342-0132-B.bin` (keyboard, 2716, UE12) and `342-0133-A.bin` (video, 2732, UF4).
 - `roms/coco2`: `extbas11.rom` (Extended Color BASIC 1.1, 8K, $8000) and `bas12.rom` (Color BASIC 1.2, 8K, $A000), which share the one 27C128 on the CoCo 2 board. `disk11.rom` (Disk BASIC) can be there too: no disk controller is built.
 - `roms/dragon64`: `d64_1.rom` (the 1982 BASIC, 16K, in IC34) and `d64_2.rom` (the 1983 Dragon 64 ROM, 16K, in IC37). `ddos10.rom` (DragonDOS) can be there too: no disk controller is built.
 - `roms/mc10`: `mc10.rom` (Microcolor BASIC 1.0, 1982 Microsoft, 8K, $E000).

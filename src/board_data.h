@@ -35,7 +35,6 @@ extern const board_data_t bd_zx48i1;    /* zx48i1_board_data.c (Issue 1) */
 extern const board_data_t bd_zx48i4b;   /* zx48i4b_board_data.c (Issue 4B) */
 extern const board_data_t bd_zx48i6a;   /* zx48i6a_board_data.c (Issue 6A) */
 extern const board_data_t bd_pet4032;   /* pet4032_board_data.c (8032080-03, 40 columns) */
-extern const board_data_t bd_apple2plus; /* apple2plus_board_data.c (Apple ][+ rev 0) */
 extern const board_data_t bd_apple2e;   /* apple2e_board_data.c (Apple IIe 820-0064-B) */
 extern const board_data_t bd_coco2;   /* coco2_board_data.c (Color Computer 2, 26-3134B/3136B) */
 extern const board_data_t bd_dragon64;   /* dragon64_board_data.c (Dragon 64 issue 6) */
