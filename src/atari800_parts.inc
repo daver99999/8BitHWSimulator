@@ -9,7 +9,7 @@
     { "A402", &PT_ATARI_ROM, "ROM", ROLE_ROM, NULL, "OS ROM D, 2K: $D800-$DFFF" },
     { "A403", &PT_ATARI_ROM, "ROM", ROLE_ROM, NULL, "OS ROM E, 4K: $E000-$EFFF" },
     { "CARTL", &PT_ATARI_CART, "ROM", ROLE_ROM, NULL, "plug-in cartridge in the left slot (J109): the 8K BASIC ROM at $A000-$BFFF, nothing fitted until one is loaded" },
-    { "X101", &PT_XTAL358, "3.579545", ROLE_CLOCK, NULL, "3.579545 MHz crystal (modelled as a clock source on OSC)" },
+    { "OSCSIM", &PT_XTAL358, "3.579545", ROLE_CLOCK, NULL, "stand-in for the oscillator Q102 / Q103 / X101: puts the 3.579545 MHz simulator clock on the OSC net (not a real part)" },
     { "Z101", &PT_74LS42, "74LS42", ROLE_GLUE, NULL, "74LS42: address decoder, A13-A15 to the eight 8K blocks S0-S7" },
     { "Z102", &PT_74LS32, "74LS32", ROLE_GLUE, NULL, "74LS32: gates S4 / S5 off when a cartridge pulls RD4 / RD5" },
     { "Z103", &PT_CD4051, "CD4051", ROLE_GLUE, NULL, "CD4051: keyboard scan, the column POKEY pulls low" },

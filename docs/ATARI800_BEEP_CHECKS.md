@@ -68,5 +68,12 @@ The gate wiring was reread and matches the netlist. Two points are only from the
 - Phase 2 delay: beep J107 pin S to Z402 pin 5 and R403 pin 1, then the far end of L403 (C410 side) to Z402 pins 10 and 4. These two groups must not touch each other (R403 and the coils are in between).
 - EXSEL node: beep J107 pin 14 to Z403 pins 3, 6, 8, 13, Z402 pin 2 and R402. All of them are one wire.
 
+## 17. Oscillator, RF stage, sound amplifier and J115 power pins (open)
+New this pass, read at 300 dpi.
+- J115 power pins: the print puts -5 V on pin 1 and +5 V (the 5B supply) on pin 17; I had them the other way round before. Pins 18 and 19 are +5 V (5A), 21 is +12 V, 15, 16 and 22 are ground. Beep J115 pin 1 to the -5 V pin of a RAM slot (20 or X), and pin 17 to +5 V (19 or W).
+- Oscillator: X101 pin 1 to R105 and Q102 base; X101 pin 2 to R107 and Q103 collector; Q102 collector to R106 and J101 pin C (OSC). Both transistors are PNP by the arrows on the print, so check the lead order of the real parts by their markings, not by this netlist.
+- Sound amplifier: A104 pins 4 / 2 are the two bases, 3 the shared emitter (R164 to ground), 5 and 1 the collectors. J115 pin 2 (audio out) is behind R194 and J115 pin 13 (speaker audio) behind R195.
+- RF stage: Q106 collector to L102 and C173; emitter to C169, R188, R190 and C172.
+
 ## Not netted
-The oscillator (Q102, Q103), the RF modulator stage (Q106, L101, L102), the sound amplifier (A104C/D, R163-R167, R191-R195), the supply filters at J115 (L107-L112, C190-C193, C199, C200) and the power supply board.
+The six supply chokes L107-L112 at J115 (the netlist has the rails go straight to the connector, because the simulator feeds power in there) and the power supply board. The oscillator, RF stage, sound amplifier and the capacitors at J115 are netted from check 17, but the chokes and the oscillator's simulator clock (the part OSCSIM, which is not a real part) are not real continuity.

@@ -369,12 +369,24 @@ def motherboard():
         c = 'C%d' % (182 + i)
         part(c, 'C', 2, '.001uF'); net('SIO_' + 'OCLK BCLK SID SOD CB1 CA1 CB2'.split()[(7, 8, 9, 10, 14, 12, 11).index(jp)], c + '.1'); net(GND, c + '.2')
     unsure('SIO pull-ups: R129A-D go to BCLK, SID, SOD, OCLK in that order by the dots on the print, R129E-F to CA1 and CB2, R158A (value not printed, 4.7K assumed) to CB1; C182-C188 top to bottom on pins 7, 8, 9, 10, 14, 12, 11.')
-    net(V5, 'J115.18'); net(V5, 'J115.1'); net(V12, 'J115.21'); net(VM5, 'J115.17'); net(GND, 'J115.19', 'J115.15', 'J115.16', 'J115.22')
-    unsure('J115 power pins (18 +5A, 1 +5B, 17 -5, 21 +12, grounds 15 16 19 22) and the serial-bus pin names.')
+    # supply filters at J115: the capacitors C190-C193, C199 and C200 are netted; the chokes L107-L112 that sit in series on the real board are not,
+    # because the simulator feeds the supplies in at the connector pins and a series part would cut the rails
+    for ref, v in (('C190', '.1uF'), ('C191', '.1uF'), ('C192', '.1uF'), ('C193', '.1uF'), ('C199', '10uF'), ('C200', '.001uF')): part(ref, 'C', 2, v)
+    net(V5, 'J115.18', 'J115.19', 'J115.17', 'C190.1', 'C192.1', 'C200.1'); net(VM5, 'J115.1', 'C191.1'); net(V12, 'J115.21', 'C193.1', 'C199.1')
+    net(GND, 'C190.2', 'C191.2', 'C192.2', 'C193.2', 'C199.2', 'C200.2', 'J115.15', 'J115.16', 'J115.22')
+    unsure('J115 power pins read at 300 dpi from the column positions: 18 and 19 +5A, 1 -5, 17 +5B, 21 +12, grounds 15 16 22 (earlier I had pins 1 and 17 the other way round). The six chokes L107-L112 (+5A through L111 and L107, -5 L108, +5B L109, +12 L112 and L110) are not netted: they are in series on the real board, and here the rails go straight to the connector because the simulator feeds power in there. C190-C193 are paired with the rails by position. +5A and +5B are one rail.')
     # video / luma mixer: CD4050 buffers (pins in/out as the CD4050 standard), sum node to J115
     for sig, ip, op in (('LUM3', 5, 4), ('LUM0', 9, 10), ('LUM1', 14, 15), ('LUM2', 11, 12), ('CSYNC', 7, 6)):
         net(sig, 'A103.%d' % ip)
-    part('X101', 'XTAL', 2, '3.579575 MHz'); net('OSC', 'X101.1')
+    # oscillator: Q102 / Q103 (both PNP, emitters on the +12 side through R104), crystal X101 between Q102's base node and Q103's collector node, OSC taken from Q102's collector (R106 to ground)
+    part('X101', 'XTAL', 2, '3.579575 MHz'); part('OSCSIM', 'OSCSRC', 2, 'simulator clock source')
+    part('Q102', 'PNP', 3, 'PNP'); part('Q103', 'PNP', 3, 'PNP')
+    for ref, v in (('R104', '470'), ('R105', '100'), ('R106', '270'), ('R107', '100')): part(ref, 'R', 2, v)
+    part('C103', 'C', 2, '.22uF')
+    net(V12, 'R104.1', 'C103.1'); net(GND, 'C103.2', 'R106.2', 'R107.2'); net('OSCE', 'R104.2', 'Q102.E', 'Q103.E')
+    net(V5, 'R105.1', 'Q103.B'); net('XTB', 'R105.2', 'Q102.B', 'X101.1'); net('XTC', 'X101.2', 'Q103.C', 'R107.1')
+    net('OSC', 'Q102.C', 'R106.1', 'OSCSIM.1')
+    unsure('Oscillator (read at 300 dpi): Q102 and Q103 PNP by their emitter arrows, Q103 base to +5A, crystal between the Q102 base / R105 node and the Q103 collector / R107 node, OSC from the Q102 collector with R106 to ground. OSCSIM is not a real part: it stands in for the oscillator and puts the simulator clock on the OSC net, so beep the crystal and transistor pads, not OSCSIM.')
     # video: the luminance mixer (A103B-F through R180-R183 and CR108 into the node at Q105's base), Q105 and the outputs to J115
     part('R179', 'R', 2, '2200'); part('C162', 'C', 2, '.1uF'); part('C163', 'C', 2, '33pF'); part('CR108', 'D', 2, 'diode')
     net(V5, 'R179.1', 'C162.1'); net(GND, 'C162.2'); net('LUMN', 'R179.2', 'C163.1', 'Q105.B', 'CR108.1'); net(GND, 'C163.2')
@@ -398,9 +410,26 @@ def motherboard():
     net('COL', 'R196.1'); net('COLR', 'R196.2', 'C16X.1'); net('CBASE', 'C16X.2', 'R197.1', 'R198.1', 'A104.12'); net(GND, 'R197.2', 'A104.13')
     net('CCOLL', 'A104.14', 'R198.2', 'R199.1', 'A104.9', 'C170.2'); net(V5, 'R199.2', 'A104.11')
     net('MODC', 'R206.2', 'C170.1')
+    # RF modulator stage: Q106 (NPN) collector on +5B through L101 / L102, base bias R162 from +5B, emitter node RFN with C169 to +5B, R188 to ground, C173 back to the collector;
+    # R190 and C171 join RFN to the MOD node
+    part('Q106', 'NPN', 3, 'NPN'); part('L101', 'L', 2, 'variable'); part('L102', 'L', 2, '2.0uH')
+    for ref, v in (('R162', '1K'), ('R188', '9.1K'), ('R190', '1.8K')): part(ref, 'R', 2, v)
+    for ref, v in (('C169', '820pF'), ('C171', '47pF'), ('C173', '820pF')): part(ref, 'C', 2, v)
+    net(V5, 'L101.1', 'R162.1', 'C169.1'); net('RFL', 'L101.2', 'L102.1'); net('RFC', 'L102.2', 'Q106.C', 'C173.1'); net('RFB', 'R162.2', 'Q106.B')
+    net('RFN', 'Q106.E', 'C169.2', 'R188.1', 'C173.2', 'R190.1', 'C172.2'); net(GND, 'R188.2'); net('RFR', 'R190.2', 'C171.1'); net('MODN', 'C171.2')
+    # sound amplifier: A104C / A104D differential pair; C172 and R191 bring RFN to the collector of C, AUD (POKEY) comes in through R167
+    for ref, v in (('R163', '2.2K'), ('R164', '3300'), ('R165', '1K'), ('R166', '1K'), ('R167', '18K'), ('R191', '18K'), ('R192', '4.7K'), ('R193', '4.7K'), ('R194', '4700'), ('R195', '4700')):
+        part(ref, 'R', 2, v)
+    for ref, v in (('C172', '.1uF'), ('C177', '.001uF'), ('C178', '.001uF'), ('C179', '10uF'), ('C180', '.22uF'), ('C181', '.1uF')): part(ref, 'C', 2, v)
+    net(V5, 'R163.1', 'R166.1'); net('AMPBC', 'A104.4', 'R163.2', 'R165.1'); net('AMPBD', 'A104.2', 'R165.2', 'C180.2', 'R167.2', 'R195.1')
+    net('AMPR', 'R166.2', 'C180.1'); net('AMPE', 'A104.3', 'R164.1'); net(GND, 'R164.2')
+    net('AMPC', 'A104.5', 'R191.2', 'R192.1'); net('AMPIN', 'R191.1', 'C172.1'); net('AMPD', 'A104.1', 'R193.1', 'C179.1')
+    net(V12, 'R192.2', 'R193.2'); net('AUDX', 'C179.2', 'R194.1'); net('AUDJ', 'R194.2', 'C178.1', 'J115.2'); net('SPA', 'R195.2', 'C177.1', 'J115.13')
+    net(GND, 'C177.2', 'C178.2', 'C181.2'); net('AUD', 'R167.1', 'C181.1')
     unsure('Video page read from the 600 dpi scan: A104 is a transistor array, not a CD4050 (A104A base 12, collector 14, emitter 13; A104B collector 11, emitter 10, base pin not printed, 9 assumed; C and D, the sound amplifier, not modelled); '
            'CR108 polarity (anode on the luma node), which A103 buffer feeds which of R180-R183 (36K, 18K, 9.1K, 4700 in the order of the rows), the 10pF coupling capacitor has no reference number on the print (C16X here), '
-           'and everything on the RF modulator side (Q106, L101, L102, C169, C171-C173, R162, R188, R190) and the audio amplifier (A104C/D, R163-R167, R191-R195, C177-C181), the power filter chokes and capacitors at J115 (L107-L112, C190-C193, C199, C200) and the oscillator (Q102, Q103, R104-R107, C103) are not netted. The simulator draws the picture from the GTIA model, not from these parts.')
+           'and the parts read from the 300 dpi crops below. The simulator draws the picture from the GTIA model, not from these parts.')
+    unsure('RF modulator and sound amplifier (read at 300 dpi): Q106 is NPN, the emitter node RFN joins C169, R188, C173, R190 and C172; A104C is base 4, emitter 3, collector 5 and A104D base 2, emitter 3, collector 1 (the two 3s are one node, with R164 to ground); C181 is taken to ground at its right plate, and the lower of the two 4700 resistors R194 / R195 is R195 by position. The tuning coil L101 and the pairing of the equal parts are by position.')
 
 
 ROMPIN_A = {'A0': 8, 'A1': 7, 'A2': 6, 'A3': 5, 'A4': 4, 'A5': 3, 'A6': 2, 'A7': 1, 'A8': 23, 'A9': 22, 'A10': 19, 'A11': 18}

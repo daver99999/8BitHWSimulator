@@ -1,6 +1,6 @@
 /* atari800.c - the Atari 800 (motherboard CO14175 Rev A with its CPU board, personality board with the 10K OS ROMs, and three 16K RAM boards).
  *
- * The 3.579545 MHz crystal X101 (a clock source on its pin 1, wired to GTIA's OSC pin: the transistor oscillator is not simulated) is
+ * The 3.579545 MHz clock comes from OSCSIM, a stand-in part for the oscillator (Q102, Q103, crystal X101), whose pin 1 is on the OSC net with GTIA's OSC pin: the transistor oscillator itself is not simulated, and is the
  * the only clock the machine is given. GTIA divides it by two for F0, the CPU board's flip-flops make PHI2 and the halt synchroniser
  * from that, and ANTIC halts the 6502 and takes the bus for display list, screen, character and player/missile DMA. ANTIC, GTIA and
  * POKEY are behavioural models of the real chips (atari800_chips.c). One CPU cycle is four steps (half a crystal period each); a
@@ -18,7 +18,7 @@ static const part_def_t at_part_defs[] = {
 };
 
 static const conn_def_t at_conn_defs[] = {
-    { "J115", "POWER / SIO", "1=+5V 17=-5V 18=+5V 21=+12V 15=GND 16=GND 19=GND 22=GND 2=AUDIO" },
+    { "J115", "POWER / SIO", "1=-5V 17=+5V 18=+5V 19=+5V 21=+12V 15=GND 16=GND 22=GND 2=AUDIO" },
     { "J105", "SPEAKER", "1=SPEAKER+ 2=SPEAKER-" },
     { "J106", "KEYBOARD", "9=KEYCOM 6=KB0 1=KB1 4=KB2 7=KB3 2=KB4 8=KB5 3=KB6 5=KB7 16=KC0 15=KC1 12=KC2 17=KC3 10=KC4 14=KC5 11=KC6 13=KC7" },
     { "J114", "CONSOLE SWITCHES", "1=OPTION 2=SELECT 3=START 4=RESET" },
@@ -97,7 +97,7 @@ static void at_keys_register(atari800_t *z);
 static void at_create(board_t *b) {
     atari800_t *z = AT(b);
     sim_t *s = &b->sim;
-    z->p_xtal = sim_find_part(s, "X101");
+    z->p_xtal = sim_find_part(s, "OSCSIM");
     z->p_cpu = sim_find_part(s, "A303");
     z->p_gtia = sim_find_part(s, "A301");
     z->p_antic = sim_find_part(s, "A302");
@@ -117,8 +117,8 @@ static void at_create(board_t *b) {
     if (z->p_gtia >= 0 && b->screen) atari_gtia_set_screen(&s->parts[z->p_gtia], b->screen);
     z->pin_rcnode = at_pin_of(b, "C198", 1);
     z->pin_12v = at_pin_of(b, "J115", 21);
-    z->pin_m5v = at_pin_of(b, "J115", 17);
-    z->pin_osc = at_pin_of(b, "X101", 1);
+    z->pin_m5v = at_pin_of(b, "J115", 1);
+    z->pin_osc = at_pin_of(b, "OSCSIM", 1);
     at_delay(b, "R403", "PHI2");
     for (int i = 1; i <= 3; i++) {
         char ref[16], net[16];
@@ -390,7 +390,7 @@ const machine_t machine_atari800 = {
     .conns = at_conn_defs, .nconns = sizeof(at_conn_defs) / sizeof(at_conn_defs[0]),
     .link_resistors = "R110 R111 R112 R113 R114 R115 R116 R117 R118 R119 R120 R121 R122 R123 R124 R125 R126 R168 R169 R170 R171 R172 R173 "
                       "R174 R175 R176 R177 R178 R184 R185 R186 R187 R404",
-    .crystals = "X101",
+    .crystals = "OSCSIM",
     .diodes = "CR", .jumpers = "", .supplies = "+12V -5V",
     .keys_help = "Keys: type (letters are capitals unless CAPS is toggled); F2 = OPTION, F3 = SELECT, F4 = START, F6 = Atari key, F7 = CAPS",
     .reset_help = "Hold to press RESET: pulls ANTIC's /RNMI (pin 6) to ground",
