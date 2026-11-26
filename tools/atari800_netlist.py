@@ -183,7 +183,7 @@ POKEY = {'VSS': 1, 'D3': 2, 'D4': 3, 'D5': 4, 'D6': 5, 'D7': 6, 'PHI2': 7, 'VSS2
 PIA = {'VSS': 1, 'PA0': 2, 'PA1': 3, 'PA2': 4, 'PA3': 5, 'PA4': 6, 'PA5': 7, 'PA6': 8, 'PA7': 9, 'PB0': 10, 'PB1': 11,
        'PB2': 12, 'PB3': 13, 'PB4': 14, 'PB5': 15, 'PB6': 16, 'PB7': 17, 'CB1': 18, 'CB2': 19, 'VCC': 20, 'RW': 21, 'CS0': 22,
        'CS2': 23, 'CS1': 24, 'ENABLE': 25, 'D7': 26, 'D6': 27, 'D5': 28, 'D4': 29, 'D3': 30, 'D2': 31, 'D1': 32, 'D0': 33,
-       'RESET': 34, 'RS1': 36, 'RS0': 35, 'IRQB': 37, 'IRQA': 38, 'CA2': 39, 'CA1': 40}
+       'RESET': 34, 'RS1': 35, 'RS0': 36, 'IRQB': 37, 'IRQA': 38, 'CA2': 39, 'CA1': 40}
 CD4051 = {'X0': 13, 'X1': 14, 'X2': 15, 'X3': 12, 'X4': 1, 'X5': 5, 'X6': 2, 'X7': 4, 'COM': 3, 'INH': 6, 'VEE': 7, 'VSS': 8,
           'A': 11, 'B': 10, 'C': 9, 'VDD': 16}
 
@@ -258,7 +258,8 @@ def motherboard():
         net('D%d' % i, pin('A101', POKEY, 'D%d' % i), pin('A102', PIA, 'D%d' % i))
     for i in range(4):
         net('A%d' % i, pin('A101', POKEY, 'A%d' % i))
-    net('A0', 'A102.35'); net('A1', 'A102.36')
+    net('A0', 'A102.36'); net('A1', 'A102.35')
+    unsure('PIA register select: the print labels pin 35 RS0 and pin 36 RS1, the 6520 has RS0 on 36 and RS1 on 35 (the Atari OS needs A0 on RS0): wired as the chip, A0 to pin 36, A1 to pin 35.')
     net('R/W', 'A101.32', 'A102.21'); net('PHI2', 'A101.7', 'A102.25')
     net(V5, 'A101.31', 'A102.22', 'A102.24')
     net('POKEY_CS', 'A101.30'); net('PIA_CS', 'A102.23')
