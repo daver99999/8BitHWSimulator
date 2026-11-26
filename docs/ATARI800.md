@@ -28,3 +28,14 @@ The luma and chroma output network, Q107 and the serial bus pull-ups are in the 
 Lift a pin with `board_set_pin_fault(b, pin, PF_OPEN)`, not by writing `pins[].fault` directly: only the first call rebuilds the nets. `tests/atari800/fault.c` (`/tmp/atari_fault REF PIN [frames]`) and `keys.c` (`OPEN="A302 8" CART=... /tmp/atari_keys "TEXT" out.ppm`) do it that way.
 
 Example, DRAM refresh: with ANTIC's /REF (A302 pin 8) lifted, the RAM boards other than the one the CPU happens to be addressing get no refresh. In BASIC, `POKE 20480,123` then `PRINT PEEK(20480)` gives 123 on a good board and 0 with the leg lifted, because the row at $5000 is not refreshed for more than 16 ms. Lifting Z501 pin 2 (the REF input of the RAS gate) on one RAM board does the same for that board only. Lifting Z501 pin 3 only affects the read gate.
+
+Results with the legs lifted properly (120 frames, `/tmp/atari_fault REF PIN 120`):
+
+| Lifted leg | What the screen shows |
+|---|---|
+| Z512_1 pin 2 (data bit 0 into the first 16K board) | rows of `$` characters, CPU running at $0003 (in the zero page) |
+| Z505_1 pin 14 (data bit 6 out of the first board) | scattered punctuation, CPU in the OS at $EBD0 |
+| A303 pin 33 (6502 address line) | the screen filled with `B2` pairs, CPU at $E806 |
+| A101 pin 7 (POKEY phase 2) | scattered punctuation like the Z505 case, CPU at $E707 |
+
+None of them reaches the Memo Pad screen. These are the simulator's results, not measurements of a real board.
