@@ -15,4 +15,4 @@ Boots to the `Apple ][` banner and `]` prompt; the keyboard works through the UE
 - The IOU resets low for about 36000 cycles at power-on; RESET is open collector and the model supplies the pull-up.
 - Row address RA0..7 = A0-A5, A7, A8; column = A9, A6, A10-A15, with the byte reversed into the 6664's pins.
 - Latches on a derived clock (UD3, clocked by PHI0) take their data from the previous commit, as the real edge arrives before the logic it starts moves the data.
-- The board's UC1 wiring gives a 12-clock long cycle (908 clocks a line) where the reference testbench expects 16 (912). To be checked on the real board.
+- UC1 (74LS109): the KiCad capture has pin 14 on pin 7 and pin 13 on 7M. Beeped on the real board: pin 14 to pin 6 (7M) and pin 13 to pin 7 are connected, pin 14 to 7 is open. The netlist now follows the board. This gives the 16 clock long cycle (912 clocks a line).
