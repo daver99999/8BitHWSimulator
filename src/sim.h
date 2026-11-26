@@ -199,8 +199,8 @@ struct part {
     group_t groups[PART_GROUPS];
 };
 
-#define SIM_MAX_PARTS 256
-#define SIM_QUEUE_SIZE 512      /* power of two, > SIM_MAX_PARTS */
+#define SIM_MAX_PARTS 512
+#define SIM_QUEUE_SIZE 1024     /* power of two, > SIM_MAX_PARTS */
 
 /* What the engine needs to know about a board besides its tables. */
 typedef struct {

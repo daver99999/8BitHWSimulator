@@ -38,6 +38,7 @@ extern const board_data_t bd_pet4032;   /* pet4032_board_data.c (8032080-03, 40 
 extern const board_data_t bd_apple2e;   /* apple2e_board_data.c (Apple IIe 820-0064-B) */
 extern const board_data_t bd_coco2;   /* coco2_board_data.c (Color Computer 2, 26-3134B/3136B) */
 extern const board_data_t bd_dragon64;   /* dragon64_board_data.c (Dragon 64 issue 6) */
+extern const board_data_t bd_atari800;   /* atari800_board_data.c (Atari 800 CO14175 Rev A, typed from the Field Service Manual) */
 extern const board_data_t bd_mc10;   /* mc10_board_data.c (MC-10, from the Eagle schematic, parts placed in rows) */
 extern const board_data_t bd_ts1000;   /* ts1000_board_data.c (Issue 3, reconstructed) */
 extern const board_data_t bd_ts1000i1; /* ts1000i1_board_data.c (Issue 1, placed from the Issue 1 layout) */

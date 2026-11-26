@@ -33,7 +33,7 @@ def region(ref):
     if m: return 'ram' + m.group(1)
     if re.fullmatch(r'RB_\d', ref): return 'ram' + ref[-1]
     if ref in ('J101C', 'A301', 'A302', 'A303', 'Z301', 'Z302', 'Z303', 'Z304') or re.fullmatch(r'[RC]30\d|R31\d', ref): return 'cpu'
-    if ref == 'PERSC' or ref in ('A401', 'A402', 'A403', 'Z401', 'Z402', 'Z403') or re.fullmatch(r'[RC]40\d', ref): return 'pers'
+    if ref == 'PERSC' or ref in ('A401', 'A402', 'A403', 'Z401', 'Z402', 'Z403') or re.fullmatch(r'[RCL]40\d|C410', ref): return 'pers'
     return 'mb'
 
 # (type in the netlist) -> (part type, label, role)
@@ -45,7 +45,7 @@ TYPES = {
     '7400': ('PT_74LS00', '7400', 'ROLE_GLUE'), '7402': ('PT_74LS02', '7402', 'ROLE_GLUE'),
     '74LS03': ('PT_74LS03', '74LS03', 'ROLE_GLUE'), '74LS10': ('PT_74LS10', '74LS10', 'ROLE_GLUE'),
     '74LS32': ('PT_74LS32', '74LS32', 'ROLE_GLUE'), '74LS42': ('PT_74LS42', '74LS42', 'ROLE_GLUE'),
-    '74LS74': ('PT_74LS74', '74LS74', 'ROLE_GLUE'), '7474': ('PT_74LS74', '74LS74', 'ROLE_GLUE'),
+    '74LS74': ('PT_74LS74R', '74LS74', 'ROLE_GLUE'), '7474': ('PT_74LS74R', '74LS74', 'ROLE_GLUE'),
     '74LS158': ('PT_74LS158', '74LS158', 'ROLE_GLUE'), '74LS244': ('PT_74LS244', '74LS244', 'ROLE_GLUE'),
     'CD4051': ('PT_CD4051', 'CD4051', 'ROLE_GLUE'), 'CD4050': ('PT_CD4050', 'CD4050', 'ROLE_GLUE'),
     '4116': ('PT_4116', 'RAM', 'ROLE_RAM'),

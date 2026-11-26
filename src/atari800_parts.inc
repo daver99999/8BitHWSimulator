@@ -15,7 +15,7 @@
     { "Z103", &PT_CD4051, "CD4051", ROLE_GLUE, NULL, "CD4051: keyboard scan, the column POKEY pulls low" },
     { "Z104", &PT_CD4051, "CD4051", ROLE_GLUE, NULL, "CD4051: keyboard return, the row that POKEY reads" },
     { "Z301", &PT_74LS02, "7402", ROLE_GLUE, NULL, "7402: gates the 6502 phase 0 and the bus read/write line" },
-    { "Z302", &PT_74LS74, "74LS74", ROLE_GLUE, NULL, "74LS74: PHI1 / PHI2 and the halt synchroniser" },
+    { "Z302", &PT_74LS74R, "74LS74", ROLE_GLUE, NULL, "74LS74: PHI1 / PHI2 and the halt synchroniser" },
     { "Z303", &PT_ATARI_BUF, "74LS", ROLE_GLUE, NULL, "address buffer A0-A7 from the CPU to the bus" },
     { "Z304", &PT_ATARI_BUF, "74LS", ROLE_GLUE, NULL, "address buffer A8-A15 from the CPU to the bus" },
     { "Z401", &PT_74LS138, "74LS138", ROLE_GLUE, NULL, "74LS138: decodes $D0xx-$D7xx page selects from A8-A10" },

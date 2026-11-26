@@ -145,6 +145,7 @@ typedef struct {
     uint8_t row, col;
     uint8_t ras_prev, cas_prev;
     uint8_t out_en, out_bit;
+    uint8_t we_prev, rmw_open;   /* late write: /WE falling while /CAS is low writes the open cell */
 } dram_state_t;
 /* 64K x 4 DRAM: one nibble per cell. */
 typedef struct {

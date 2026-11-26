@@ -39,7 +39,7 @@ CPUCONN = {
     'PHI1': '22', 'A15': '24', 'A14': 'CC', 'A13': '20', 'A12': '18', 'A11': 'U', 'A10': 'W', 'A9': 'P', 'A8': '15', 'A7': '13',
     'A6': '19', 'A5': '16', 'A4': 'T', 'A3': 'V', 'A2': 'N', 'A1': '14', 'A0': '12', 'PHI2': '21', 'R/W': 'Y',
     'COL': '4', 'LUM0': '1', 'LUM1': '3', 'LUM2': '2', 'LUM3': 'M', 'OSC': 'C', 'CSYNC': 'B', 'S3': 'S', 'S2': 'R', 'S1': '11',
-    'S0': '17', 'T3': 'L', 'T2': '10', 'T1': 'K', 'T0': '9', 'CSI': '27', 'RNMI': 'Z', 'LP': 'A', 'REF': 'D', 'RESETA': 'X',
+    'S0': '17', 'T3': 'L', 'T2': '10', 'T1': 'K', 'T0': '9', 'GTIA_CS': '27', 'RNMI': 'Z', 'LP': 'A', 'REF': 'D', 'RESETA': 'X',
     'NMI': '23', 'RESETM': '25', 'D7': '8', 'D6': 'J', 'D5': 'H', 'D4': 'F', 'D3': '7', 'D2': '6', 'D1': 'E', 'D0': '5',
     'SYNC': 'BB', 'IRQ': 'AA',
 }
@@ -49,7 +49,7 @@ CPUCONN_PWR = {'+5V': ['26', 'DD'], '+12V': ['EE'], 'GND': ['28', 'FF']}
 GTIA = {'VCC': 27, 'VSS': 3, 'R/W': 33, 'HALT': 26, 'PHI2': 30, 'A4': 38, 'A3': 39, 'A2': 40, 'A1': 1, 'A0': 2, 'AN0': 18,
         'AN1': 19, 'AN2': 20, 'F0': 29, 'D7': 34, 'D6': 35, 'D5': 36, 'D4': 37, 'D3': 4, 'D2': 5, 'D1': 6, 'D0': 7, 'COL': 21,
         'LUM0': 22, 'LUM1': 23, 'LUM2': 24, 'LUM3': 31, 'OSC': 28, 'CSYNC': 25, 'S3': 15, 'S2': 14, 'S1': 13, 'S0': 12,
-        'T3': 11, 'T2': 10, 'T1': 9, 'T0': 8, 'CSI': 32, 'DEL': 17}
+        'T3': 11, 'T2': 10, 'T1': 9, 'T0': 8, 'GTIA_CS': 32, 'DEL': 17}
 ANTIC = {'VCC': 21, 'VSS': 1, 'R/W': 14, 'HALT': 9, 'PHI2': 29, 'A0': 13, 'A1': 12, 'A2': 11, 'A3': 10, 'A4': 28, 'A5': 27,
          'A6': 26, 'A7': 25, 'A8': 24, 'A9': 23, 'A10': 16, 'A11': 22, 'A12': 17, 'A13': 18, 'A14': 19, 'A15': 20, 'AN0': 2,
          'AN1': 3, 'AN2': 5, 'F0': 35, 'D7': 37, 'D6': 38, 'D5': 39, 'D4': 40, 'D3': 33, 'D2': 32, 'D1': 31, 'D0': 30,
@@ -126,7 +126,7 @@ def cpu_board():
     net('SYNC', pin('A303', CPU6502, 'SYNC'))
     net('PHI0', pin('A302', ANTIC, 'PHI0'), pin('A303', CPU6502, 'PHI0'))
     # GTIA video and console
-    for s in ('COL', 'LUM0', 'LUM1', 'LUM2', 'LUM3', 'OSC', 'CSYNC', 'S3', 'S2', 'S1', 'S0', 'T3', 'T2', 'T1', 'T0', 'CSI'):
+    for s in ('COL', 'LUM0', 'LUM1', 'LUM2', 'LUM3', 'OSC', 'CSYNC', 'S3', 'S2', 'S1', 'S0', 'T3', 'T2', 'T1', 'T0', 'GTIA_CS'):
         net(s, pin('A301', GTIA, s))
     # the 1K pull-ups R302-R306 on COL and LUM0-3, the colour adjust R308 / R309 / C305 on DEL
     for ref, s in (('R302', 'COL'), ('R303', 'LUM0'), ('R304', 'LUM1'), ('R305', 'LUM2'), ('R306', 'LUM3')):
@@ -164,11 +164,11 @@ def cpu_board():
 # J108 (right) and J109 (left) the cartridge slots. All the bus nets are shared by name with the plug-in boards (flattened).
 RAMSLOT = {'A0': '5', 'A1': '7', 'A2': 'E', 'A3': '10', 'A4': 'J', 'A5': '9', 'A6': '12', 'A7': '6', 'A8': '8', 'A9': 'F',
            'A10': '11', 'A11': 'K', 'A12': 'L', 'A13': 'H', 'D0': '1', 'D1': 'A', 'D2': '2', 'D3': '3', 'D4': 'B', 'D5': 'C',
-           'D6': 'D', 'D7': '4', 'PHI2': '14', 'RASTIME': '15', 'RW_EARLY': '16', 'RW_LATE': '13', 'REF': '17'}
+           'D6': 'D', 'D7': '4', 'PHI2': '14', 'RASTIME': '15', 'R/W': '16', 'RW_LATE': '13', 'REF': '17'}
 RAMSLOT_PWR = {'+5V': ['19', 'W'], '-5V': ['20', 'X'], '+12V': ['21', 'Y'], 'GND': ['22', 'Z']}
 PERS = {'D0': '1', 'D1': 'A', 'D2': '2', 'D3': '3', 'D4': 'B', 'D5': 'C', 'D6': 'D', 'D7': '4', 'A0': '5', 'A1': '7', 'A2': 'E',
         'A3': '10', 'A4': 'K', 'A5': '9', 'A6': 'J', 'A7': '6', 'A8': '8', 'A9': 'F', 'A10': '11', 'A11': 'L', 'A12': '12',
-        'A15': 'R', 'PHI1': '17', 'RW_EARLY': 'U', 'RASTIME': 'V', 'PHI2B': 'S', 'S7': 'H', 'S6': 'M', 'S4': 'P', 'S5': 'N',
+        'A15': 'R', 'PHI1': '17', 'R/W': 'U', 'RASTIME': 'V', 'PHI2': 'S', 'S7': 'H', 'S6': 'M', 'S4': 'P', 'S5': 'N',
         'D6XX': 'W', 'D5XX': 'X', 'PIA_CS': '18', 'POKEY_CS': '19', 'GTIA_CS': '13', 'EXSEL': '14', 'GBA': 'T', 'GBAN': '15',
         'WRITIME': '16'}
 PERS_PWR = {'+5V': ['21', 'Y'], 'GND': ['22', 'Z']}
@@ -207,12 +207,12 @@ def motherboard():
     # personality slot
     part('J107', 'EDGE44', 44, 'personality board slot')
     for sig, p in PERS.items():
-        if sig in ('A15', 'PHI1', 'RW_EARLY', 'RASTIME') or sig[0] in 'AD' and sig[1:].isdigit():
+        if sig in ('A15', 'PHI1', 'R/W', 'RASTIME') or sig[0] in 'AD' and sig[1:].isdigit():
             net(sig, 'J107.' + p)
     for sig, ps in PERS_PWR.items():
         for p in ps:
             net(sig, 'J107.' + p)
-    for sig in ('PHI2B', 'S7', 'S6', 'S4', 'S5', 'D6XX', 'D5XX', 'PIA_CS', 'POKEY_CS', 'GTIA_CS', 'EXSEL', 'GBA', 'GBAN', 'WRITIME'):
+    for sig in ('PHI2', 'S7', 'S6', 'S4', 'S5', 'D6XX', 'D5XX', 'PIA_CS', 'POKEY_CS', 'GTIA_CS', 'EXSEL', 'GBA', 'GBAN', 'WRITIME'):
         net(sig, 'J107.' + PERS[sig])
     unsure('J107: pin letters taken from the personality board edge connector; the motherboard drawing agrees where it is legible.')
     # cartridge slots
@@ -234,7 +234,7 @@ def motherboard():
     part('C101', 'C', 2, '.01uF'); net(V5, 'C101.1'); net(GND, 'C101.2')
     net('A13', 'Z101.15'); net('A14', 'Z101.14'); net('A15', 'Z101.13'); net(GND, 'Z101.12')
     for i, pn in enumerate((1, 2, 3, 4)):
-        net('S%d' % i, 'Z101.%d' % pn)
+        net('MS%d' % i, 'Z101.%d' % pn)
     net('S4', 'Z101.5'); net('S5', 'Z101.6'); net('S6', 'Z101.7'); net('S7', 'Z101.9')
     unsure('Z101 74LS42: input pins (A15 B14 C13 D12, standard pinout) and which address line goes to which input are not legible; assumed A13,A14,A15 and D low.')
     # Z102A/B gate the S4 / S5 RAM selects off when a cartridge pulls RD4 / RD5; pull-downs R108 / R109 680
@@ -243,9 +243,12 @@ def motherboard():
     part('R108', 'R', 2, '680'); net('RD4', 'R108.1'); net(GND, 'R108.2')
     part('R109', 'R', 2, '680'); net('RD5', 'R109.1'); net(GND, 'R109.2')
     part('R103', 'R', 2, '680'); net('S6', 'R103.1'); net(GND, 'R103.2')
+    # Z102C/D: R/W LATE for the RAM slots = R/W OR WRITIME (low only in a write, during the write strobe)
+    net('R/W', 'Z102.9', 'Z102.12'); net('WRITIME', 'Z102.10', 'Z102.13'); net('RW_LATE', 'Z102.8', 'Z102.11')
+    unsure('Z102C/D: R/W LATE taken as R/W OR WRITIME (inputs 9,10 / 12,13, outputs 8 / 11); the W/TIME source is the personality.')
     unsure('Z102A/B (74LS32): which gate input takes S4/S5 and which RD4/RD5, and where the outputs go (taken as the RAM select for slot J104), is not clear on the print.')
-    # RAM selects: J102 SEL = S0, U = S1; J103 = S2, S3; J104 = gated S4, S5
-    for ref, a, b in (('J102', 'S0', 'S1'), ('J103', 'S2', 'S3'), ('J104', 'S4G', 'S5G')):
+    # RAM selects (decoder outputs MS0-MS3; the console switch lines of the CPU slot are S0-S3): J102 SEL = MS0, U = MS1; J103 = MS2, MS3; J104 = gated S4, S5
+    for ref, a, b in (('J102', 'MS0', 'MS1'), ('J103', 'MS2', 'MS3'), ('J104', 'S4G', 'S5G')):
         net(a, ref + '.18'); net(b, ref + '.U')
     unsure('RAM slot select pins (18 and U) per slot: S0/S1 -> J102, S2/S3 -> J103, S4/S5 gated -> J104 (the 48K map). Not read directly.')
 
@@ -387,19 +390,24 @@ def personality():
     net('D4XX', 'Z403.1'); net('GTIA_CS', 'Z403.2')
     net('EXSEL', 'Z403.3', 'Z403.8', 'Z403.6', 'Z402.2', 'Z403.13')
     net('A15', 'Z403.9'); net('EXSELB', 'Z403.10'); net('S5', 'Z403.4'); net('S4', 'Z403.5')
-    part('R404', 'R', 2, '1'); net('EXSELB', 'R404.1'); net('PHI2B', 'R404.2')
+    part('R404', 'R', 2, '1'); net('EXSELB', 'R404.1'); net('PHI2', 'R404.2')
     part('R402', 'R', 2, '2200'); net(V5, 'R402.1'); net('EXSEL', 'R402.2')
     # Z402A -> /GBA, Z403C -> GBA (pull-up R401)
-    net('RW_EARLY', 'Z402.1'); net('GBAN', 'Z402.3', 'Z403.12')
+    net('R/W', 'Z402.1'); net('GBAN', 'Z402.3', 'Z403.12')
     net('GBA', 'Z403.11')
     part('R401', 'R', 2, '4700'); net(V5, 'R401.1'); net('GBA', 'R401.2')
     # Z402B RASTIME from phase 1, Z402C /WRITIME from phase 2B
     net('PHI1', 'Z402.9'); net('RASTIME', 'Z402.8'); net('PHIX', 'Z402.10', 'Z402.4')
-    net('PHI2B', 'Z402.5'); net('WRITIME', 'Z402.6')
-    part('R403', 'R', 2, '470'); net('PHI2B', 'R403.1')
+    net('PHI2', 'Z402.5'); net('WRITIME', 'Z402.6')
+    part('R403', 'R', 2, '470'); net('PHI2', 'R403.1')
+    for i, (l, a, b) in enumerate((('L401', 'R403.2', 'L401.1'), ('L402', 'L401.2', 'L402.1'), ('L403', 'L402.2', 'L403.1'))):
+        part(l, 'L', 2, '22uH')
+    net('DLY1', 'R403.2', 'L401.1'); net('DLY2', 'L401.2', 'L402.1'); net('DLY3', 'L402.2', 'L403.1'); net('PHIX', 'L403.2')
+    for c, v, n_ in (('C407', '47pF', 'DLY1'), ('C408', '68pF', 'DLY2'), ('C409', '47pF', 'DLY3'), ('C410', '68pF', 'PHIX')):
+        part(c, 'C', 2, v); net(n_, c + '.1'); net(GND, c + '.2')
     for c in ('C401', 'C402'):
         part(c, 'C', 2, '.1uF' if c == 'C401' else '.001uF'); net(V5, c + '.1'); net(GND, c + '.2')
-    unsure('Personality gates: Z402 is read as NAND gates A (in 1,2 out 3), B (in 9,10 out 8), C (in 4,5 out 6) and Z403 as open-collector NANDs with R402 pull-up; the node at Z402 pin 10 / 4 runs off to the right and is not read. Ø2B edge pin is printed as 5 (same as A0): placed on pin S.')
+    unsure('Personality gates: Z402 is read as NAND gates A (in 1,2 out 3), B (in 9,10 out 8), C (in 4,5 out 6) and Z403 as open-collector NANDs with R402 pull-up; the node at Z402 pin 10 / 4 runs off to the right and is not read. the delayed phase 2 (R403, L401-L403) feeds Z402B and Z402C. The Ø2 edge pin is S on the motherboard (the personality print shows it at 5, the same as A0).')
 
 
 # 16K RAM board (Fig 2-16). DRAM Z505..Z512 hold data bits D6 D7 D5 D3 D4 D2 D1 D0 (bit order read from the data lines).
@@ -432,7 +440,7 @@ def ram16(tag, selA, selB, slot):
     net(GND, r('Z501') + '.7', r('Z503') + '.8', r('Z504') + '.8', r('Z502') + '.10', r('Z503') + '.15', r('Z504') + '.15', r('Z504') + '.10')
     # Z501: A (5,3,4 -> 6) read gate, B (13,2,1 -> 12), C (10,11,9 -> 8) RAS
     z1 = r('Z501')
-    net('RW_EARLY', z1 + '.5'); net('REF', z1 + '.3', z1 + '.2'); net(selB, z1 + '.13'); net(selA, z1 + '.1')
+    net('R/W', z1 + '.5'); net('REF', z1 + '.3', z1 + '.2'); net(selB, z1 + '.13'); net(selA, z1 + '.1')
     net(n('ENB'), z1 + '.12', z1 + '.4', z1 + '.10', z1 + '.11')
     net('RASTIME', z1 + '.9')
     net(n('RDEN'), z1 + '.6', r('Z502') + '.1', r('Z502') + '.19')
@@ -475,7 +483,7 @@ def main():
     cpu_board()
     motherboard()
     personality()
-    ram16('_1', 'S0', 'S1', 'J102'); ram16('_2', 'S2', 'S3', 'J103'); ram16('_3', 'S4G', 'S5G', 'J104')
+    ram16('_1', 'MS0', 'MS1', 'J102'); ram16('_2', 'MS2', 'MS3', 'J103'); ram16('_3', 'S4G', 'S5G', 'J104')
     # every net must have two or more pins, and no pin may be on two nets
     seen, bad = {}, 0
     for n, pins in nets.items():

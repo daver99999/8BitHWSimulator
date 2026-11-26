@@ -433,10 +433,12 @@ static void dram_cycle(sim_t *s, part_t *p, int bits, int half) {
         int cell = (st->row << 8) | st->col;
         bool bad = half == HALF_ROW7_LOW ? (st->row & 0x80) : half == HALF_ROW7_HIGH ? !(st->row & 0x80) :
                    half == HALF_COL7_LOW ? (st->col & 0x80) : half == HALF_COL7_HIGH ? !(st->col & 0x80) : false;
+        st->rmw_open = 0;
         if (!pin_in(s, p, 3)) {          /* /WE low before /CAS: early write */
             if (!bad && !g_dram_inhibit) st->cells[cell] = (uint8_t)pin_in(s, p, 2);
             st->out_en = 0;
         } else {                        /* read: Q drives until /CAS rises */
+            st->rmw_open = !bad;
             st->out_en = g_mmu_ovr ? 0 : 1;
             st->out_bit = bad ? (uint8_t)(((unsigned)cell * 2654435761u) >> 31) : st->cells[cell];
             if (p->mfault) st->out_bit = (uint8_t)(mem_read(p, (unsigned)cell, st->out_bit) & 1);
@@ -446,6 +448,16 @@ static void dram_cycle(sim_t *s, part_t *p, int bits, int half) {
     /* Q is valid until /CAS rises (it outlives /RAS: the ZX Spectrum's
      * ULA reads the attribute byte that way). */
     if (cas) st->out_en = 0;
+    /* Late write (read-modify-write): /WE falls after /CAS, the cell is written then. */
+    {
+        int we = pin_in(s, p, 3);
+        if (st->we_prev && !we && !cas && !ras && st->rmw_open && !g_dram_inhibit) {
+            st->cells[(st->row << 8) | st->col] = (uint8_t)pin_in(s, p, 2);
+            st->out_en = 0;
+        }
+        if (cas || ras) st->rmw_open = 0;
+        st->we_prev = (uint8_t)we;
+    }
     st->ras_prev = (uint8_t)ras;
     st->cas_prev = (uint8_t)cas;
     if (st->out_en != out_en || st->out_bit != out_bit) sim_mark_dirty(s, (int)(p - s->parts));
@@ -1128,6 +1140,7 @@ const part_type_t PT_SUPERPLA = { "251715-01 PLA",
 /* A memory chip that can take memory faults (part_t.mfault): its address
  * lines and data bits (0 if it isn't one). A DRAM has its multiplexed
  * lines: 7 for a 4116, the chip address is (row << 8) | column. */
+extern bool atari_rom_is(const part_t *p);
 int part_memory(const part_t *p, int *data_bits, bool *dram) {
     int lines = 0, bits = 8;
     bool d = false;
@@ -1136,6 +1149,7 @@ int part_memory(const part_t *p, int *data_bits, bool *dram) {
     else if (p->eval == hn613128_eval || p->eval == upd23128_eval || p->eval == rom27128_eval) lines = 14;
     else if (p->eval == sram_eval) { lines = 10; bits = 4; }
     else if (p->eval == rom2332l_eval) lines = 12;
+    else if (atari_rom_is(p)) lines = 12;
     else if (p->eval == s6116_eval) lines = 11;
     else if (part_is_dram64(p)) { lines = 8; bits = 1; d = true; }
     else if (p->commit == dram4116_commit) { lines = 7; bits = 1; d = true; }
