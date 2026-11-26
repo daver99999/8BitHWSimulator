@@ -1,0 +1,11 @@
+# 16K RAM board (Fig 2-16, 300 dpi, clean) - the 8K board (Fig 2-14) is the same circuit with fewer DRAMs. Edge connector (same pins as the motherboard RAM slots):
+# D0 1 | D1 A | D2 2 | D4 B | D3 3 | D5 C | D7 4 | D6 D | N,M,R,P,T,S unused (printed as blank boxes) | RW_EARLY 16 | /REF 17 | /SEL 18 | U (to Z501B pin 13) | RASTIME 15
+# A13 H | A5 9 | A6 12 | A12 L | A11 K | A4 J | A10 11 | A3 10 | PHI2 14 | A9 F | A2 E | A8 8 | A1 7 | A7 6 | A0 5 | RW_LATE 13 | VDD 21,Y (+12) | VCC 19,W (+5) | VBB 20,X (-5) | VSS 22,Z
+# Z501 (74LS10 triple NAND, Vcc 14 w/ C501): A (5,3,4 -> 6) from RW_EARLY, ... B (13,2,1 -> 12) from U and /REF /SEL, C (10,11,9 -> 8) = RAS source to R501 220 -> RAS of every DRAM; L501 4.7uH feeds the SEL pins of Z503/Z504.
+# Z503, Z504 (74LS158 quad 2:1 mux, Vcc 16, Vss 8): Z503 inputs 1A 2 / 2B 6 / 1B 3 / 2A 5 / 3A 11 / 3B 10 / 4A 14 / 4B 13 fed from A13(H) A5 A6 A12 A11 A4 A10 A3; outputs 1Y 4, 2Y 7, 3Y 9, 4Y 12;
+#   Z504 inputs 3A 11 (PHI2) 4A 14 (A9) 4B 13 (A2) 1A 2 (A8) 1B 3 (A1) 2A 5 (A7) 2B 6 (A0) 3B 10 (gnd); outputs 4Y 12, 1Y 4, 2Y 7, 3Y 9; SEL 1 from the RAS/CAS timing line; STR 15 to Vss.
+#   Their outputs drive the DRAM address pins A0-A6 (row/column multiplexed): each Y goes to one A pin of all eight DRAMs.
+# Z502 (74LS244 octal buffer, Vcc 20, Vss 10): data buffer: 1A1..1A4 / 2A1..2A4 to the DRAM DIN/DOUT bit lines, G1 and G2 (pins 1 and 19) from the Z501A output (read/write gating).
+# Z505-Z512: eight 4116 16K x 1 DRAMs (16-pin): VBB 1, DIN 2, WRITE 3, RAS 4, A0 5, A2 6, A1 7, VDD 8, VCC 9, A5 10, A4 11, A3 12, A6 13, DOUT 14, CAS 15, VSS 16; one per data bit D0..D7 (DIN 2 / DOUT 14 to the Z502 buffer);
+#   CAS pin 15 from Z504 (R/W late side), WRITE pin 3 from RW_LATE (edge pin 13); each has two bypass caps (C502-C517, .1) to +12/+5/-5.
+# Decoupling: C521 .001 -5, C522 .001 +5, C523 .001 +12 on the supplies. C518 47pF on Z503 SEL. C519 .1.

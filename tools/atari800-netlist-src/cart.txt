@@ -1,0 +1,38 @@
+# Cartridge slots J109 (left, "Cartridge A") and J108 (right, 800 only): 15 numbered pins + 15 lettered pins (A B C D E F H J K L M N P R S).
+# From the Atari 8-bit FAQ pinout, to be checked against the schematic (Fig 2-6A shows J109 pin 1 = /S4, A = RD4, 12 = S5, 14 = RD5, J108 pin 12 = /S4, 14 = RD4).
+# pin  left(J109)  right(J108)
+1  /S4   R/W_late
+2  A3    A3
+3  A2    A2
+4  A1    A1
+5  A0    A0
+6  D4    D4
+7  D5    D5
+8  D2    D2
+9  D1    D1
+10 D0    D0
+11 D6    D6
+12 /S5   /S4
+13 +5V   +5V
+14 RD5   RD4
+15 /CCTL /CCTL
+A  RD4   PHI2
+B  GND   GND
+C  A4    A4
+D  A5    A5
+E  A6    A6
+F  A7    A7
+H  A8    A8
+J  A9    A9
+K  A12   A12
+L  D3    D3
+M  D7    D7
+N  A11   A11
+P  A10   A10
+R  R/W   R/W
+S  PHI2  PHI2
+# ---- from the 600 dpi crop of J107-J109 ----
+# J108 pins 12 (S4) and J109 pin 1 (/S4) are joined on one line; J108 pin 14 (RD4) and J109 pin A (RD4) are joined on one line.
+# J109 pins 12 (/S5) and 14 (RD5) are separate lines (S5 goes toward the decoder, RD5 to the cartridge-present gate).
+# Z102B (74LS32 OR, Vcc 14 on +5A, GND 7): inputs pin 1 and pin 2 each pulled to ground by R109 680 (pin 1) / R108 680 (pin 2); output pin 3 -> decoder chain.
+# J107 (personality slot) row order top to bottom: S4 S5 S7 S6 A15 Y5 A12 A11 A10 A9 A8 A7 A6 A5 A4 ... the address lines A0-A12 run straight across to J108/J109 pins K N P J H F E D C ...

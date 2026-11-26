@@ -1,0 +1,16 @@
+# Page 2 (Fig 2-6B), left half, read clean at 300 dpi.
+# J101 page-2 pins (signal J101pin TPpin): OSC C 3 | RESET_A X - | RESET_M 25 22 | S2 R - | S1 11 - | S0 17 - | RNMI Z - | LM3 M - | LM0 1 A | LM1 3 C | LM2 2 B | VIDEO_SYNC B 2 | COL 4 D
+# Oscillator: X101 3.579575 MHz crystal between Q102 base-node(+5A via R105 100) and Q103 base; Q102 collector to +12 via R104 470 (C103 .22 +12 to gnd);
+#   Q102 emitter -> OSC (J101 C) with R106 270 to ground; Q103 emitter side: R107 100 to ground; Q103 collector to +5A.
+# Reset: J101 RESET_M (25) -> A103A (CD4050 buffer, pins 2 in / 3 out, input and output tied through R154 1M); R155 100K from buffer output to C198 .1 node;
+#   R156 470K from +5B to that node, CR102 diode across R156; RESET_A (X) tied to RESET_M line.
+# Luma: A103B..F (CD4050 buffers, +5B on pin 1, gnd 8): LM3 M -> 5/4 -> R180 36K; LM0 1 -> 9/10 -> R181 18K; LM1 3 -> 14/15 -> R182 9.1K; LM2 2 -> 11/12 -> R183 9.1K? (as printed 'R183 4700'); VIDEO_SYNC B -> 7/6 -> CR108 diode to the same sum node.
+#   Sum node: R179 2200 to +5B, C162 .1 +5B to gnd, base of Q105 (C163 33pF to gnd), Q105 emitter -> R200 220 / R205 3900 / R201 120 chain to COMP LUM.
+# Chroma/COL: J101 COL (4) -> R196 3.3K -> 10 pF -> A104A (12 in, 14, 13) with R197 4700 to gnd, R198 10K + R199 1K to +5B; A104B (11,10) buffer; R203 270, R204 75 to gnd.
+# S2, S1, S0, RNMI (J101 R, 11, 17, Z) go through R184-R187 (4x 100) to J114 control switch header pins 1-4 (with C165-C168 .001 to ground).
+# Page 2, right half. J115 "TO POWER SUPPLY" (22 pins): 3 COMP CHROMA (via L105), 6 COMP VIDEO (via L104), 20 MOD (via L103... COMP LUM/MOD lines), 5 COMP LUM, 2 AUDIO OUT, 13 SP AUDIO,
+#   7 CLOCK OUT, 8 CLOCK IN, 9 DATA IN, 10 DATA OUT, 14 INTERRUPT, 12 PROCEED, 11 COMMAND, 4 MOTOR CONTROL; power: 18 +5A (L111/L107), 19 ref ground, 1 +5B?, 17 -5, 21 +12 (L112), 15 16 22 grounds. (power-pin assignment to confirm with beep)
+# Serial bus lines from J101-page-1 (AUD, OCLK, BCLK, SID, SOD, CB1, CA1, CB2, CA2, RESET) go through R168-R174 (100 ohm x7) to the J115 pins above; pull-ups to +5A:
+#   R129A-D 4.7K on BCLK/SID/SOD/CB1 region, R158A, R157 1K, R129E-F 4.7K on CA1/CB2; CA2 drives Q107 base through R159 2.7K, Q107 collector -> L106 -> MOTOR CONTROL.
+#   C182-C188 (7x .001) from each serial line to ground; C181 .1 on AUD; C189 .1.
+# Chroma/video: A104C/A104D (transistor pairs) with R163 2.2K, R164 3300, R165 1K, R166 1K, R167 18K, R191 18K, R192/R193 4.7K, R194-R195 4700, C179 10uF 16V, C172 .1, C180 .22; L101 (adjustable), L102 2.0uH, Q106 chroma transistor.

@@ -1,0 +1,31 @@
+# A101 POKEY and A102 PIA (6520), read from 600 dpi Fig 2-6A. Pin numbers as printed on the drawing; they match the standard chip pinouts.
+# POKEY: Vcc 17, Vss 11 (pins 31 CS1 tied to +5, 30 /CS0 from I/O decoder Z101 Y2). Phi2 7? -> pin 7 shown is /IRQ; PHI2 = 32? see note
+POKEY 31 CS1 +5V
+POKEY 30 /CS0 from decoder (Z105 Y2)
+POKEY 37 AUD -> audio out
+POKEY 27 OCLK  26 BCLK  24 SID  28 SOD -> serial bus (page 2: SIO connector)
+POKEY 29 /IRQ  7 PHI2?  32 R/W  33 A3  34 A2  35 A1  36 A0
+POKEY 6 D7 5 D6 4 D5 3 D4 2 D3 40 D2 39 D1 38 D0
+POKEY 16 /KR2 25 /KR1 18 K5 19 K4 20 K3 21 K2? 22 K1 23 K0?  (keyboard return, via Z103/Z104 and R127/R128 pull-ups)
+POKEY 15 P1 14 P0? 13 P3? 12 P2? 11? 10 P5 9 P4 8 P7 P6 -> paddle pots (joystick jacks)
+# PIA: Vcc 20, Vss 1, D0 33 ... D7 26 (D0=33 D1=32 D2=31 D3=30 D4=29 D5=28 D6=27 D7=26), RS0 35 RS1 36, CS1 24 /CS2 23 CS0 22
+# PA0..PA7 = 2..9? (2,3,4,5,6,7,8,9,10 as drawn: PA0 2 PA1 3 PA2 4 PA3 5 PA4 6 PA5 7 PA6 8 PA7 9), PB0 10 .. PB7 17 -> joystick ports 1-4 / 3-4
+# NOTE: items marked '?' still need the next crop to confirm the pin number against the standard pinout.
+# Speaker (Fig 2-6A): POKEY AUD (pin 37) -> R102 1K -> base of Q101; C104 .001 base to ground; Q101 emitter to ground, collector to the
+# speaker (J105 pin 2) with CR101 across the speaker; speaker other side (J105 pin 1) to +5A through R101 100 ohm.
+# Keyboard bus: C105-C113 (9x .001) from each J106 keyboard line to ground; R110-R126 (17x 100) in series with the keyboard lines.
+# Keyboard return: POKEY /KR1 (pin 25) and /KR2 (pin 16) each pulled to +5A by R128 47K / R127 (the "2X 47K" pair); /KR2 also goes out the keyboard connector J106 (via a 100 ohm).
+# Z103 KEY OUT and Z104 KEY IN are CD4051 analog muxes, Vcc pin 16 on +5A; their X0-X7 inputs (pins 13,14,15,12,1,5,2,4) go through the R110-R126 100 ohm resistors to J106.
+# ---- Keyboard connector J106 and muxes (600 dpi, read clean) ----
+# J106 pin 22 = NC. Pin 9 = common line (down to POKEY /KR2 via 100 ohm). Nine C105-C113 .001 caps, one per line pin (9,6,1,4,7,2,8,3,5), to ground.
+# Z103 KEY OUT (CD4051): X0 13 <- R110 <- J106.6 ; X1 14 <- J106.1 ; X2 15 <- J106.4 ; X3 12 <- J106.7 ; X4 1 <- J106.2 ; X5 5 <- J106.8 ; X6 2 <- J106.3 ; X7 4 <- J106.5 (resistors R110-R118)
+#   Z103 pins 6 (INH), 7 (VEE), 8 (VSS), 3 (COM) all ground; Vcc 16 on +5A; select C=9 B=10 A=11 from the PIA/POKEY side.
+# Z104 KEY IN: A0 13 <- J106.16 ; A1 14 <- J106.15? ; A2 15 <- J106.12 ; A3 12 <- J106.17? ; A4 1 <- J106.10? ; A5 5 <- J106.14? ; A6 2 <- J106.11 ; A7 4 <- J106.13 (R119-R126)
+#   (digits 15 / 17 / 10 / 14 are blurred on the print: confirm by beep J106 pin to R119..R126 far end)
+#   Z104 pins 7 (VEE) 8 (VSS) ground; pin 6 (INH) tied to ground with them; COM 3 goes to POKEY /KR1; selects 9,10,11 = C,B,A ; X = pin 3 label.
+# C114-C121 (8x .001): each Z104 input line to ground.
+# ---- Controller jacks J110-J113 (jacks 1-4), read at 600 dpi: pin 7 Vcc(+5), 5 B POT, 9 A POT, 1 FWD(up), 2 BACK(down), 3 LEFT, 4 RIGHT, 6 TRIGGER, 8 Vss. Same on all four.
+# Expected routing (standard Atari 800; the exact wire order through the 1.8K/220 ladders still to be traced):
+#   jack1 dirs -> PIA PA0-PA3, jack2 dirs -> PA4-PA7, jack3 dirs -> PB0-PB3, jack4 dirs -> PB4-PB7 (via R138-R153 220 ohm / R130-R137 1.8K)
+#   triggers 1-4 -> CTIA T0-T3 through R175-R178 (220) to J101 pins 9, K, 10, L (via diode/Q104 light-pen network)
+#   pots: jack1 P0/P1, jack2 P2/P3, jack3 P4/P5, jack4 P6/P7 -> POKEY

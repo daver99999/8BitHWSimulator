@@ -1,0 +1,10 @@
+# 800 personality board (Fig 2-10, 300 dpi, clean). Edge connector pin per signal:
+# VCC 21,Y | S7 H | D0 1 | D1 A | D2 2 | D3 3 | D4 B | D5 C | D6 D | D7 4 | A0 5 | A1 7 | A2 E | A3 10 | A4 K | A5 9 | A6 J | A7 6 | A8 8 | A9 F | A10 11 | A11 L | A12 12 | S6 M | NC 20
+# D6XX W | D5XX X | PIA_CS 18 | POKEY_CS 19 | GTIA_CS 13 | EXSEL 14 | RW_EARLY U | /GBA 15 | GBA T | RAM_S5 N | RAM_S4 P | A15 R | PHI1 17 | RASTIME V | /WRITIME 16 | PHI2B 5(?) | VSS 22,Z
+#   (PHI2B shares pin 5 with A0 on the print: the label list has "Ø2B" at pin 5? -> check: A0 is pin 5 in the D-column, so Ø2B is another pin; confirm by beep)
+# Z401 74LS138 (16 pin, Vcc 16 w/ C404 .01, Vss 8): A 1, B 2, C 3 <- A10?.. G2A 4, G1 6, G2B 5; outputs Y6 9, Y5 10, Y3 12, Y2 13, Y0 15, Y4 11 -> D6XX, D5XX, PIA_CS, POKEY_CS, GTIA_CS.
+#   (Y0 15 = GTIA select, Y2 13 = POKEY, Y3 12 = PIA, Y5 10 = D5XX, Y6 9 = D6XX, Y4 11 -> Z403A)
+# Z402 (quad NAND 7400, 14 pin) A (3,1,2), B (8,9,10), C (6,4,5), D not used (11 NC, 12 13 to +5, C411 .01); Z403 (quad NAND) A (3,2,1), B (8,9,10), C (11,12,13), D (6,5,4); R401 4700, R402 2200 pull-ups to +5, R404 1 ohm, R403 470.
+# ROMs (24-pin mask ROMs, 4K): A401 "F", A402 "D (9-F)", A403 "E" (system numbers: E = $D800, F = $E000..., D = $C000 per memory map; modelled from the 10K OS image: D 2K, E 4K, F 4K):
+#   pins: CS 21 (CS 20 second select, active level), A11 18, A10 19, A9 22, A8 23, A7 1, A6 2, A5 3, A4 4, A3 5, A2 6, A1 7, A0 8, D7 17, D6 16, D5 15, D4 14, D3 13, D2 11, D1 10, D0 9; Vcc 24 (.1 each), Vss 12.
+# Output filter at lower right: L401-L403 22uH with C407 47pF, C408 68pF, C409 47pF, C410 68pF (a video filter, not used by the logic).

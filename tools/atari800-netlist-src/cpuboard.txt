@@ -1,0 +1,15 @@
+# CPU board (Fig 2-12, 300 dpi, read clean). Edge connector pins (signal pin) - these are the same pins J101 uses on the motherboard:
+# PHI1 22 | A15 24 | A14 CC | A13 20 | A12 18 | A11 U | A10 W | A9 P | A8 15 | A7 13 | A6 19 | A5 16 | A4 T | A3 V | A2 N | A1 14 | A0 12 | PHI2 21 | R/W Y
+# COL 4 | LUM0 1 | LUM1 3 | LUM2 2 | LUM3 M | OSC C | CSYNC B | S3 S | S2 R | S1 11 | S0 17 | T3 L | T2 10 | T1 K | T0 9 | CSI 27
+# RNMI Z | LP A | REF D | RESET_A X | NMI 23 | RESET_M 25 | D7 8 | D6 J | D5 H | D4 F | D3 7 | D2 6?? E | D1 E? | D0 5 | SYNC BB | IRQ AA | +5 26,DD | +12 EE | GND 28,FF
+#   (D2/D1 pins: print shows D3 7, D2 6, D1 E, D0 5 -> D2=6, D1=E)
+# A301 CTIA/GTIA (40 pin): VCC 27, VSS 3, R/W 33, HALT 26, PHI2 30, A4 38, A3 39, A2 40, A1 1, A0 2 (address in), AN0 18, AN1 19, AN2 20, F0PHI 29,
+#   D7 34, D6 35, D5 36, D4 37, D3 4, D2 5, D1 6, D0 7, COL 21, LUM0 22, LUM1 23, LUM2 24, LUM3 31, OSC 28, CSYNC 25, S3 15 S2 14 S1 13 S0 12, T3 11 T2 10 T1 9 T0 8, CSI 32, DEL 17
+#   R302-R306 1K pull-ups from +5 to COL/LUM0-3; R308 330K + R309 500K (color adj.) + C305 .1 on DEL; C302 .1 on VCC.
+# A302 ANTIC (40 pin): VCC 21, VSS 1, R/W 14, HALT 9, PHI2 29, A0 13 A1 12 A2 11 A3 10 A4 28 A5 27 A6 26 A7 25, A8 24 A9 23 A10 16 A11 22 A12 17 A13 18 A14 19 A15 20,
+#   AN0 2, AN1 3, AN2 5, F0PHI 35, D7 37 D6 38 D5 39 D4 40 D3 33 D2 32 D1 31 D0 30, RNMI 6, LP 4, REF 8, RESET 36, NMI 7, RDY 15, PHI0 34; C303 .01 on VCC.
+# A303 6502 CPU: VCC 8, VSS 1,21 (and SO 38 to ground), R/W 34, A0 9 A1 10 A2 11 A3 12 A4 13 A5 14 A6 15 A7 16, A8 17 A9 18 A10 19 A11 20 A12 22 A13 23 A14 24 A15 25,
+#   D0 33 D1 32 D2 31 D3 30 D4 29 D5 28 D6 27 D7 26, IRQ 4 (R307 4.7K pull-up to +5), SYNC 7, NMI 6, RDY 5?/7, RESET 40, PHI0 37; C304 .1 on VCC.
+# Z303 (A0-A7) and Z304 (A8-A15): 20-pin octal bus buffers: inputs from CPU, outputs to the bus lines; Vcc 20 from +5 through L301/L302; EN 19 and 1 tied; VSS 10 to ground through R312/R313 (1 ohm).
+# Z302 (dual D flip-flop, 14 pin, Vcc 14): clock generator: pins CLR1 1, PRST1 4, CLK2 11, D2 12 to +5; Q2 9, D1 2, /Q1 6, CLK1 3 with /Q2 8 tied back; CLR2 13, PRST2 10.
+# Z301 (quad NOR 7402, 14 pin): A (13,12,11), B (10,9,8), C (1 with 2,3), D (4,5,6); gate C feeds the RDY/HALT path; R310 4.7K and R311 4.7K pull-ups on RDY / RESET lines.

@@ -1,0 +1,47 @@
+# Atari 800 motherboard (CO14175) - read from the 600 dpi scan of Field Service Manual Section 2 (May 1983), Fig 2-6A, page 1 of 2.
+# CPU connector J101 (pin per signal) and the TEST POINTS edge strip (its own connector: pin per signal). Pins are alphanumeric.
+# signal  J101-pin  TP-pin
+S3      5   -
+EXSEL   -   E
+A15     24  CC
+A14     CC  DD
+A13     20  Y
+SYNC    BB  28     # J101 BB not connected (NC); TP 28
+NMI     23  BB     # J101 23 NC; TP BB
+REF     D   4
+A12     18  W
+A11     U   V
+A10     W   21
+A9      P   13
+A8      15  T
+A7      13  R
+A6      19  X
+A5      16  17
+A4      T   U
+A3      V   18
+A2      N   12
+A1      14  S
+A0      12  P
+EXSEL_L -   1      # active-low EXSEL line, TP pin 1
+PHI1    22  AA
+VCC     DD,26   27
+VBB     -   EE
+D2      6   H
+D1      E   5
+D5      H   7
+D4      F   6
+VDD     EE  25
+VSS     FF,28   FF,28
+D3      7   J
+D7      8   K
+D6      J   8
+D0      5   F
+RW_EARLY Y  Z
+PHI2    21  23
+CTIA_CS 27  -
+IRQ     AA  24
+T0      9   -
+T1      K   -
+T2      10  -
+T3      L   -
+LP      A   -

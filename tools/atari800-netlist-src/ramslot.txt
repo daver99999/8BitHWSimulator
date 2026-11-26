@@ -1,0 +1,35 @@
+# RAM slots J102-J104 (same pin per signal on all three) - read from 600 dpi Fig 2-6A, cross-checked against the 8K RAM board edge (Fig 2-14), which agrees on every pin.
+# signal pin
+A0 5
+A1 7
+A2 E
+A3 10
+A4 J
+A5 9
+A6 12
+A7 6
+A8 8
+A9 F
+A10 11
+A11 K
+A12 L
+A13 H
+D0 1
+D1 A
+D2 2
+D3 3
+D4 B
+D5 C
+D6 D
+D7 4
+PHI2 14
+RASTIME 15
+RW_EARLY 16
+RW_LATE 13
+REF 17
+SEL 18
+VCC 19,W
+VBB 20,X
+VDD 21,Y
+VSS 22,Z
+# select lines: slot1 18 (S0) and U (S1); slot2 U/S (S2,S3) - still to confirm, with Z101 Y0-Y3
