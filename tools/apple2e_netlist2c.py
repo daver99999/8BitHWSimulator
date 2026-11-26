@@ -10,7 +10,7 @@ Usage: tools/apple2e_netlist2c.py [outdir]  (default: src)
 import os, re, sys
 here = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, here)
-import apple2plus_netlist2c as base      # reader, pad naming and pad rows of the Apple II+ generator
+import board_layout_lib as base      # netlist reader, pad naming and pad rows
 
 def is_ic(typ):
     return (typ.startswith('74') or typ in ('6664', '2764', '2732', '2716', '6502A', 'NE558', 'LM741', 'MMU', 'IOU', 'PAL_HAL', '3600PRO'))

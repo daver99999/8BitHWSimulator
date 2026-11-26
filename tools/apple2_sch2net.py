@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""apple2_sch2net.py - trace the KiCad schematic sheets of the Apple II+ (baldengineer/bit-preserve, Apple/Apple II+/AppleII+)
-into a netlist: tools/apple2plus-netlist-src/apple2plus.net ('chip REF TYPE' and 'net NAME: REF.PIN ...' lines).
+"""apple2_sch2net.py - trace the KiCad schematic sheets of an Apple II board (baldengineer/bit-preserve; the Apple IIe, 050-0051-D, is the
+one the simulator uses, the Apple II+ is also understood) into a netlist: tools/apple2e-netlist-src/apple2e.net by default ('chip REF TYPE'
+and 'net NAME: REF.PIN ...' lines).
 Usage: tools/apple2_sch2net.py <dir with the .kicad_sch files> [out.net]
 Connectivity as KiCad has it: wire ends, pins, labels, junctions, sheet pins that touch a wire (end or middle) are one net;
 local and hierarchical labels are per sheet, power symbols are global, a hierarchical label joins the pin of the same name on the
@@ -145,7 +146,7 @@ def main():
     if d.endswith('.kicad_sch'):        # any KiCad 6+ project: the top sheet's file
         d, topfile = os.path.split(d)
     fixups = FIXUPS if topfile == 'AppleII+.kicad_sch' else FIXUPS_IIE if topfile.startswith('Apple IIe') else []
-    out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(os.path.abspath(__file__)), 'apple2plus-netlist-src', 'apple2plus.net')
+    out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(os.path.abspath(__file__)), 'apple2e-netlist-src', 'apple2e.net')
     top = load_sheet(os.path.join(d, topfile))
     sheets = {}
     for s in top.sheets:

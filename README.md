@@ -105,6 +105,13 @@ approach, with his code as a starting point, to its logical extreme:
 pin-level models of every other part of the C64, the RAMs, the ROMs, the
 logic chips, the PLA, and so forth.
 
+The Apple IIe netlist is traced from the KiCad schematic of the Apple IIe
+(NTSC) drawing 050-0051-D, captured by rjhelms for the Bit Preserve project
+(baldengineer/bit-preserve, CC BY 4.0). The models of the IIe's MMU and IOU
+are generated from frozen-signal's Apple_IIe_MMU_IOU VHDL (CC0), and the
+timing HAL follows the original ABEL equations from the same author's
+Apple_IIe_TIMING_HAL repository.
+
 The chip cores are floooh's chips, taken from c64-llm (zlib license). The
 boards come from bwack's C64-250407-Replica-KiCad and
 C64C-250469-KiCAD-Replica (both CERN OHL). The PLA equations come from
