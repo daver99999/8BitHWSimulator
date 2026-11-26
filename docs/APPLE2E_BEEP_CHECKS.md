@@ -21,5 +21,5 @@ Board unpowered, meter on beep. 76 checks, 26 November 2026. The netlist is the 
 ## Not checked
 The pin-to-net mapping of the MMU (UE4), IOU (UE5) and timing HAL (UD1) beyond the pins above, the slots, the keyboard connector and encoder, the game connector and the power connectors.
 
-## Open
-- X4 and X5: UB8 pin 5 does not beep to either jumper, and pin 6 beeps to X4. Whether X5 is bridged on this board was not looked at directly.
+## Closed
+- X4 and X5: X5 is bridged on this board (David), as in the netlist, so UB8 pin 6 joins the DMA net through it; X4 is open. UB8 pin 5 does not beep to either jumper because it is on PH1, which fits the corrected pin order.
