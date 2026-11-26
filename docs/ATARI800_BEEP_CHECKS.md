@@ -29,8 +29,8 @@ J102, J103, J104 pin 18 and pin U each get one of the eight-kilobyte block selec
 ## 5. Motherboard: Z102 gates and the cartridge RD4 / RD5 (open)
 Beep Z102 pins 1, 2, 4, 5 (and outputs 3 and 6) to Z101 pin 5 (S4), Z101 pin 6 (S5), J109 pin A (RD4), J109 pin 14 (RD5), J104 pin 18, J104 pin U.
 
-## 6. Motherboard: keyboard connector J106 pins 15, 17, 10, 14 (open)
-Beep J106 pins 16, 15, 12, 17, 10, 14, 11, 13 to the far end of R119 through R126 in turn; the netlist expects R119..R126 in that order.
+## 6. Motherboard: keyboard connector J106 pins 15 and 10 (open, narrowed)
+Reread at 800 dpi; the scan is blurred at two of the eight pins on the Z104 side. The other six (16, 12, 17, 14, 11, 13) read clean, and 15 and 10 are the two left over, so only their order is open. The netlist has 15 at the second position and 10 at the fifth (R120 and R123). Beep J106 pin 15 to the far end of R120; if it beeps to R123 instead, the two are swapped.
 
 ## 7. Motherboard: Z101 74LS42 inputs, PIA chip selects, power-on reset, J115 power pins, J101 pin 5 / S3 (open)
 Details are listed in the generator output (`python3 tools/atari800_netlist.py`).
