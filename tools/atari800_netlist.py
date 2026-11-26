@@ -222,8 +222,8 @@ def motherboard():
             net(sig, '%s.%s' % (ref, p))
         net(V5, ref + '.13'); net(GND, ref + '.B')
         net('D5XX', ref + '.15')
-        net('R/W', ref + '.R' if ref == 'J109' else ref + '.1')
-        net('PHI2', ref + '.S' if ref == 'J109' else ref + '.A')
+        net('R/W', ref + '.R')
+        net('PHI2', ref + '.S')
     net('S4', 'J109.1', 'J108.12'); net('RD4', 'J109.A', 'J108.14')
     net('S5', 'J109.12'); net('RD5', 'J109.14')
     # the cartridge itself: one ROM part wired to the left slot (empty until a cartridge is loaded)
@@ -231,7 +231,7 @@ def motherboard():
     for i in range(13): net('A%d' % i, 'CARTL.%d' % (i + 1))
     for i in range(8): net('D%d' % i, 'CARTL.%d' % (14 + i))
     net('S5', 'CARTL.22'); net('RD5', 'CARTL.23')
-    unsure('Cartridge slots: pin assignments from the 8-bit FAQ pinout; the right slot pins 1 and A (R/W, phase 2) are not read on the schematic.')
+    unsure('Cartridge slots: reread at 330 dpi. Both slots print R as R/WE and S as RAS (not phase 2); J108 was wired with R/W on pin 1 and phase 2 on pin A (which is RD4), now R and S like J109. Pin S is netted to PHI2 (the FAQ pinout calls it phase 2) but the print labels it RAS, so where it leads is not read. J108 has S4 on 12 and RD4 on 14 only, no S5 / RD5. Pin 15 carries the D5XX select on both. A0-A12 and D0-D7 pin letters read from the print agree with the netlist.')
 
     # address decoder Z101 (74LS42): A13/A14/A15 select the eight 8K blocks; Y0-Y3 RAM selects, Y4/Y5/Y6/Y7 = S4..S7
     part('Z101', '74LS42', 16, 'address decoder'); part('Z102', '74LS32', 14, 'OR gates')

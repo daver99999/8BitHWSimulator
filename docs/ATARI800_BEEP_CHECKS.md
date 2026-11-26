@@ -53,5 +53,10 @@ Read at 330 dpi. Z101 Y0 and Y1 go to J104 pins 18 and U (slot 1, so the first 1
 ## 13. Motherboard: Z101 pin 12, R103 and the speaker resistor R102 (open)
 Read at 330 dpi, changed in the netlist. Z101 pin 12 (D) is on the EXSEL line (J101 pin E), not ground, and R103 680 hangs from that line to ground (it was on S6). The speaker resistor R102 1K is fed from J101's S3 line (the GTIA speaker bit), not from the POKEY audio line. Beep: Z101 pin 12 to J101 pin E and to R103's upper end; R102's J101 end to J101 pin S (S3) and to GTIA pin 15; check that R102 does not beep to POKEY pin 37.
 
+## 14. Cartridge slots J108 / J109: pin S and pin R
+The print labels pin S "RAS" and pin R "R/WE" on both slots. The netlist has R on R/W (same as the CPU R/W) and S on phase 2 (the FAQ pinout), and J108 now matches J109 (it was wired to pins 1 and A, which was wrong: A is RD4).
+- Beep J109 pin S to J108 pin S (they should be one wire), then J109 pin S to RAM slot J104 pin 14 (phase 2) and to J104 pin 15 (RAS time). Whichever beeps is what pin S really is.
+- Beep J109 pin R to J108 pin R, then to J104 pin 16 (R/W).
+
 ## Not netted
 The oscillator (Q102, Q103), the RF modulator stage (Q106, L101, L102), the sound amplifier (A104C/D, R163-R167, R191-R195), the supply filters at J115 (L107-L112, C190-C193, C199, C200) and the power supply board.
