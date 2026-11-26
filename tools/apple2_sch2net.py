@@ -134,7 +134,9 @@ FIXUPS = [('RA2.2', '~{INH}'), ('B5.1', 'SOFT5'), ('B8.1', 'SOFT5')]
 FIXUPS_IIE = [('UF4.22', '~{RA9}'), ('UF4.20', '~{WNDW}'), ('UF8.2', 'MD2'), ('UF8.14', 'MD2'),
               # UC1 (74LS109), beeped on the real board: the second flip-flop's J (pin 14) is on 7M (pin 6) and its /K (pin 13) on /Q (pin 7);
               # the KiCad capture has them the other way round
-              ('UC1.14', '7M'), ('UC1.13', 'N$87')]
+              ('UC1.14', '7M'), ('UC1.13', 'N$87'),
+              # UB8 (7402), beeped on the real board: pin 5 is on PH1 and pin 6 on the X4/X5 jumpers; the capture has them the other way round
+              ('UB8.5', 'PH1'), ('UB8.6', 'N$20')]
 
 
 def main():
