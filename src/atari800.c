@@ -92,6 +92,8 @@ static void at_delay(board_t *b, const char *ref, const char *from) {
     element_set_type(s, p, 0, EL_DELAY);
 }
 
+static void at_keys_register(atari800_t *z);
+
 static void at_create(board_t *b) {
     atari800_t *z = AT(b);
     sim_t *s = &b->sim;
@@ -126,6 +128,7 @@ static void at_create(board_t *b) {
     }
     b->pin_reset = at_pin_of(b, "A302", 6);              /* the RESET key pulls ANTIC's /RNMI to ground */
     b->pin_reset_gnd = at_pin_of(b, "A302", 1);
+    at_keys_register(z);
 }
 
 static void at_power_on(board_t *b) {
@@ -133,6 +136,7 @@ static void at_power_on(board_t *b) {
     sim_t *s = &b->sim;
     s->clock_level = 0;
     z->keyq_n = 0;
+    at_keys_register(z);
     memset(b->screen, 0, (size_t)AT_SCREEN_W * AT_SCREEN_H * sizeof(uint32_t));
     if (z->p_gtia >= 0) atari_gtia_set_screen(&s->parts[z->p_gtia], b->screen);
     sim_drive(s, z->pin_12v, DRIVE(S_SUPPLY, 1));

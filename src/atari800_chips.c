@@ -656,8 +656,7 @@ static uint16_t antic_addr(antic_t *a, int kind) {
         int n = kind - PL_P0;
         return (uint16_t)(base + (single ? 0x400 + 0x100 * n : 0x200 + 0x80 * n) + off);
     }
-    case PL_DL: case PL_LMSL: return a->dlptr;
-    case PL_LMSH: return (uint16_t)((a->dlptr & 0xFC00) | ((a->dlptr + 1) & 0x3FF));
+    case PL_DL: case PL_LMSL: case PL_LMSH: return a->dlptr;     /* the pointer is advanced as each byte arrives */
     case PL_S: return (uint16_t)((a->memscan & 0xF000) | ((a->memscan + a->sidx) & 0xFFF));
     case PL_C: {
         int m = a->mode, sl = a->tot_lines - a->lines_left, row = (m == 5 || m == 7) ? sl >> 1 : sl;
@@ -799,7 +798,7 @@ static void antic_commit(sim_t *s, part_t *p) {
         a->own_kind = a->plan[a->cyc];
         a->own = a->own_kind != PL_NONE;
         a->addr = a->own ? antic_addr(a, a->own_kind) : 0;
-        a->refn = a->refcyc[a->cyc];
+        a->refn = a->refcyc[a->cyc] && !a->own;     /* a DMA fetch in the slot does the refresh with its own row */
         a->ph = 0;
         dirty = true;
     }
