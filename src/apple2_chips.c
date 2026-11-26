@@ -265,7 +265,7 @@ static void a2chr_eval(sim_t *s, part_t *p) {
     part_drive_bus_cached(s, p, a2rom_d, 8, st->data ? st->data[a] : 0xFF, sel, &st->out_cache);
 }
 const part_type_t PT_A2CHR = { "2716 CHAR",
-    "A7:M A6:M A5:M A4:M A3:M A2:M A1:M A0:M Q0:O Q1:O Q2:O VDD:P Q3:O Q4:O Q5:O Q6:O Q7:O /CE:M A10:M /OE:M NC:O A9:M A8:M VCC:P",
+    "A7:M A6:M A5:M A4:M A3:M A2:M A1:M A0:M Q0:O Q1:O Q2:O VDD:P Q3:O Q4:O Q5:O Q6:O Q7:O /CE:M A10:M /OE:M VPP:m A9:M A8:M VCC:P",
     a2chr_eval, 0, 0, sizeof(rom_state_t), TECH_NMOS };
 
 /* ------------------------------------------------------------------------ */
