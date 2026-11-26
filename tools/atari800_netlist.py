@@ -324,8 +324,8 @@ def motherboard():
     unsure('POKEY pot input P5 (jack 3 pin 5) has no pin on the print: left unconnected.')
     unsure('Controller ports: the pull-up / ladder resistors R130-R153 and the joystick-to-PIA wire order are the standard Atari 800 arrangement, not traced.')
     # page 2: reset, serial bus J115, console switch header J114
-    part('A103', 'CD4050', 16, 'CMOS buffer reset/luma'); part('A104', 'CD4050', 16, 'CMOS buffer chroma')
-    net(V5, 'A103.1', 'A104.1'); net(GND, 'A103.8', 'A104.8')
+    part('A103', 'CD4050', 16, 'CMOS buffer reset/luma'); part('A104', 'TRARRAY', 14, 'transistor array (chroma amplifier)')
+    net(V5, 'A103.1'); net(GND, 'A103.8')
     part('R154', 'R', 2, '1M'); part('R155', 'R', 2, '100K'); part('R156', 'R', 2, '470K'); part('C198', 'C', 2, '.1uF'); part('CR102', 'D', 2, 'diode')
     net('RESETM', 'A103.2', 'R154.1', 'R155.1'); net('RCNODE', 'R154.2')
     unsure('Power-on reset network (A103A, R154-R156, C198, CR102): topology as read, not beep checked; reset must reach J101 pin 25 and the PIA.')
@@ -345,15 +345,50 @@ def motherboard():
     for sig in ('OCLK', 'BCLK', 'SID', 'SOD'):
         net('SIO_%s_I' % sig, pin('A101', POKEY, sig))
     net('SIO_CB1_I', 'A102.18'); net('SIO_CA1_I', 'A102.40'); net('SIO_CB2_I', 'A102.19')
-    net('MOTOR', 'A102.39', 'J115.4')
-    net('AUD', 'J115.2')
+    # motor control: CA2 -> R159 -> PNP Q107 (emitter +5A) -> L106 -> J115 pin 4, with C189 on the connector side
+    part('R159', 'R', 2, '2.7K'); part('Q107', 'PNP', 3, 'PNP'); part('L106', 'L', 2, 'choke'); part('C189', 'C', 2, '.1uF')
+    net('MOTOR', 'A102.39', 'R159.1'); net('MOTORB', 'R159.2', 'Q107.B'); net(V5, 'Q107.E')
+    net('MOTORC', 'Q107.C', 'L106.1'); net('MOTORJ', 'L106.2', 'J115.4', 'C189.1'); net(GND, 'C189.2')
+    # serial bus: 4.7K pull-ups R129A-F on the chip side of R168-R174, R157 1K on AUD, C182-C188 .001 from each connector pin to ground
+    for ref, sig in (('R129A', 'BCLK'), ('R129B', 'SID'), ('R129C', 'SOD'), ('R129D', 'OCLK'), ('R129E', 'CA1'), ('R129F', 'CB2'), ('R158A', 'CB1')):
+        part(ref, 'R', 2, '4.7K'); net(V5, ref + '.1'); net('SIO_%s_I' % sig, ref + '.2')
+    part('R157', 'R', 2, '1K'); net(V5, 'R157.1'); net('AUD', 'R157.2')
+    for i, jp in enumerate((7, 8, 9, 10, 14, 12, 11)):
+        c = 'C%d' % (182 + i)
+        part(c, 'C', 2, '.001uF'); net('SIO_' + 'OCLK BCLK SID SOD CB1 CA1 CB2'.split()[(7, 8, 9, 10, 14, 12, 11).index(jp)], c + '.1'); net(GND, c + '.2')
+    unsure('SIO pull-ups: R129A-D go to BCLK, SID, SOD, OCLK in that order by the dots on the print, R129E-F to CA1 and CB2, R158A (value not printed, 4.7K assumed) to CB1; C182-C188 top to bottom on pins 7, 8, 9, 10, 14, 12, 11.')
     net(V5, 'J115.18'); net(V5, 'J115.1'); net(V12, 'J115.21'); net(VM5, 'J115.17'); net(GND, 'J115.19', 'J115.15', 'J115.16', 'J115.22')
-    unsure('J115 power pins (18 +5A, 1 +5B, 17 -5, 21 +12, grounds 15 16 19 22) and the serial-bus pin names; the motor transistor Q107 is not modelled yet (CA2 goes to J115 pin 4 directly).')
+    unsure('J115 power pins (18 +5A, 1 +5B, 17 -5, 21 +12, grounds 15 16 19 22) and the serial-bus pin names.')
     # video / luma mixer: CD4050 buffers (pins in/out as the CD4050 standard), sum node to J115
     for sig, ip, op in (('LUM3', 5, 4), ('LUM0', 9, 10), ('LUM1', 14, 15), ('LUM2', 11, 12), ('CSYNC', 7, 6)):
         net(sig, 'A103.%d' % ip)
     part('X101', 'XTAL', 2, '3.579575 MHz'); net('OSC', 'X101.1')
-    unsure('Video, chroma and oscillator networks (Q102-Q106, A104, L101-L105, R179-R205): not modelled in this pass, only the bus-facing parts.')
+    # video: the luminance mixer (A103B-F through R180-R183 and CR108 into the node at Q105's base), Q105 and the outputs to J115
+    part('R179', 'R', 2, '2200'); part('C162', 'C', 2, '.1uF'); part('C163', 'C', 2, '33pF'); part('CR108', 'D', 2, 'diode')
+    net(V5, 'R179.1', 'C162.1'); net(GND, 'C162.2'); net('LUMN', 'R179.2', 'C163.1', 'Q105.B', 'CR108.1'); net(GND, 'C163.2')
+    for ref, val, op in (('R180', '36K', 4), ('R181', '18K', 10), ('R182', '9.1K', 15), ('R183', '4700', 12)):
+        part(ref, 'R', 2, val); net('LUMOUT%d' % op, 'A103.%d' % op, ref + '.1'); net('LUMN', ref + '.2')
+    net('SYNCOUT', 'A103.6', 'CR108.2')
+    part('Q105', 'NPN', 3, 'NPN'); net(V5, 'Q105.C'); net('EMIT', 'Q105.E')
+    part('R189', 'R', 2, '75'); part('R205', 'R', 2, '3900'); part('R200', 'R', 2, '220'); part('R201', 'R', 2, '120')
+    part('R202', 'R', 2, '1K'); part('C164', 'C', 2, '100pF'); part('R203', 'R', 2, '270'); part('R204', 'R', 2, '75')
+    part('R206', 'R', 2, '18K'); part('C170', 'C', 2, '100pF')
+    part('L103', 'L', 2, 'choke'); part('L104', 'L', 2, 'choke'); part('L105', 'L', 2, 'choke')
+    part('C174', 'C', 2, '220pF'); part('C175', 'C', 2, '220pF'); part('C176', 'C', 2, '220pF')
+    net('EMIT', 'R189.1', 'R205.1', 'R200.1'); net('LUMJ', 'R189.2', 'C174.1', 'J115.5'); net(GND, 'C174.2')
+    net('LUMV', 'R200.2', 'R201.2', 'R202.1', 'L104.1'); net(GND, 'R201.1')
+    net('VIDJ', 'L104.2', 'C175.1', 'J115.6'); net(GND, 'C175.2')
+    net('CH64', 'R202.2', 'C164.1'); net('CHN3', 'C164.2', 'R203.1', 'A104.10')
+    net('CHR', 'R203.2', 'R204.1', 'L105.1'); net(GND, 'R204.2'); net('CHRJ', 'L105.2', 'C176.1', 'J115.3'); net(GND, 'C176.2')
+    net('MODN', 'R205.2', 'R206.1', 'L103.1'); net('MODJ', 'L103.2', 'J115.20')
+    # chroma amplifier: COL -> R196 -> C(10pF) -> A104A base; R197 to ground, R198 feedback and R199 to +5B at its collector, which drives A104B (emitter follower)
+    part('R196', 'R', 2, '3.3K'); part('C16X', 'C', 2, '10pF'); part('R197', 'R', 2, '4700'); part('R198', 'R', 2, '10K'); part('R199', 'R', 2, '1K')
+    net('COL', 'R196.1'); net('COLR', 'R196.2', 'C16X.1'); net('CBASE', 'C16X.2', 'R197.1', 'R198.1', 'A104.12'); net(GND, 'R197.2', 'A104.13')
+    net('CCOLL', 'A104.14', 'R198.2', 'R199.1', 'A104.9', 'C170.2'); net(V5, 'R199.2', 'A104.11')
+    net('MODC', 'R206.2', 'C170.1')
+    unsure('Video page read from the 600 dpi scan: A104 is a transistor array, not a CD4050 (A104A base 12, collector 14, emitter 13; A104B collector 11, emitter 10, base pin not printed, 9 assumed; C and D, the sound amplifier, not modelled); '
+           'CR108 polarity (anode on the luma node), which A103 buffer feeds which of R180-R183 (36K, 18K, 9.1K, 4700 in the order of the rows), the 10pF coupling capacitor has no reference number on the print (C16X here), '
+           'and everything on the RF modulator side (Q106, L101, L102, C169, C171-C173, R162, R188, R190) and the audio amplifier (A104C/D, R163-R167, R191-R195, C177-C181), the power filter chokes and capacitors at J115 (L107-L112, C190-C193, C199, C200) and the oscillator (Q102, Q103, R104-R107, C103) are not netted. The simulator draws the picture from the GTIA model, not from these parts.')
 
 
 ROMPIN_A = {'A0': 8, 'A1': 7, 'A2': 6, 'A3': 5, 'A4': 4, 'A5': 3, 'A6': 2, 'A7': 1, 'A8': 23, 'A9': 22, 'A10': 19, 'A11': 18}

@@ -2,7 +2,6 @@
     { "A101", &PT_ATARI_POKEY, "POKEY", ROLE_CHIP, NULL, "POKEY (C012294): sound, keyboard scan, pots, timers, serial bus" },
     { "A102", &PT_PET6520, "PIA", ROLE_CHIP, NULL, "6520 PIA: the joystick directions of the four controller ports, serial bus handshake lines" },
     { "A103", &PT_CD4050, "CD4050", ROLE_GLUE, NULL, "CD4050 buffer: power-on reset and the luminance mixer" },
-    { "A104", &PT_CD4050, "CD4050", ROLE_GLUE, NULL, "CD4050 buffer: chroma" },
     { "A301", &PT_ATARI_GTIA, "GTIA", ROLE_CHIP, NULL, "GTIA (CTIA successor, C014805): colour and luminance, players, missiles, collisions, console switches and triggers" },
     { "A302", &PT_ATARI_ANTIC, "ANTIC", ROLE_CHIP, NULL, "ANTIC (C012296): display list, playfield and player/missile DMA, refresh, vertical blank and display list NMIs" },
     { "A303", &PT_PET6502, "CPU", ROLE_CHIP, NULL, "6502 CPU, 1.79 MHz: its phase-0 clock is gated by Z301 and stopped while ANTIC halts it" },

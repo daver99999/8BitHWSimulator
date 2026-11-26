@@ -12,7 +12,7 @@ sys.path.insert(0, here)
 import board_layout_lib as base
 
 IC_TYPES = {'GTIA', 'ANTIC', '6502', 'POKEY', 'PIA6520', 'MASKROM', 'ADDRBUF', '74LS138', '7400', '7402', '74LS03', '74LS10', '74LS32',
-            '74LS42', '74LS74', '7474', '74LS158', '74LS244', 'CD4051', 'CD4050', '4116', 'CARTROM'}
+            '74LS42', '74LS74', '7474', '74LS158', '74LS244', 'CD4051', 'CD4050', '4116', 'CARTROM', 'TRARRAY'}
 CONN_TYPES = {'EDGE56', 'EDGE44', 'CART30', 'CONN22', 'DB9', 'HDR2', 'HDR4'}
 
 def is_ic(typ): return typ in IC_TYPES
@@ -23,7 +23,7 @@ def footprint(ref, typ, n):
     if typ == 'D': return 'D_DO-35'
     if typ == 'L': return 'L_Axial'
     if typ == 'XTAL': return 'XTAL'
-    if typ in ('NPN',): return 'TO-92'
+    if typ in ('NPN', 'PNP'): return 'TO-92'
     if typ in CONN_TYPES: return 'CONN'
     if is_ic(typ): return 'DIP-%d' % n
     return 'CONN'

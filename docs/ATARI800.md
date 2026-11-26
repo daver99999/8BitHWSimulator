@@ -15,7 +15,7 @@ Four simulation steps per CPU cycle (1.79 MHz). The OSC divides to F0, Z302 make
 The rev B OS reaches the Memo Pad screen; typing works through the keyboard matrix. Loading the 8K BASIC ROM plugs it into J109 (one ROM part, `CARTL`, wired to the slot; it drives RD5 and takes the RAM's $A000 select away) and the machine reaches `READY`.
 
 ## Not simulated
-Video, chroma and audio output networks (the picture is drawn by the GTIA model straight to the frame buffer), serial bus, controller ports, DRAM decay and refresh. ANTIC's dummy cycle for a display list instruction without LMS is a known deviation from real timing.
+The luma and chroma output network, Q107 and the serial bus pull-ups are in the netlist for continuity checks but have no behaviour. Video, chroma and audio output networks (the picture is drawn by the GTIA model straight to the frame buffer), serial bus, controller ports, DRAM decay and refresh. ANTIC's dummy cycle for a display list instruction without LMS is a known deviation from real timing.
 
 ## Uncertain wiring
 `tools/atari800_netlist.py` lists 23 items where the print was not legible (run it to see them). Notable: the F0 line into Z302 pin 13, R/W LATE as R/W OR WRITIME (Z102C/D), the RAM select pins per slot. `ATARI800_BEEP_CHECKS.md` has the continuity checks that settle them.
