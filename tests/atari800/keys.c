@@ -7,6 +7,7 @@
 int main(int argc, char **argv) {
     board_t *b = board_create(&machine_atari800);
     board_power_on(b);
+    if (getenv("OPEN")) { char r[32]; int pin; if (sscanf(getenv("OPEN"), "%31s %d", r, &pin) == 2) board_set_pin_fault(b, part_pin(&b->sim.parts[sim_find_part(&b->sim, r)], pin), PF_OPEN); }   /* OPEN="A302 8": lift one leg */
     if (getenv("CART")) { char m[200]; b->m->load(b, getenv("CART"), true, m, sizeof m); puts(m); }
     b->m->run(b, 120 * AT_CYCLES_PER_FRAME);
     for (const char *p = argv[1]; *p; p++) {

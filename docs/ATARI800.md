@@ -22,3 +22,9 @@ The luma and chroma output network, Q107 and the serial bus pull-ups are in the 
 
 ## Headless tests
 `tests/atari800/`: `boot.c` (run frames, write a PPM), `keys.c` (type text; `CART=file` plugs a cartridge), `trace.c`, `pins.c`, `who.c`, `dma.c`, `ram.c`, `scan.c`, `fault.c` (open one pin: `/tmp/atari_fault REF PIN`).
+
+## Fault testing from the test tools
+
+Lift a pin with `board_set_pin_fault(b, pin, PF_OPEN)`, not by writing `pins[].fault` directly: only the first call rebuilds the nets. `tests/atari800/fault.c` (`/tmp/atari_fault REF PIN [frames]`) and `keys.c` (`OPEN="A302 8" CART=... /tmp/atari_keys "TEXT" out.ppm`) do it that way.
+
+Example, DRAM refresh: with ANTIC's /REF (A302 pin 8) lifted, the RAM boards other than the one the CPU happens to be addressing get no refresh. In BASIC, `POKE 20480,123` then `PRINT PEEK(20480)` gives 123 on a good board and 0 with the leg lifted, because the row at $5000 is not refreshed for more than 16 ms. Lifting Z501 pin 2 (the REF input of the RAS gate) on one RAM board does the same for that board only. Lifting Z501 pin 3 only affects the read gate.

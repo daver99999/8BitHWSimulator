@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
     sim_t *s = &b->sim;
     int pi = sim_find_part(s, argv[1]);
     if (pi < 0) { printf("no part %s\n", argv[1]); return 1; }
-    s->pins[part_pin(&s->parts[pi], atoi(argv[2]))].fault = PF_OPEN;
+    board_set_pin_fault(b, part_pin(&s->parts[pi], atoi(argv[2])), PF_OPEN);
     board_rebuild(b);
     int frames = argc > 3 ? atoi(argv[3]) : 150;
     b->m->run(b, frames * AT_CYCLES_PER_FRAME);
