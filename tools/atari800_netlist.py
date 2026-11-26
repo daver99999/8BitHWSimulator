@@ -304,6 +304,7 @@ def motherboard():
         net('PORT%d_POTA' % j, ref + '.9'); net('PORT%d_POTB' % j, ref + '.5')
         if pa in POKEY: net('PORT%d_POTA' % j, pin('A101', POKEY, pa))
         if pb in POKEY: net('PORT%d_POTB' % j, pin('A101', POKEY, pb))
+    unsure('POKEY pot input P5 (jack 3 pin 5) has no pin on the print: left unconnected.')
     unsure('Controller ports: the pull-up / ladder resistors R130-R153 and the joystick-to-PIA wire order are the standard Atari 800 arrangement, not traced.')
     # page 2: reset, serial bus J115, console switch header J114
     part('A103', 'CD4050', 16, 'CMOS buffer reset/luma'); part('A104', 'CD4050', 16, 'CMOS buffer chroma')
@@ -326,9 +327,9 @@ def motherboard():
     for sig in ('OCLK', 'BCLK', 'SID', 'SOD'):
         net('SIO_%s_I' % sig, pin('A101', POKEY, sig))
     net('SIO_CB1_I', 'A102.18'); net('SIO_CA1_I', 'A102.40'); net('SIO_CB2_I', 'A102.19')
-    net('MOTOR', 'A102.39'); net('SIOMOTOR', 'J115.4')
+    net('MOTOR', 'A102.39', 'J115.4')
     net('AUD', 'J115.2')
-    net(V5, 'J115.18'); net('+5B', 'J115.1'); net(V12, 'J115.21'); net(VM5, 'J115.17'); net(GND, 'J115.19', 'J115.15', 'J115.16', 'J115.22')
+    net(V5, 'J115.18'); net(V5, 'J115.1'); net(V12, 'J115.21'); net(VM5, 'J115.17'); net(GND, 'J115.19', 'J115.15', 'J115.16', 'J115.22')
     unsure('J115 power pins (18 +5A, 1 +5B, 17 -5, 21 +12, grounds 15 16 19 22) and the serial-bus pin names; the motor transistor Q107 is not modelled yet (CA2 goes to J115 pin 4 directly).')
     # video / luma mixer: CD4050 buffers (pins in/out as the CD4050 standard), sum node to J115
     for sig, ip, op in (('LUM3', 5, 4), ('LUM0', 9, 10), ('LUM1', 14, 15), ('LUM2', 11, 12), ('CSYNC', 7, 6)):
@@ -392,11 +393,80 @@ def personality():
     unsure('Personality gates: Z402 is read as NAND gates A (in 1,2 out 3), B (in 9,10 out 8), C (in 4,5 out 6) and Z403 as open-collector NANDs with R402 pull-up; the node at Z402 pin 10 / 4 runs off to the right and is not read. Ø2B edge pin is printed as 5 (same as A0): placed on pin S.')
 
 
+# 16K RAM board (Fig 2-16). DRAM Z505..Z512 hold data bits D6 D7 D5 D3 D4 D2 D1 D0 (bit order read from the data lines).
+RAM_DRAM_BITS = [('Z505', 6), ('Z506', 7), ('Z507', 5), ('Z508', 3), ('Z509', 4), ('Z510', 2), ('Z511', 1), ('Z512', 0)]
+Z502_Y = {6: 18, 5: 16, 4: 14, 1: 12, 0: 9, 2: 7, 3: 5, 7: 3}      # data bit -> 74LS244 output pin (to the bus)
+Z502_A = {6: 2, 5: 4, 4: 6, 1: 8, 0: 11, 2: 13, 3: 15, 7: 17}       # data bit -> 74LS244 input pin (from the DRAM DOUT)
+# DRAM address pin driven by each multiplexer output: (mux, output pin) -> 4116 pin, with the (A, B) inputs
+RAM_MUX = [('Z503', 4, 5, (2, 'A13'), (3, 'A6')), ('Z503', 7, 10, (5, 'A12'), (6, 'A5')),
+           ('Z503', 9, 11, (11, 'A11'), (10, 'A4')), ('Z503', 12, 12, (14, 'A10'), (13, 'A3')),
+           ('Z504', 12, 6, (14, 'A9'), (13, 'A2')), ('Z504', 4, 7, (2, 'A8'), (3, 'A1')),
+           ('Z504', 7, 13, (5, 'A7'), (6, 'A0'))]
+RAM_MUX_B = {'Z503': [(3, 'A6'), (6, 'A5'), (10, 'A4'), (13, 'A3')], 'Z504': [(13, 'A2'), (3, 'A1'), (6, 'A0')]}
+
+
+def ram16(tag, selA, selB, slot):
+    """One 16K RAM board plugged into motherboard slot `slot`; selA / selB are the two 8K select nets. Refs get the suffix `tag`."""
+    def r(x): return x + tag
+    def n(x): return x + tag
+    edge = r('RB')
+    part(edge, 'EDGE44', 44, '16K RAM board edge (slot %s)' % slot)
+    for sig, p in RAMSLOT.items():
+        net(sig, '%s.%s' % (edge, p))
+    for sig, ps in RAMSLOT_PWR.items():
+        for p in ps:
+            net(sig, '%s.%s' % (edge, p))
+    net(selA, edge + '.18'); net(selB, edge + '.U')
+    for z, t, k in (('Z501', '74LS10', 14), ('Z502', '74LS244', 20), ('Z503', '74LS158', 16), ('Z504', '74LS158', 16)):
+        part(r(z), t, k, z)
+    net(V5, r('Z501') + '.14', r('Z503') + '.16', r('Z504') + '.16', r('Z502') + '.20')
+    net(GND, r('Z501') + '.7', r('Z503') + '.8', r('Z504') + '.8', r('Z502') + '.10', r('Z503') + '.15', r('Z504') + '.15', r('Z504') + '.10')
+    # Z501: A (5,3,4 -> 6) read gate, B (13,2,1 -> 12), C (10,11,9 -> 8) RAS
+    z1 = r('Z501')
+    net('RW_EARLY', z1 + '.5'); net('REF', z1 + '.3', z1 + '.2'); net(selB, z1 + '.13'); net(selA, z1 + '.1')
+    net(n('ENB'), z1 + '.12', z1 + '.4', z1 + '.10', z1 + '.11')
+    net('RASTIME', z1 + '.9')
+    net(n('RDEN'), z1 + '.6', r('Z502') + '.1', r('Z502') + '.19')
+    net(n('RAS'), z1 + '.8')
+    part(r('R501'), 'R', 2, '220'); part(r('L501'), 'L', 2, '4.7uH'); part(r('C518'), 'C', 2, '47pF')
+    net(n('RAS'), r('R501') + '.1'); net(n('RASD'), r('R501') + '.2', r('L501') + '.1')
+    net(n('SELRAS'), r('L501') + '.2', r('Z503') + '.1', r('Z504') + '.1', r('C518') + '.1'); net(GND, r('C518') + '.2')
+    # data buffer and DRAM
+    for ref, bit in RAM_DRAM_BITS:
+        d = r(ref)
+        part(d, '4116', 16, 'DRAM bit D%d' % bit)
+        net('D%d' % bit, d + '.2', '%s.%d' % (r('Z502'), Z502_Y[bit]))
+        net(n('DO%d' % bit), d + '.14', '%s.%d' % (r('Z502'), Z502_A[bit]))
+        net(n('RAS'), d + '.4'); net(n('CAS'), d + '.15'); net('RW_LATE', d + '.3')
+        net(GND, d + '.16'); net(V5, d + '.9'); net(V12, d + '.8'); net(VM5, d + '.1')
+    # address multiplexers (SEL low = A inputs, high = B inputs); DRAM address pins A0..A6 = pins 5 7 6 12 11 10 13
+    for mux, outp, dpin, (pa, sa), (pb, sb) in RAM_MUX:
+        m = r(mux)
+        net(sa, '%s.%d' % (m, pa)); net(sb, '%s.%d' % (m, pb))
+        net(n('MA%d%s' % (outp, mux)), '%s.%d' % (m, outp), *['%s.%d' % (r(d), dpin) for d, _ in RAM_DRAM_BITS])
+    z4 = r('Z504')
+    net('PHI2', z4 + '.11'); net(n('CAS'), z4 + '.9')
+    for ref in ('C%d' % c for c in range(502, 518)):
+        pass
+    caps = [(502, V12), (503, VM5)] + [(c, V12 if c % 2 == 0 else (V5 if (c // 2) % 2 == 0 else VM5)) for c in range(504, 518)]
+    for c in range(502, 518):
+        part(r('C%d' % c), 'C', 2, '.1uF')
+    # per DRAM: the +12 cap is the even-numbered one, the other cap +5 or -5 alternately (as drawn)
+    for i, (ref, bit) in enumerate(RAM_DRAM_BITS):
+        ce, co = 502 + 2 * i, 503 + 2 * i
+        net(V12, r('C%d' % ce) + '.1'); net(GND, r('C%d' % ce) + '.2')
+        net(VM5 if i % 2 == 0 else V5, r('C%d' % co) + '.1'); net(GND, r('C%d' % co) + '.2')
+    for c, v in (('C501', V5), ('C519', V5), ('C521', VM5), ('C522', V5), ('C523', V12)):
+        part(r(c), 'C', 2, '.1uF' if c in ('C501', 'C519') else '.001uF'); net(v, r(c) + '.1'); net(GND, r(c) + '.2')
+    unsure('16K RAM board in %s: which DRAM holds which data bit and the DOUT-to-74LS244 pairing follow the bit order of the data lines (read from the drawing, bit-consistent); Z501B inputs (U, REF, SEL).' % slot)
+
+
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(here, 'atari800-netlist-src', 'atari800.net')
     cpu_board()
     motherboard()
     personality()
+    ram16('_1', 'S0', 'S1', 'J102'); ram16('_2', 'S2', 'S3', 'J103'); ram16('_3', 'S4G', 'S5G', 'J104')
     # every net must have two or more pins, and no pin may be on two nets
     seen, bad = {}, 0
     for n, pins in nets.items():
