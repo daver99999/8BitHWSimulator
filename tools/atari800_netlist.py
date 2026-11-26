@@ -90,7 +90,7 @@ def cpu_board():
     for ref in ('Z303', 'Z304'):
         net(GND, ref + '.10')                        # through R312 / R313 1 ohm: modelled as direct, see the resistor parts
         net(V5, ref + '.20')
-        net('BUFEN', ref + '.1', ref + '.19')
+        net('Q1N', ref + '.1', ref + '.19')
     net(V5, 'Z302.14', 'Z302.1', 'Z302.4', 'Z302.11', 'Z302.12')
     net(GND, 'Z302.7')
     net(V5, 'Z301.14')
@@ -112,9 +112,10 @@ def cpu_board():
     for s in ('AN0', 'AN1', 'AN2'):
         net(s, pin('A301', GTIA, s), pin('A302', ANTIC, s))
     net('F0', pin('A301', GTIA, 'F0'), pin('A302', ANTIC, 'F0'))
-    net('R/W', pin('A301', GTIA, 'R/W'), pin('A302', ANTIC, 'R/W'), pin('A303', CPU6502, 'R/W'))
-    net('HALT', pin('A301', GTIA, 'HALT'), pin('A302', ANTIC, 'HALT'))
-    net('PHI2', pin('A301', GTIA, 'PHI2'), pin('A302', ANTIC, 'PHI2'), pin('A303', CPU6502, 'PHI2'))
+    net('R/W', pin('A301', GTIA, 'R/W'), pin('A302', ANTIC, 'R/W'), 'Z301.13')       # bus R/W: Z301A output (CPU R/W forced to read when /Q1 is high)
+    net('CPURW', pin('A303', CPU6502, 'R/W'), 'Z301.8')
+    net('HALT', pin('A301', GTIA, 'HALT'), pin('A302', ANTIC, 'HALT'), 'Z302.2')
+    net('PHI2', pin('A301', GTIA, 'PHI2'), pin('A302', ANTIC, 'PHI2'), 'Z302.9')
     net('RDY', pin('A302', ANTIC, 'RDY'), pin('A303', CPU6502, 'RDY'))
     net('RNMI', pin('A302', ANTIC, 'RNMI'))
     net('LP', pin('A302', ANTIC, 'LP'))
@@ -141,13 +142,20 @@ def cpu_board():
     part('C307', 'C', 2, '.001uF'); net(V5, 'C307.1'); net(GND, 'C307.2')
     part('R307', 'R', 2, '4.7K'); net(V5, 'R307.1'); net('IRQ', 'R307.2')
     part('R310', 'R', 2, '4.7K'); net(V5, 'R310.1')
-    part('R311', 'R', 2, '4.7K'); net(V5, 'R311.1')
+    part('R311', 'R', 2, '4.7K')
     part('R312', 'R', 2, '1'); part('R313', 'R', 2, '1')
-    # clock generator Z301 / Z302 (read from the 300 dpi drawing; the exact gate-to-gate links are UNSURE, see below)
-    net('OSC', 'Z301.11', 'Z301.12')                 # Z301A: OSC inverted
-    net('OSCN', 'Z301.13', 'Z302.3')
-    net('PHI0', 'Z301.1')                            # Z301C output = the 6502 phase-0 input
-    unsure('CPU board clock: Z301A/B/C/D and Z302 pin-to-pin links (OSC -> Z302 CLK1; Z302 /Q1, Q2, /Q2 -> Z301 -> CPU PHI0, GTIA F0/PHI0).')
+    # clock generator Z301 / Z302 (read from the 300 dpi drawing 2-12): Z302 flop 2 makes PHI2 (Q2) and PHI1 (/Q2), flop 1 (D1 = HALT, clock = /Q2)
+    # makes /Q1 which enables the address buffers and forces the bus R/W high through Z301B / Z301A; Z301C makes the 6502 PHI0.
+    net('PHI1', 'Z302.8', 'Z302.3')
+    net('Q1N', 'Z302.6', 'Z301.9', 'Z301.2')          # /Q1: buffer enables, Z301B input, Z301C input
+    net('Z301B_OUT', 'Z301.10', 'Z301.11', 'Z301.12')  # Z301B output into Z301A (an inverter, inputs tied)
+    net('Z301D_OUT', 'Z301.4', 'Z301.3', 'Z302.10')   # Z301D output: Z301C input and Z302 PRST2
+    net('F0', 'Z301.6', 'Z302.13', 'R310.2')           # the line into Z302 CLR2 / Z301D / R310 (see the beep check: taken as F0)
+    net(GND, 'Z301.5')
+    net('PHI0', 'Z301.1')                              # Z301C output = the 6502 and ANTIC phase-0 input
+    net(V5, 'R311.1')
+    net('RDY', 'R311.2')
+    unsure('CPU board clock: the line that enters Z302 pin 13 (CLR2), Z301D pin 6 and R310 is read as ANTIC/GTIA F0 (pins 35 / 29) but the drawing does not show where it leads; this is the first continuity check.')
     unsure('CPU board: 6502 RDY pin printed as 7 next to SYNC 7; assumed pin 2 (RDY) joined to ANTIC RDY.')
 
 
