@@ -100,24 +100,73 @@ def main():
         m = re.fullmatch(r'U([A-F])(\d{1,2})', ref)
         if m and fp.startswith('DIP'): grid[ref] = (ord('F') - ord(m.group(1)), int(m.group(2)))
         else: loose.append(ref)
-    colw, rowh = {}, {}
+    # the loose parts: the slots J1 to J7 (J0 the aux connector) lie along the right of the board with slot 1 at the top, as photographed;
+    # every other part goes in a strip under the IC it shares most signal nets with, so a resistor or capacitor sits next to its chip
+    POWER = {'+5V', 'GND', '+12V', '-12V', '-5V', '-5C', '+5C'}
+    refs_on = {}
+    for (ref, pn), net in padnet.items():
+        if net and net not in POWER: refs_on.setdefault(net, set()).add(ref)
+    slots = [r for r in loose if re.fullmatch(r'J[0-7]', r)]
+    anchored, free = {}, []
+    for ref in loose:
+        if ref in slots: continue
+        score = {}
+        for (r2, pn), net in padnet.items():
+            if r2 != ref or not net or net in POWER: continue
+            for o in refs_on.get(net, ()):
+                if o in grid: score[o] = score.get(o, 0) + 1
+        if score: anchored.setdefault(max(sorted(score), key=lambda o: score[o]), []).append(ref)
+        else: free.append(ref)
+    def psize(ref):
+        typ, val, n = chips[ref]
+        return base.pads_for(footprint(ref, typ, n), base.pad_names(typ, n, pinsof.get(ref, set())), 0, 0)[1]
+    colw, rowh, bandh = {}, {}, {}
     for ref, (c, r) in grid.items():
         n = chips[ref][2]
         colw[c] = max(colw.get(c, 0), (n // 2) * 2.54 + 6)
         rowh[r] = max(rowh.get(r, 0), base.dip_geom(n) + 6)
+    # strips: lay the parts of each IC out in lines no wider than its column, as tall as they need
+    strip = {}
+    for ic, lst in anchored.items():
+        c, r = grid[ic]
+        wmax = colw[c] - 2
+        xx2, yy2, rh2, pos = 0.0, 0.0, 0.0, {}
+        for ref in sorted(lst, key=sortkey):
+            w, h = psize(ref)
+            if xx2 + w > wmax and xx2 > 0: xx2, yy2, rh2 = 0.0, yy2 + rh2 + 2, 0.0
+            pos[ref] = (xx2, yy2); xx2 += w + 2; rh2 = max(rh2, h)
+        strip[ic] = (pos, yy2 + rh2)
+        bandh[r] = max(bandh.get(r, 0), yy2 + rh2 + 2)
+    base_h = dict(rowh)
+    for r in rowh: rowh[r] += bandh.get(r, 0)
     colx, x = {}, 10.0
     for c in sorted(colw): colx[c] = x; x += colw[c]
     rowy, y = {}, 10.0
     for r in sorted(rowh): rowy[r] = y; y += rowh[r]
-    W = max(x + 4, 330.0)
-    H = y + 4
+    gridw, H = x, y + 4
     placed = {}
     for ref, (c, r) in grid.items():
         typ, val, n = chips[ref]
         names = base.pad_names(typ, n, pinsof.get(ref, set()))
         placed[ref] = pads_dip_across(names, colx[c], rowy[r])[0]
+    for ic, (pos, hh) in strip.items():
+        c, r = grid[ic]
+        for ref, (dx, dy) in pos.items():
+            typ, val, n = chips[ref]
+            names = base.pad_names(typ, n, pinsof.get(ref, set()))
+            placed[ref] = base.pads_for(footprint(ref, typ, n), names, colx[c] + dx, rowy[r] + base_h[r] + dy)[0]
+    # the slots, pins along x, slot 1 at the top
+    sx, sy = gridw + 6, 10.0
+    for ref in sorted(slots, key=lambda r: (r != 'J0', sortkey(r)) if False else sortkey(r)):
+        typ, val, n = chips[ref]
+        names = base.pad_names(typ, n, pinsof.get(ref, set()))
+        placed[ref] = [(nm, sx + (i // 2) * 2.54, sy + (i % 2) * 2.54, 1.6, 1.6) for i, nm in enumerate(names)]
+        sy += 12
+    W = max(gridw + 6 + 31 * 2.54 + 4, 330.0)
+    H = max(H, sy + 2)
+    # parts with no IC to sit by (the crystal, the monitor and cassette sockets, the supply connectors) in rows below
     xx, yy, rh = 10.0, H + 8, 0.0
-    for ref in sorted(loose, key=lambda r: (footprint(r, chips[r][0], chips[r][2]) != 'CONN',
+    for ref in sorted(free, key=lambda r: (footprint(r, chips[r][0], chips[r][2]) != 'CONN',
                                            footprint(r, chips[r][0], chips[r][2]), sortkey(r))):
         typ, val, n = chips[ref]
         fp = footprint(ref, typ, n)
