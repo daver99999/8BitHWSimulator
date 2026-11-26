@@ -261,7 +261,6 @@ def motherboard():
     part('A101', 'POKEY', 40, 'POKEY'); part('A102', 'PIA6520', 40, '6520 PIA')
     net(V5, 'A101.17', 'A102.20'); net(GND, 'A101.1', 'A102.1')
     part('C122', 'C', 2, '.1uF'); net(V5, 'C122.1'); net(GND, 'C122.2')
-    unsure('POKEY power pins: the drawing shows Vcc on 17 and Vss on 11 next to pin 1, which a real POKEY ties to ground. Both 1 and 11 grounded here.')
     for i in range(8):
         net('D%d' % i, pin('A101', POKEY, 'D%d' % i), pin('A102', PIA, 'D%d' % i))
     for i in range(4):
