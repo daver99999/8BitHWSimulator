@@ -176,7 +176,7 @@ PERS_PWR = {'+5V': ['21', 'Y'], 'GND': ['22', 'Z']}
 CART_ADDR = {'A0': '5', 'A1': '4', 'A2': '3', 'A3': '2', 'A4': 'C', 'A5': 'D', 'A6': 'E', 'A7': 'F', 'A8': 'H', 'A9': 'J',
              'A10': 'P', 'A11': 'N', 'A12': 'K'}
 CART_DATA = {'D0': '10', 'D1': '9', 'D2': '8', 'D3': 'L', 'D4': '6', 'D5': '7', 'D6': '11', 'D7': 'M'}
-POKEY = {'VSS': 1, 'D3': 2, 'D4': 3, 'D5': 4, 'D6': 5, 'D7': 6, 'PHI2': 7, 'VSS2': 11, 'VCC': 17, 'KR2': 16, 'KR1': 25,
+POKEY = {'VSS': 1, 'D3': 2, 'D4': 3, 'D5': 4, 'D6': 5, 'D7': 6, 'PHI2': 7, 'P5': 11, 'VCC': 17, 'KR2': 16, 'KR1': 25,
          'K5': 18, 'K4': 19, 'K3': 20, 'K2': 21, 'K1': 22, 'K0': 23, 'SID': 24, 'BCLK': 26, 'OCLK': 27, 'SOD': 28, 'IRQ': 29,
          'CS0': 30, 'CS1': 31, 'RW': 32, 'A3': 33, 'A2': 34, 'A1': 35, 'A0': 36, 'AUD': 37, 'D0': 38, 'D1': 39, 'D2': 40,
          'P1': 15, 'P0': 14, 'P3': 13, 'P2': 12, 'P4': 10, 'P7': 9, 'P6': 8}
@@ -259,7 +259,7 @@ def motherboard():
 
     # POKEY A101
     part('A101', 'POKEY', 40, 'POKEY'); part('A102', 'PIA6520', 40, '6520 PIA')
-    net(V5, 'A101.17', 'A102.20'); net(GND, 'A101.11', 'A101.1', 'A102.1')
+    net(V5, 'A101.17', 'A102.20'); net(GND, 'A101.1', 'A102.1')
     part('C122', 'C', 2, '.1uF'); net(V5, 'C122.1'); net(GND, 'C122.2')
     unsure('POKEY power pins: the drawing shows Vcc on 17 and Vss on 11 next to pin 1, which a real POKEY ties to ground. Both 1 and 11 grounded here.')
     for i in range(8):
@@ -307,6 +307,7 @@ def motherboard():
     unsure('J106 keyboard connector: reread at 330 and 800 dpi, the scan itself is blurred. Z103 side 6/1/4/7/2/8/3/5 and the NC pin 22 are clear; on the Z104 side 16, 12, 17, 14, 11 and 13 are clear and the glyphs at positions 2 and 5 are not, but the pins are 10 and 15 by elimination (the set is 10-17), so only whether position 2 is 15 and position 5 is 10, or the other way round, is open.')
     # controller jacks J110-J113 (jack 1..4)
     jack_pia = {1: ('PA0', 'PA1', 'PA2', 'PA3'), 2: ('PA4', 'PA5', 'PA6', 'PA7'), 3: ('PB0', 'PB1', 'PB2', 'PB3'), 4: ('PB4', 'PB5', 'PB6', 'PB7')}
+    POTROW = ('P1', 'P0', 'P3', 'P2', 'P5', 'P4', 'P7', 'P6')  # resistor rows R130-R137 top to bottom
     jack_pot = {1: ('P0', 'P1'), 2: ('P2', 'P3'), 3: ('P4', 'P5'), 4: ('P6', 'P7')}
     for j in range(1, 5):
         ref = 'J%d' % (109 + j)
@@ -319,10 +320,22 @@ def motherboard():
         part(tr, 'R', 2, '220'); net('PORT%d_TRIG' % j, ref + '.6', tr + '.1'); net('T%d' % (j - 1), tr + '.2')
         pa, pb = jack_pot[j]
         net('PORT%d_POTA' % j, ref + '.9'); net('PORT%d_POTB' % j, ref + '.5')
-        if pa in POKEY: net('PORT%d_POTA' % j, pin('A101', POKEY, pa))
-        if pb in POKEY: net('PORT%d_POTB' % j, pin('A101', POKEY, pb))
-    unsure('POKEY pot input P5 (jack 3 pin 5) has no pin on the print: left unconnected.')
-    unsure('Controller ports: the pull-up / ladder resistors R130-R153 and the joystick-to-PIA wire order are the standard Atari 800 arrangement, not traced.')
+        for sg, pp in (('A', pa), ('B', pb)):
+            k = POTROW.index(pp)
+            part('R%d' % (130 + k), 'R', 2, '1.8K'); part('C%d' % (127 + k), 'C', 2, '.047uF'); part('C%d' % (135 + k), 'C', 2, '.001uF')
+            net('POT_' + pp, pin('A101', POKEY, pp), 'R%d.1' % (130 + k), 'C%d.1' % (127 + k))
+            net('PORT%d_POT%s' % (j, sg), 'R%d.2' % (130 + k), 'C%d.1' % (135 + k))
+            net(GND, 'C%d.2' % (127 + k), 'C%d.2' % (135 + k))
+        for d in range(4):
+            idx = (j - 1) * 4 + d; cn = 143 + idx if idx < 8 else 153 + idx - 8
+            part('C%d' % cn, 'C', 2, '.001uF'); net('PORT%d_%s' % (j, ('FWD', 'BACK', 'LEFT', 'RIGHT')[d]), 'C%d.1' % cn); net(GND, 'C%d.2' % cn)
+        part('C%d' % (193 + j), 'C', 2, '.001uF'); net('PORT%d_TRIG' % j, 'C%d.1' % (193 + j)); net(GND, 'C%d.2' % (193 + j))
+        if j in (1, 3, 4):
+            cv = {1: 123, 3: 151, 4: 152}[j]; part('C%d' % cv, 'C', 2, '.001uF'); net(V5, 'C%d.1' % cv, ref + '.7'); net(GND, 'C%d.2' % cv)
+    for i in range(8):
+        part('R158' + 'BCDEFGHI'[i], 'R', 2, '4.7K'); net(V5, 'R158%s.1' % 'BCDEFGHI'[i]); net('PB%d' % i, 'R158%s.2' % 'BCDEFGHI'[i])
+    unsure('POKEY pins: the print shows P5 on pin 11 and a ground at the foot of the chip labelled 11; a real POKEY has P5 on 11 and Vss on 1, so pin 11 is P5 here and only pin 1 is ground. Which POKEY pot goes to which jack (jack 1 = P0 A / P1 B ... jack 4 = P6 A / P7 B) follows the standard arrangement and the order of the wires out of R130-R137; the wire crossings are not followed one by one.')
+    unsure('Controller ports: read at 200 dpi. Jack pins 7 Vcc, 5 B pot, 9 A pot, 1 fwd, 2 back, 3 left, 4 right, 6 trigger, 8 Vss. R130-R137 1.8K in series with the pots (.047uF C127-C134 on the POKEY side, .001 C135-C142 on the jack side), R138-R153 220 on the PIA lines with .001 C143-C150 / C153-C160 on the jack side, R175-R178 220 and C194-C197 on the triggers, R158B-R158I 4.7K pull-ups on PB0-PB7. The pairing of each capacitor with its line is by position, and which wire goes to which jack pin is the standard arrangement, not followed wire by wire.')
     # page 2: reset, serial bus J115, console switch header J114
     part('A103', 'CD4050', 16, 'CMOS buffer reset/luma'); part('A104', 'TRARRAY', 14, 'transistor array (chroma amplifier)')
     net(V5, 'A103.1'); net(GND, 'A103.8')
