@@ -21,4 +21,4 @@ Video, chroma and audio output networks (the picture is drawn by the GTIA model 
 `tools/atari800_netlist.py` lists 23 items where the print was not legible (run it to see them). Notable: the F0 line into Z302 pin 13, R/W LATE as R/W OR WRITIME (Z102C/D), the RAM select pins per slot. `ATARI800_BEEP_CHECKS.md` has the continuity checks that settle them.
 
 ## Headless tests
-`tests/atari800/`: `boot.c` (run frames, write a PPM), `keys.c` (type text; `CART=file` plugs a cartridge), `trace.c`, `pins.c`, `who.c`, `dma.c`, `ram.c`, `scan.c`.
+`tests/atari800/`: `boot.c` (run frames, write a PPM), `keys.c` (type text; `CART=file` plugs a cartridge), `trace.c`, `pins.c`, `who.c`, `dma.c`, `ram.c`, `scan.c`, `fault.c` (open one pin: `/tmp/atari_fault REF PIN`).
