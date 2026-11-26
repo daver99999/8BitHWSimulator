@@ -100,42 +100,53 @@ def main():
         m = re.fullmatch(r'U([A-F])(\d{1,2})', ref)
         if m and fp.startswith('DIP'): grid[ref] = (ord('F') - ord(m.group(1)), int(m.group(2)))
         else: loose.append(ref)
-    # the loose parts: the slots J1 to J7 (J0 the aux connector) lie along the right of the board with slot 1 at the top, as photographed;
-    # every other part goes in a strip under the IC it shares most signal nets with, so a resistor or capacitor sits next to its chip
+    # the loose parts: the slots J1 to J7 (J0 the aux connector) lie along the right of the board with slot 1 at the top, as photographed.
+    # Every other part goes into the grid cell the SAMS GridTrace location guide gives it (apple2e-netlist-src/sams_grid.txt: C1 is A-3, R27 is
+    # C-10), as a strip below the chips of its row; a part the guide does not list sits under the IC it shares most signal nets with.
+    sams = {}
+    for line in open(os.path.join(here, 'apple2e-netlist-src', 'sams_grid.txt')):
+        if line.startswith('#') or not line.strip(): continue
+        ref, cellname = line.split()
+        sams[ref] = (ord('F') - ord(cellname[0]), int(cellname.split('-')[1]))
     POWER = {'+5V', 'GND', '+12V', '-12V', '-5V', '-5C', '+5C'}
     refs_on = {}
     for (ref, pn), net in padnet.items():
         if net and net not in POWER: refs_on.setdefault(net, set()).add(ref)
     slots = [r for r in loose if re.fullmatch(r'J[0-7]', r)]
-    anchored, free = {}, []
+    cellparts, free = {}, []
     for ref in loose:
         if ref in slots: continue
+        # the capacitor groups of the capture ("C1-7,10") take the cell of their first member, J17 that of the guide's J17A
+        key = ref if ref in sams else 'C' + re.match(r'C(\d+)[-,]', ref).group(1) if re.match(r'C\d+[-,]', ref) else 'J17A' if ref == 'J17' else ref
+        if key in sams: cellparts.setdefault(sams[key], []).append(ref); continue
         score = {}
         for (r2, pn), net in padnet.items():
             if r2 != ref or not net or net in POWER: continue
             for o in refs_on.get(net, ()):
                 if o in grid: score[o] = score.get(o, 0) + 1
-        if score: anchored.setdefault(max(sorted(score), key=lambda o: score[o]), []).append(ref)
+        if score: cellparts.setdefault(grid[max(sorted(score), key=lambda o: score[o])], []).append(ref)
         else: free.append(ref)
     def psize(ref):
         typ, val, n = chips[ref]
         return base.pads_for(footprint(ref, typ, n), base.pad_names(typ, n, pinsof.get(ref, set())), 0, 0)[1]
-    colw, rowh, bandh = {}, {}, {}
+    colw, rowh, bandh = {c: 44.0 for c in range(6)}, {}, {}
     for ref, (c, r) in grid.items():
         n = chips[ref][2]
-        colw[c] = max(colw.get(c, 0), (n // 2) * 2.54 + 6)
+        colw[c] = max(colw[c], (n // 2) * 2.54 + 6)
         rowh[r] = max(rowh.get(r, 0), base.dip_geom(n) + 6)
-    # strips: lay the parts of each IC out in lines no wider than its column, as tall as they need
+    for (c, r), lst in cellparts.items():
+        colw[c] = max(colw[c], max(psize(ref)[0] for ref in lst) + 4)
+    for (c, r) in cellparts: rowh.setdefault(r, 0)
+    # strips: lay the parts of each cell out in lines no wider than its column, as tall as they need
     strip = {}
-    for ic, lst in anchored.items():
-        c, r = grid[ic]
+    for (c, r), lst in cellparts.items():
         wmax = colw[c] - 2
         xx2, yy2, rh2, pos = 0.0, 0.0, 0.0, {}
         for ref in sorted(lst, key=sortkey):
             w, h = psize(ref)
             if xx2 + w > wmax and xx2 > 0: xx2, yy2, rh2 = 0.0, yy2 + rh2 + 2, 0.0
             pos[ref] = (xx2, yy2); xx2 += w + 2; rh2 = max(rh2, h)
-        strip[ic] = (pos, yy2 + rh2)
+        strip[(c, r)] = (pos, yy2 + rh2)
         bandh[r] = max(bandh.get(r, 0), yy2 + rh2 + 2)
     base_h = dict(rowh)
     for r in rowh: rowh[r] += bandh.get(r, 0)
@@ -149,8 +160,7 @@ def main():
         typ, val, n = chips[ref]
         names = base.pad_names(typ, n, pinsof.get(ref, set()))
         placed[ref] = pads_dip_across(names, colx[c], rowy[r])[0]
-    for ic, (pos, hh) in strip.items():
-        c, r = grid[ic]
+    for (c, r), (pos, hh) in strip.items():
         for ref, (dx, dy) in pos.items():
             typ, val, n = chips[ref]
             names = base.pad_names(typ, n, pinsof.get(ref, set()))
