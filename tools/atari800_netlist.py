@@ -251,11 +251,11 @@ def motherboard():
     # Z102C/D: R/W LATE for the RAM slots = R/W OR WRITIME (low only in a write, during the write strobe)
     net('R/W', 'Z102.9', 'Z102.12'); net('WRITIME', 'Z102.10', 'Z102.13'); net('RW_LATE', 'Z102.8', 'Z102.11')
     unsure('Z102C/D: R/W LATE taken as R/W OR WRITIME (inputs 9,10 / 12,13, outputs 8 / 11); the W/TIME source is the personality.')
-    unsure('Z102A/B (74LS32): which gate input takes S4/S5 and which RD4/RD5, and where the outputs go (taken as the RAM select for slot J104), is not clear on the print.')
-    # RAM selects (decoder outputs MS0-MS3; the console switch lines of the CPU slot are S0-S3): J102 SEL = MS0, U = MS1; J103 = MS2, MS3; J104 = gated S4, S5
-    for ref, a, b in (('J102', 'MS0', 'MS1'), ('J103', 'MS2', 'MS3'), ('J104', 'S4G', 'S5G')):
+    unsure('Z102A/B (74LS32): read at 330 dpi: A has Y4 (decoder pin 5) on pin 5 and RD4 on pin 4 (R108 680 to ground), output 6 = gated S4 to J107 P and J103 P; B has Y5 on pin 1 and RD5 on pin 2 (R109 680 to ground), output 3 = gated S5 to J107 N and J103 M. The cartridge slots take the raw Y4 / Y5 (S4 on J109 pin 1 and J108 pin 12, S5 on J109 pin 12). The personality slot P and N pins are wired to the raw S4 / S5 here, the print shows the gated ones.')
+    # RAM selects (decoder outputs MS0-MS3; the console switch lines of the CPU slot are S0-S3): J104 (slot 1) 18 = MS0, U = MS1; J103 (slot 2) = MS2, MS3; J102 (slot 3) = gated S4, S5
+    for ref, a, b in (('J104', 'MS0', 'MS1'), ('J103', 'MS2', 'MS3'), ('J102', 'S4G', 'S5G')):
         net(a, ref + '.18'); net(b, ref + '.U')
-    unsure('RAM slot select pins (18 and U) per slot: S0/S1 -> J102, S2/S3 -> J103, S4/S5 gated -> J104 (the 48K map). Not read directly.')
+    unsure('RAM slot select pins (18 and U) per slot: the print shows Y0/Y1 on J104 pins 18 and U (slot 1, so the first 16K board is in J104, not J102), and Y2/Y3 reaching J103; the gated S4/S5 (Z102A/B outputs) go to J107 P and N and to J103 P and M, and the pins that join J103 18/T/R/N to J104 T/S/P/M and J102 U/18 to J104 N/R are not understood. Taken: J104 = Y0/Y1, J103 = Y2/Y3, J102 = gated S4/S5 on pins 18 and U. See beep check 12.')
 
     # POKEY A101
     part('A101', 'POKEY', 40, 'POKEY'); part('A102', 'PIA6520', 40, '6520 PIA')
@@ -524,7 +524,7 @@ def main():
     cpu_board()
     motherboard()
     personality()
-    ram16('_1', 'MS0', 'MS1', 'J102'); ram16('_2', 'MS2', 'MS3', 'J103'); ram16('_3', 'S4G', 'S5G', 'J104')
+    ram16('_1', 'MS0', 'MS1', 'J104'); ram16('_2', 'MS2', 'MS3', 'J103'); ram16('_3', 'S4G', 'S5G', 'J102')
     # every net must have two or more pins, and no pin may be on two nets
     seen, bad = {}, 0
     for n, pins in nets.items():
