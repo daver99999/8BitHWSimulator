@@ -50,5 +50,8 @@ Netted from the print for continuity only (the simulator draws the picture from 
 ## 12. Motherboard: RAM slot select wiring and the gated S4 / S5 (open)
 Read at 330 dpi. Z101 Y0 and Y1 go to J104 pins 18 and U (slot 1, so the first 16K board is in J104, and the netlist now has it so), Y2 and Y3 reach J103, and the gated S4 / S5 (Z102A pin 6, Z102B pin 3) go to J107 pins P and N and to J103 pins P and M. Not understood: short wires between J103 pins 18, T, R, N and J104 pins T, S, P, M, and between J102 pins U, 18 and J104 pins N, R. Beep: Z101 pin 1 to J104 pin 18, Z101 pin 2 to J104 pin U, Z101 pins 3 and 4 to every pin of J103 (note which), Z102 pin 6 to J107 pin P and to J103 pin P, Z102 pin 3 to J107 pin N and to J103 pin M, then J102 pins 18 and U to every pin of J103 and J104. The netlist has J103 on Y2/Y3 and J102 on the gated S4/S5 for now, and the personality board's S4 / S5 pins on the raw selects (the print shows the gated ones).
 
+## 13. Motherboard: Z101 pin 12, R103 and the speaker resistor R102 (open)
+Read at 330 dpi, changed in the netlist. Z101 pin 12 (D) is on the EXSEL line (J101 pin E), not ground, and R103 680 hangs from that line to ground (it was on S6). The speaker resistor R102 1K is fed from J101's S3 line (the GTIA speaker bit), not from the POKEY audio line. Beep: Z101 pin 12 to J101 pin E and to R103's upper end; R102's J101 end to J101 pin S (S3) and to GTIA pin 15; check that R102 does not beep to POKEY pin 37.
+
 ## Not netted
 The oscillator (Q102, Q103), the RF modulator stage (Q106, L101, L102), the sound amplifier (A104C/D, R163-R167, R191-R195), the supply filters at J115 (L107-L112, C190-C193, C199, C200) and the power supply board.

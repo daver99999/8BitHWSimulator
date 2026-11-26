@@ -237,17 +237,17 @@ def motherboard():
     part('Z101', '74LS42', 16, 'address decoder'); part('Z102', '74LS32', 14, 'OR gates')
     net(V5, 'Z101.16', 'Z102.14'); net(GND, 'Z101.8', 'Z102.7')
     part('C101', 'C', 2, '.01uF'); net(V5, 'C101.1'); net(GND, 'C101.2')
-    net('A13', 'Z101.15'); net('A14', 'Z101.14'); net('A15', 'Z101.13'); net(GND, 'Z101.12')
+    net('A13', 'Z101.15'); net('A14', 'Z101.14'); net('A15', 'Z101.13'); net('EXSEL', 'Z101.12')
     for i, pn in enumerate((1, 2, 3, 4)):
         net('MS%d' % i, 'Z101.%d' % pn)
     net('S4', 'Z101.5'); net('S5', 'Z101.6'); net('S6', 'Z101.7'); net('S7', 'Z101.9')
-    unsure('Z101 74LS42: input pins (A15 B14 C13 D12, standard pinout) and which address line goes to which input are not legible; assumed A13,A14,A15 and D low.')
+    unsure('Z101 74LS42: read at 330 dpi: A (pin 15) = A13, B (14) = A14, C (13) = A15 and D (12) = EXSEL (not ground); Y6 and Y7 go to J107 M and H. R103 680 hangs from the EXSEL line, not from S6 as first netted.')
     # Z102A/B gate the S4 / S5 RAM selects off when a cartridge pulls RD4 / RD5; pull-downs R108 / R109 680
     net('S4', 'Z102.5'); net('RD4', 'Z102.4'); net('S4G', 'Z102.6')
     net('S5', 'Z102.2'); net('RD5', 'Z102.1'); net('S5G', 'Z102.3')
     part('R108', 'R', 2, '680'); net('RD4', 'R108.1'); net(GND, 'R108.2')
     part('R109', 'R', 2, '680'); net('RD5', 'R109.1'); net(GND, 'R109.2')
-    part('R103', 'R', 2, '680'); net('S6', 'R103.1'); net(GND, 'R103.2')
+    part('R103', 'R', 2, '680'); net('EXSEL', 'R103.1'); net(GND, 'R103.2')
     # Z102C/D: R/W LATE for the RAM slots = R/W OR WRITIME (low only in a write, during the write strobe)
     net('R/W', 'Z102.9', 'Z102.12'); net('WRITIME', 'Z102.10', 'Z102.13'); net('RW_LATE', 'Z102.8', 'Z102.11')
     unsure('Z102C/D: R/W LATE taken as R/W OR WRITIME (inputs 9,10 / 12,13, outputs 8 / 11); the W/TIME source is the personality.')
@@ -274,10 +274,10 @@ def motherboard():
     unsure('PIA chip selects: assumed CS0 and CS1 high, /CS2 from the personality PIA select (active low).')
     net('IRQ', 'A101.29', 'A102.38', 'A102.37')
     net('RESETM', 'A102.34')
-    # speaker circuit
+    # speaker circuit: the print runs the line from J101 (S3, the GTIA speaker bit) through R102 to Q101, not the POKEY audio
     part('R102', 'R', 2, '1K'); part('Q101', 'NPN', 3, '2N'); part('C104', 'C', 2, '.001uF'); part('R101', 'R', 2, '100')
     part('J105', 'HDR2', 2, 'speaker'); part('CR101', 'D', 2, 'diode')
-    net('AUD', 'A101.37', 'R102.1'); net('QB', 'R102.2', 'Q101.B', 'C104.1'); net(GND, 'C104.2', 'Q101.E')
+    net('AUD', 'A101.37'); net('S3', 'R102.1'); net('QB', 'R102.2', 'Q101.B', 'C104.1'); net(GND, 'C104.2', 'Q101.E')
     net('SPK', 'Q101.C', 'J105.2', 'CR101.1'); net('SPKP', 'J105.1', 'CR101.2', 'R101.2'); net(V5, 'R101.1')
     # keyboard: Z103 KEY OUT / Z104 KEY IN (CD4051), J106 keyboard connector
     part('Z103', 'CD4051', 16, 'key out'); part('Z104', 'CD4051', 16, 'key in'); part('J106', 'CONN22', 22, 'keyboard')
