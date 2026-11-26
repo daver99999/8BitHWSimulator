@@ -336,6 +336,7 @@ def motherboard():
         r = 'R%d' % (184 + i)
         part(r, 'R', 2, '100'); net(sig, r + '.1'); net('SW_' + sig, r + '.2', 'J114.%d' % hp)
         part('C%d' % (165 + i), 'C', 2, '.001uF'); net('SW_' + sig, 'C%d.1' % (165 + i)); net(GND, 'C%d.2' % (165 + i))
+    unsure('J114 pin order: the print nests the S2/S1/S0//RNMI wires so that /RNMI would be on pin 1 and S0, S1, S2 on 4, 3, 2 (the netlist has the reverse); see beep check 10.')
     sio = (('OCLK', 7), ('BCLK', 8), ('SID', 9), ('SOD', 10), ('CB1', 14), ('CA1', 12), ('CB2', 11))
     for i, (sig, jp) in enumerate(sio):
         r = 'R%d' % (168 + i)
