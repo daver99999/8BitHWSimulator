@@ -226,6 +226,11 @@ def motherboard():
         net('PHI2', ref + '.S' if ref == 'J109' else ref + '.A')
     net('S4', 'J109.1', 'J108.12'); net('RD4', 'J109.A', 'J108.14')
     net('S5', 'J109.12'); net('RD5', 'J109.14')
+    # the cartridge itself: one ROM part wired to the left slot (empty until a cartridge is loaded)
+    part('CARTL', 'CARTROM', 24, 'cartridge ROM (left slot)')
+    for i in range(13): net('A%d' % i, 'CARTL.%d' % (i + 1))
+    for i in range(8): net('D%d' % i, 'CARTL.%d' % (14 + i))
+    net('S5', 'CARTL.22'); net('RD5', 'CARTL.23')
     unsure('Cartridge slots: pin assignments from the 8-bit FAQ pinout; the right slot pins 1 and A (R/W, phase 2) are not read on the schematic.')
 
     # address decoder Z101 (74LS42): A13/A14/A15 select the eight 8K blocks; Y0-Y3 RAM selects, Y4/Y5/Y6/Y7 = S4..S7

@@ -94,6 +94,26 @@ const part_type_t PT_CD4050 = { "CD4050", "VDD:P AY:O A:M BY:O B:M CY:O C:M VSS:
     cd4050_eval, 0, 0, 0, TECH_CMOS };
 
 /* ------------------------------------------------------------------------ */
+/* A plug-in cartridge: an 8K ROM at $A000-$BFFF (the left slot, BASIC). It drives RD5 high, which takes the RAM's $A000 select away. */
+/* ------------------------------------------------------------------------ */
+
+typedef struct { const uint8_t *data; int32_t cache; } acart_t;
+static const int cart_a[13] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 };
+static const int cart_d[8] = { 14, 15, 16, 17, 18, 19, 20, 21 };
+void atari_cart_set(part_t *p, const uint8_t *data) { ((acart_t *)p->state)->data = data; }
+static void acart_eval(sim_t *s, part_t *p) {
+    acart_t *c = p->state;
+    pin_out(s, p, 23, c->data ? DRV_HI : DRV_Z);
+    if (!c->data) { part_drive_bus(s, p, cart_d, 8, 0, false); return; }
+    bool sel = !pin_in(s, p, 22);
+    unsigned a = part_read_bus(s, p, cart_a, 13);
+    part_drive_bus_cached(s, p, cart_d, 8, sel ? c->data[a] : 0, sel, &c->cache);
+}
+const part_type_t PT_ATARI_CART = { "cartridge ROM",
+    "A0:M A1:M A2:M A3:M A4:M A5:M A6:M A7:M A8:M A9:M A10:M A11:M A12:M D0:O D1:O D2:O D3:O D4:O D5:O D6:O D7:O /CS:M RD5:O NC:O",
+    acart_eval, 0, 0, sizeof(acart_t), TECH_NMOS };
+
+/* ------------------------------------------------------------------------ */
 /* Mask ROMs of the personality board (A401 "F", A402 "D", A403 "E")         */
 /* ------------------------------------------------------------------------ */
 

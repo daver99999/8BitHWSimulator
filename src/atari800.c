@@ -297,12 +297,40 @@ static void at_print_text(board_t *b) {
     printf("(the Atari 800 screen is graphics; ANTIC: %s)\n", st);
 }
 
-static const file_kind_t *at_file_kind(const char *path, char *info, int len, bool *bad) { return board_state_file_kind(path, info, len, bad); }
-static bool at_load(board_t *b, const char *path, bool run, char *msg, int msglen) {
-    (void)b; (void)run;
-    snprintf(msg, (size_t)msglen, "%s: the Atari 800 takes no files (the board is for troubleshooting)", path);
-    return false;
+static const file_kind_t at_cart_kind = { "cartridge", "Plug into the left slot", true, ROLE_ROM };
+static const file_kind_t *at_file_kind(const char *path, char *info, int len, bool *bad) {
+    const file_kind_t *state = board_state_file_kind(path, info, len, bad);
+    if (state) return state;
+    size_t pl = strlen(path);
+    if (pl < 5 || (strcasecmp(path + pl - 4, ".rom") && strcasecmp(path + pl - 4, ".bin"))) return NULL;
+    FILE *f = fopen(path, "rb");
+    long n = -1;
+    if (f) { fseek(f, 0, SEEK_END); n = ftell(f); fclose(f); }
+    if (n != 8192) return NULL;
+    snprintf(info, (size_t)len, "8K cartridge ROM ($A000-$BFFF), plugs into the left slot (J109)");
+    return &at_cart_kind;
 }
+static void at_plug(board_t *b, bool in) {
+    atari800_t *z = AT(b);
+    int idx = sim_find_part(&b->sim, "CARTL");
+    z->basic_in = in;
+    if (idx >= 0) atari_cart_set(&b->sim.parts[idx], in ? z->basic : NULL);
+}
+/* A cartridge is not a program: the 8K ROM goes in the left slot as it would on the real board, and the machine restarts. */
+static bool at_load(board_t *b, const char *path, bool run, char *msg, int msglen) {
+    (void)run;
+    atari800_t *z = AT(b);
+    if (!read_file(path, z->basic, sizeof(z->basic))) {
+        snprintf(msg, (size_t)msglen, "%s: not an 8K cartridge ROM (the Atari 800 takes only cartridges, the board is for troubleshooting)", path);
+        return false;
+    }
+    at_plug(b, true);
+    board_power_on(b);
+    snprintf(msg, (size_t)msglen, "cartridge plugged into the left slot");
+    return true;
+}
+static const char *at_cart_name(board_t *b) { return AT(b)->basic_in ? "8K cartridge" : NULL; }
+static void at_remove_cart(board_t *b) { at_plug(b, false); board_power_on(b); }
 static void at_destroy(board_t *b) { (void)b; }
 static const char *at_cpu_status(board_t *b) {
     const atari800_t *z = AT(b);
@@ -344,7 +372,8 @@ const machine_t machine_atari800 = {
     .host_key = at_host_key,
     .host_char = at_host_char,
     .monitor = at_monitor,
-    .files_title = "Open a save state",
+    .files_title = "Open a cartridge ROM or a save state",
+    .cart_slot = "J109", .cart_name = at_cart_name, .remove_cart = at_remove_cart,
     .file_kind = at_file_kind,
     .load = at_load,
     .cpu_status = at_cpu_status,

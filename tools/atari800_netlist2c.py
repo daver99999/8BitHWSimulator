@@ -12,7 +12,7 @@ sys.path.insert(0, here)
 import board_layout_lib as base
 
 IC_TYPES = {'GTIA', 'ANTIC', '6502', 'POKEY', 'PIA6520', 'MASKROM', 'ADDRBUF', '74LS138', '7400', '7402', '74LS03', '74LS10', '74LS32',
-            '74LS42', '74LS74', '7474', '74LS158', '74LS244', 'CD4051', 'CD4050', '4116'}
+            '74LS42', '74LS74', '7474', '74LS158', '74LS244', 'CD4051', 'CD4050', '4116', 'CARTROM'}
 CONN_TYPES = {'EDGE56', 'EDGE44', 'CART30', 'CONN22', 'DB9', 'HDR2', 'HDR4'}
 
 def is_ic(typ): return typ in IC_TYPES
@@ -48,7 +48,7 @@ TYPES = {
     '74LS74': ('PT_74LS74R', '74LS74', 'ROLE_GLUE'), '7474': ('PT_74LS74R', '74LS74', 'ROLE_GLUE'),
     '74LS158': ('PT_74LS158', '74LS158', 'ROLE_GLUE'), '74LS244': ('PT_74LS244', '74LS244', 'ROLE_GLUE'),
     'CD4051': ('PT_CD4051', 'CD4051', 'ROLE_GLUE'), 'CD4050': ('PT_CD4050', 'CD4050', 'ROLE_GLUE'),
-    '4116': ('PT_4116', 'RAM', 'ROLE_RAM'),
+    '4116': ('PT_4116', 'RAM', 'ROLE_RAM'), 'CARTROM': ('PT_ATARI_CART', 'ROM', 'ROLE_ROM'),
 }
 WHAT = {
     'A301': 'GTIA (CTIA successor, C014805): colour and luminance, players, missiles, collisions, console switches and triggers',
@@ -57,7 +57,7 @@ WHAT = {
     'A101': 'POKEY (C012294): sound, keyboard scan, pots, timers, serial bus',
     'A102': '6520 PIA: the joystick directions of the four controller ports, serial bus handshake lines',
     'A401': 'OS ROM F, 4K: $F000-$FFFF (rev B, 10K OS in three chips)', 'A402': 'OS ROM D, 2K: $D800-$DFFF',
-    'A403': 'OS ROM E, 4K: $E000-$EFFF',
+    'A403': 'OS ROM E, 4K: $E000-$EFFF', 'CARTL': 'plug-in cartridge in the left slot (J109): the 8K BASIC ROM at $A000-$BFFF, nothing fitted until one is loaded',
     'Z101': '74LS42: address decoder, A13-A15 to the eight 8K blocks S0-S7', 'Z102': '74LS32: gates S4 / S5 off when a cartridge pulls RD4 / RD5',
     'Z103': 'CD4051: keyboard scan, the column POKEY pulls low', 'Z104': 'CD4051: keyboard return, the row that POKEY reads',
     'Z301': '7402: gates the 6502 phase 0 and the bus read/write line', 'Z302': '74LS74: PHI1 / PHI2 and the halt synchroniser',
