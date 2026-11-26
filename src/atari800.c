@@ -98,6 +98,9 @@ static void at_create(board_t *b) {
     atari800_t *z = AT(b);
     sim_t *s = &b->sim;
     z->p_xtal = sim_find_part(s, "OSCSIM");
+    /* the 4116s lose a row that gets no /RAS for 16 ms: the data sheet says 2 ms, but a real chip holds its data far longer, and this model
+       skips a refresh slot when a DMA fetch has it, so 2 ms would eat good RAM. A dead refresh line or a bad Z501B still loses the RAM within a frame. */
+    for (int i = 0; i < s->nparts; i++) dram_set_decay(s, &s->parts[i], 16000.0);
     z->p_cpu = sim_find_part(s, "A303");
     z->p_gtia = sim_find_part(s, "A301");
     z->p_antic = sim_find_part(s, "A302");

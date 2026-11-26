@@ -545,7 +545,7 @@ typedef struct {
     areg_t r;
     uint8_t dmactl, chactl, hscrol, vscrol, pmbase, chbase, nmien, nmist;
     uint16_t dlist, dlptr, memscan, line, addr;
-    uint8_t cyc, ph, own, own_kind, halt, refn, wsync, nmi_cnt, rnmi_prev, res_prev;
+    uint8_t cyc, ph, own, own_kind, halt, refn, wsync, nmi_cnt, rnmi_prev, res_prev, refrow;
     uint8_t lines_left, tot_lines, mode, dli, jump, jvb, lo_byte, an;
     uint8_t sidx, cidx, nb, dc, instr_lms;
     uint8_t plan[114], nplan[8], refcyc[114];
@@ -762,7 +762,7 @@ static void antic_eval(sim_t *s, part_t *p) {
     pin_out(s, p, 7, DRV_BIT(!a->nmi_cnt));
     pin_out(s, p, 8, DRV_BIT(!a->refn));
     pin_out(s, p, 2, DRV_BIT(a->an & 1)); pin_out(s, p, 3, DRV_BIT((a->an >> 1) & 1)); pin_out(s, p, 5, DRV_BIT((a->an >> 2) & 1));
-    part_drive_bus(s, p, a_antic, 16, a->addr, a->own && a->own_kind != PL_DUMMY);
+    part_drive_bus(s, p, a_antic, 16, a->addr, (a->own && a->own_kind != PL_DUMMY) || a->refn);   /* during a refresh cycle ANTIC puts its row counter on A0-A6 */
     part_drive_bus(s, p, d_antic, 8, a->r.out_data, a->r.out_en && a->r.clk);
 }
 
@@ -819,6 +819,7 @@ static void antic_commit(sim_t *s, part_t *p) {
         a->own = a->own_kind != PL_NONE;
         a->addr = a->own ? antic_addr(a, a->own_kind) : 0;
         a->refn = a->refcyc[a->cyc] && !a->own;     /* a DMA fetch in the slot does the refresh with its own row */
+        if (a->refn) { a->addr = a->refrow; a->refrow = (uint8_t)((a->refrow + 1) & 127); }
         a->ph = 0;
         dirty = true;
     }

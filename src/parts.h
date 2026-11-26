@@ -94,6 +94,8 @@ uint32_t vic_frame_of(const part_t *p);
 
 /* A 64K x 1 DRAM, whole or half good (a 4164, 4532, 3732). */
 bool part_is_dram64(const part_t *p);
+/* Switch the cell decay of a 4116 on: a row that sees no /RAS for 'us' microseconds loses its data (reads 0 afterwards). Off by default. */
+void dram_set_decay(sim_t *s, part_t *p, double us);
 
 /* A memory chip that can take memory faults (MF_*): its address lines and
  * data bits, and whether it is a DRAM. 0 if it isn't a memory chip. */
@@ -146,6 +148,8 @@ typedef struct {
     uint8_t ras_prev, cas_prev;
     uint8_t out_en, out_bit;
     uint8_t we_prev, rmw_open;   /* late write: /WE falling while /CAS is low writes the open cell */
+    uint32_t decay;              /* 0: cells keep their data; else the sim cycles a row may go without a /RAS before its cells are lost */
+    uint32_t row_t[256];         /* the sim cycle of the last /RAS of each row (only kept when decay is on) */
 } dram_state_t;
 /* 64K x 4 DRAM: one nibble per cell. */
 typedef struct {

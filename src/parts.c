@@ -427,7 +427,14 @@ static void dram_cycle(sim_t *s, part_t *p, int bits, int half) {
     uint8_t out_en = st->out_en, out_bit = st->out_bit;
     /* A dead address line inside the chip is dead for the row and the
      * column alike: they come in through the same buffer. */
-    if (st->ras_prev && !ras) st->row = (uint8_t)mem_addr(p, part_read_bus(s, p, dram_addr_pins, bits));
+    if (st->ras_prev && !ras) {
+        st->row = (uint8_t)mem_addr(p, part_read_bus(s, p, dram_addr_pins, bits));
+        if (st->decay) {
+            /* a row nobody refreshed for too long has lost its charge: its cells read 0 from now on */
+            if ((int32_t)((uint32_t)s->cycle - st->row_t[st->row]) > (int32_t)st->decay) memset(&st->cells[st->row << 8], 0, 256);
+            st->row_t[st->row] = (uint32_t)s->cycle;
+        }
+    }
     if (st->cas_prev && !cas && !ras) {
         st->col = (uint8_t)mem_addr(p, part_read_bus(s, p, dram_addr_pins, bits));
         int cell = (st->row << 8) | st->col;
@@ -468,7 +475,6 @@ static void dram_commit(sim_t *s, part_t *p) { dram_cycle(s, p, 8, HALF_ALL); }
 /* Power-on pattern used by c64-llm: 64 bytes of $00, then 64 of $FF. With
  * row = A0-A7 and column = A8-A15 the address of a cell is (col << 8) | row. */
 static void dram_reset(sim_t *s, part_t *p) {
-    (void)s;
     dram_state_t *st = p->state;
     for (int row = 0; row < 256; row++)
         for (int col = 0; col < 256; col++) {
@@ -477,6 +483,7 @@ static void dram_reset(sim_t *s, part_t *p) {
         }
     st->ras_prev = st->cas_prev = 1;
     st->out_en = 0;
+    for (int i = 0; i < 256; i++) st->row_t[i] = (uint32_t)s->cycle;
 }
 
 const part_type_t PT_4164 = { "4164",
@@ -785,6 +792,13 @@ const part_type_t PT_3732H = { "3732-H", DRAM_4532_PINS,
 /* A 4164 in the 4532's place (the whole chip works). */
 const part_type_t PT_4164_ZX = { "4164", DRAM_4532_PINS,
     dram_eval, dram_commit, dram_reset, sizeof(dram_state_t), TECH_NMOS };
+
+void dram_set_decay(sim_t *s, part_t *p, double us) {
+    if (p->commit != dram4116_commit) return;
+    dram_state_t *st = p->state;
+    st->decay = us > 0 ? (uint32_t)(us * s->time_scale) : 0;
+    for (int i = 0; i < 256; i++) st->row_t[i] = (uint32_t)s->cycle;
+}
 
 bool part_is_dram64(const part_t *p) {
     return p->commit == dram_commit || p->commit == dram4532_commit || p->commit == dram4532_4_commit ||
