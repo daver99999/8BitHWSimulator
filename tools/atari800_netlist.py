@@ -461,7 +461,7 @@ def personality():
         part(c, 'C', 2, v); net(n_, c + '.1'); net(GND, c + '.2')
     for c in ('C401', 'C402'):
         part(c, 'C', 2, '.1uF' if c == 'C401' else '.001uF'); net(V5, c + '.1'); net(GND, c + '.2')
-    unsure('Personality gates: Z402 is read as NAND gates A (in 1,2 out 3), B (in 9,10 out 8), C (in 4,5 out 6) and Z403 as open-collector NANDs with R402 pull-up; the node at Z402 pin 10 / 4 runs off to the right and is not read. the delayed phase 2 (R403, L401-L403) feeds Z402B and Z402C. The Ø2 edge pin is S on the motherboard (the personality print shows it at 5, the same as A0).')
+    unsure('Personality gates: reread at 200 dpi and now agree with the netlist. Z402A (1 = R/W early, 2 = EXSEL node, 3 = /GBA), Z402B (9 = phase 1, 10 = delayed phase 2, 8 = RASTIME), Z402C (5 = phase 2, 4 = delayed phase 2, 6 = /WRITIME), with 10 and 4 joined and fed from the far end of R403 / L401-L403 / C407-C410. Z403A (1 = decoder Y4, 2 = decoder Y0), Z403B (9 = A15, 10 = phase 2 through R404 1 ohm), Z403C (11 = GBA with R401, 12 = /GBA, 13 = EXSEL node), Z403D (4, 5 = RAM S5 and S4, which of the two goes to which input is not told apart and does not matter for a NAND). Outputs 3, 6, 8 and the EXSEL edge pin are one open-collector node with R402 2200. The personality print labels edge pin 5 as phase 2B, which is also where A0 sits; the motherboard has phase 2 on S, used here.')
 
 
 # 16K RAM board (Fig 2-16). DRAM Z505..Z512 hold data bits D6 D7 D5 D3 D4 D2 D1 D0 (bit order read from the data lines).

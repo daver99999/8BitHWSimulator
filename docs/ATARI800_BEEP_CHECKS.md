@@ -63,5 +63,10 @@ Read from the print at 200 dpi and added to the netlist: R130-R137 (1.8K) in ser
 - POKEY pin 11: the print has P5 on it and also a ground at the foot of the chip labelled 11. The netlist has P5 on 11 and ground on pin 1 only. Beep A101 pin 11 to ground; if it beeps, that pin really is ground, and P5 (jack 3 B pot) has no pin.
 - Pot to jack pairing: beep A101 pin 14 (P0) through R131 to J110 pin 9, and A101 pin 15 (P1) through R130 to J110 pin 5. Jack 2 should be P2 / P3 (pins 12 / 13), jack 3 P4 / P5, jack 4 P6 / P7.
 
+## 16. Personality board: delayed phase 2 and the EXSEL node
+The gate wiring was reread and matches the netlist. Two points are only from the drawing:
+- Phase 2 delay: beep J107 pin S to Z402 pin 5 and R403 pin 1, then the far end of L403 (C410 side) to Z402 pins 10 and 4. These two groups must not touch each other (R403 and the coils are in between).
+- EXSEL node: beep J107 pin 14 to Z403 pins 3, 6, 8, 13, Z402 pin 2 and R402. All of them are one wire.
+
 ## Not netted
 The oscillator (Q102, Q103), the RF modulator stage (Q106, L101, L102), the sound amplifier (A104C/D, R163-R167, R191-R195), the supply filters at J115 (L107-L112, C190-C193, C199, C200) and the power supply board.
