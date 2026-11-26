@@ -291,10 +291,43 @@ static void at_monitor(board_t *b, uint32_t *out) {
 /* Text of the screen (--text) and the CPU                                   */
 /* ------------------------------------------------------------------------ */
 
+/* A byte of RAM read from the DRAM cells (no bus cycle): each 16K board holds 8 chips, one data bit each. The 74LS158s invert the address,
+ * and the 4116 model's address bit k is chip pin 5,7,6,12,11,10,13, which carry A6,A1,A2,A3,A4,A5,A0 (row) and A13,A8,A9,A10,A11,A12,A7 (column). */
+static int at_ram_peek(board_t *b, unsigned a) {
+    static const int bit_chip[8] = { 512, 511, 510, 508, 509, 507, 505, 506 };
+    static const int rl[7] = { 6, 1, 2, 3, 4, 5, 0 }, cl[7] = { 13, 8, 9, 10, 11, 12, 7 };
+    int bank = (int)(a >> 14 & 3);
+    if (bank > 2) return -1;
+    unsigned row = 0, col = 0;
+    for (int k = 0; k < 7; k++) { row |= (~(a >> rl[k]) & 1u) << k; col |= (~(a >> cl[k]) & 1u) << k; }
+    int v = 0;
+    for (int bt = 0; bt < 8; bt++) {
+        char ref[16];
+        snprintf(ref, sizeof(ref), "Z%d_%d", bit_chip[bt], bank + 1);
+        int pi = sim_find_part(&b->sim, ref);
+        if (pi < 0) return -1;
+        v |= (((dram_state_t *)b->sim.parts[pi].state)->cells[(row << 8) | col] & 1) << bt;
+    }
+    return v;
+}
+
+/* --text: the Memo Pad / BASIC screen is 24 rows of 40 screen codes at SAVMSC ($58). */
 static void at_print_text(board_t *b) {
-    char st[160];
-    atari_antic_status_of(&b->sim.parts[AT(b)->p_antic], st, sizeof(st));
-    printf("(the Atari 800 screen is graphics; ANTIC: %s)\n", st);
+    int lo = at_ram_peek(b, 0x58), hi = at_ram_peek(b, 0x59);
+    if (lo < 0 || hi < 0) { printf("(no RAM)\n"); return; }
+    unsigned base = (unsigned)(hi << 8 | lo);
+    for (int r = 0; r < 24; r++) {
+        char line[41];
+        int n = 0;
+        for (int c = 0; c < 40; c++) {
+            int v = at_ram_peek(b, base + (unsigned)(r * 40 + c));
+            v = v < 0 ? 0 : v & 0x7F;
+            line[c] = v < 0x40 ? (char)(v + 0x20) : v < 0x60 ? (char)(v - 0x40) : ' ';
+            if (line[c] != ' ') n = c + 1;
+        }
+        line[n] = 0;
+        printf("%s\n", line);
+    }
 }
 
 static const file_kind_t at_cart_kind = { "cartridge", "Plug into the left slot", true, ROLE_ROM };

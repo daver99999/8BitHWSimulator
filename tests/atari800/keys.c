@@ -16,6 +16,7 @@ int main(int argc, char **argv) {
         for (int i = 0; i < 8; i++) { b->m->run(b, AT_CYCLES_PER_FRAME); b->m->frame_update(b, 16667); }
     }
     b->m->run(b, 5 * AT_CYCLES_PER_FRAME);
+    b->m->print_text(b);
     FILE *fp = fopen(argv[2], "wb");
     fprintf(fp, "P6\n%d %d\n255\n", AT_SCREEN_W, AT_SCREEN_H);
     for (int i = 0; i < AT_SCREEN_W * AT_SCREEN_H; i++) { uint32_t c = b->screen[i]; fputc(c & 255, fp); fputc(c >> 8 & 255, fp); fputc(c >> 16 & 255, fp); }
