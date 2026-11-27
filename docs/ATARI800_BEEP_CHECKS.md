@@ -182,7 +182,8 @@ Netted from the print for continuity only (the simulator draws the picture from 
 | A103 pin 15 to R182 (9.1K) | BEEP |
 | A103 pin 12 to R183 (4700) | BEEP. So the order of R180-R183 on the A103 outputs is confirmed. |
 | CR108 (diode): which end carries the stripe | At the top end in the owner's photo, toward the MC14050B chip (A103). The netlist has the cathode on A103 pin 6 (the sync buffer output) and the anode on the luma mixer node, which fits a stripe toward the chip. |
-| A104B base pin (netlist: pin 9) | not measured yet |
+| A104B base pin (netlist: pin 9): A104 pin 9 to A104 pin 14 | BEEP. So the base of the second transistor is tied to the collector of the first (pin 14), as assumed. |
+| serial bus pull-ups R129A-F: which line each is on | not measured yet |
 
 ## 12. Motherboard: RAM slot select wiring and the gated S4 / S5 (open)
 Read at 330 dpi. Z101 Y0 and Y1 go to J104 pins 18 and U (slot 1, so the first 16K board is in J104, and the netlist now has it so), Y2 and Y3 reach J103, and the gated S4 / S5 (Z102A pin 6, Z102B pin 3) go to J107 pins P and N and to J103 pins P and M. Not understood: short wires between J103 pins 18, T, R, N and J104 pins T, S, P, M, and between J102 pins U, 18 and J104 pins N, R. Beep: Z101 pin 1 to J104 pin 18, Z101 pin 2 to J104 pin U, Z101 pins 3 and 4 to every pin of J103 (note which), Z102 pin 6 to J107 pin P and to J103 pin P, Z102 pin 3 to J107 pin N and to J103 pin M, then J102 pins 18 and U to every pin of J103 and J104. The netlist has J103 on Y2/Y3 and J102 on the gated S4/S5 for now, and the personality board's S4 / S5 pins on the raw selects (the print shows the gated ones).
