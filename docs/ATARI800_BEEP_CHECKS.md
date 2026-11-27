@@ -96,8 +96,13 @@ Z102 is a 74LS32 (14 pin). Gate A: inputs pin 5 (from Z101 pin 5, S4) and pin 4 
 PARKED: where gated S4 (Z102 pin 6) and gated S5 (pin 3) go is not known; they do not reach any J connector pin, and the trace cannot be followed by eye. A photo of Z102 and the area around it would help.
 | Z102 pin 3 to J102 pin U | not measured yet |
 
-## 6. Motherboard: keyboard connector J106 pins 15 and 10 (open, narrowed)
+## 6. Motherboard: keyboard connector J106 pins 15 and 10 (in progress)
 Reread at 800 dpi; the scan is blurred at two of the eight pins on the Z104 side. The other six (16, 12, 17, 14, 11, 13) read clean, and 15 and 10 are the two left over, so only their order is open. The netlist has 15 at the second position and 10 at the fifth (R120 and R123). Beep J106 pin 15 to the far end of R120; if it beeps to R123 instead, the two are swapped.
+
+| Check | Result |
+|---|---|
+| J106 pin 15 to R120 | BEEP (owner did not say which end of R120) |
+| J106 pin 10 to R123 | not measured yet |
 
 ## 7. Motherboard: Z101 74LS42 inputs, PIA chip selects, power-on reset, J115 power pins, J101 pin 5 / S3 (open)
 Details are listed in the generator output (`python3 tools/atari800_netlist.py`).
