@@ -15,7 +15,7 @@
  *
  * WHAT IS MODELED: Z80A, gate array, ROM (32K, lower 16K OS at $0000, upper 16K BASIC at $C000), the 8255, the AY-3-8912, the 6845
  * (the simulator's 6545 core), the multiplexers and buffers, the eight 4164s, the keyboard matrix and the reset circuit. NOT modeled: the
- * tape and printer circuits' analog parts, the sound output (it is not played), the monitor's analog levels (the picture is drawn from
+ * tape and printer circuits' analog parts, the sound's analog levels (the AY's A, B and C pins show a channel as a logic level, so a probe sees the tone; nothing is played), the monitor's analog levels (the picture is drawn from
  * the gate array's colours), the expansion port's devices. The purpose is to troubleshoot the board, not to load programs. */
 #include "cpc464.h"
 #include "coco_chips.h"
@@ -93,7 +93,7 @@ static const part_type_t PT_CPC_ROM = { "27256 ROM",
 /* AY-3-8912 (IC102): BDIR/BC1 (BC2 and A8 are high): 01 read, 10 write, 11 latch address                   */
 /* ------------------------------------------------------------------------ */
 
-typedef struct { ay8912_t ay; uint8_t clk_prev, mode, data; } ay_state_t;
+typedef struct { ay8912_t ay; uint8_t clk_prev, mode, data, lvl; } ay_state_t;   /* lvl: which channels are sounding (the output pins' logic level) */
 static const int ay_data_pins[8] = { 28, 27, 26, 25, 24, 23, 22, 21 };
 static const int ay_ioa_pins[8] = { 14, 13, 12, 11, 10, 9, 8, 7 };
 static int ay_mode(sim_t *s, part_t *p) {
@@ -108,6 +108,10 @@ static void ay_eval(sim_t *s, part_t *p) {
     bool out = (st->ay.reg[7] & 0x40) != 0;
     for (int i = 0; i < 8; i++)
         pin_out(s, p, ay_ioa_pins[i], out ? DRV_BIT((st->ay.reg[14] >> i) & 1) : DRV_PULLUP);
+    /* the channel outputs are analog on the chip; here a pin is high while its channel is sounding, so a probe sees the tone (A pin 5, B pin 4, C pin 1) */
+    pin_out(s, p, 5, DRV_BIT(st->lvl & 1));
+    pin_out(s, p, 4, DRV_BIT((st->lvl >> 1) & 1));
+    pin_out(s, p, 1, DRV_BIT((st->lvl >> 2) & 1));
 }
 static void ay_commit(sim_t *s, part_t *p) {
     ay_state_t *st = p->state;
@@ -121,7 +125,11 @@ static void ay_commit(sim_t *s, part_t *p) {
         sim_mark_dirty(s, (int)(p - s->parts));
     }
     int ck = pin_in(s, p, 15);
-    if (ck && !st->clk_prev) ay8912_tick(&st->ay);
+    if (ck && !st->clk_prev) {
+        ay8912_tick(&st->ay);
+        uint8_t lv = (uint8_t)((st->ay.out[0] > 0) | (st->ay.out[1] > 0) << 1 | (st->ay.out[2] > 0) << 2);
+        if (lv != st->lvl) { st->lvl = lv; sim_mark_dirty(s, (int)(p - s->parts)); }
+    }
     st->clk_prev = (uint8_t)ck;
     if (!pin_in(s, p, 16)) { ay8912_reset(&st->ay); st->mode = 0; }
     uint8_t in = (uint8_t)part_read_bus(s, p, ay_ioa_pins, 8);

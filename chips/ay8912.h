@@ -8,7 +8,7 @@
     The 8912 has no port B and no second chip select; BC2 is tied high.
 
     Written for this project from the public AY-3-8910/8912 datasheet and the
-    well known behaviour of the chip (period counters divide the clock by 16,
+    well known behaviour of the chip (the tone counters divide the clock by 8, noise and envelope by 16,
     the 17 bit LFSR noise with taps 0 and 3, the 16 step envelope, the
     logarithmic DAC levels). No code from other emulators.
 
@@ -27,7 +27,7 @@
 typedef struct {
     uint8_t reg[16];
     uint8_t addr;               /* the selected register */
-    /* Divider: the chip is clocked at f and every channel counts f/16. */
+    /* Divider: the chip is clocked at f; the tone counters count f/8, noise and envelope f/16. */
     uint8_t div;                /* 0..15 */
     uint16_t tone_cnt[3];
     bool tone_out[3];
@@ -100,13 +100,17 @@ static void ay_env_step(ay8912_t *a) {
 }
 
 void ay8912_tick(ay8912_t *a) {
-    if (++a->div < 16) goto level;
-    a->div = 0;
+    /* the tone counters run at f/8 and toggle at the period: the pitch is f/(16 x period); noise and envelope run at f/16 */
+    ++a->div;
+    bool full = a->div >= 16;
+    if (a->div != 8 && !full) goto level;
+    if (full) a->div = 0;
     for (int c = 0; c < 3; c++) {
         uint16_t period = (uint16_t)(a->reg[c * 2] | (a->reg[c * 2 + 1] & 15) << 8);
         if (period == 0) period = 1;
         if (++a->tone_cnt[c] >= period) { a->tone_cnt[c] = 0; a->tone_out[c] = !a->tone_out[c]; }
     }
+    if (!full) goto level;
     /* noise: every period steps, shifted every 2 of them */
     uint8_t np = a->reg[6] & 31; if (np == 0) np = 1;
     if (++a->noise_cnt >= np) {
