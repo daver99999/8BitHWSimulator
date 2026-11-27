@@ -79,7 +79,7 @@ PARKED: on J103 the decoder lines Z101 pin 3 and 4 arrive on pins T and R, not o
 
 Letter positions on the slots: U is opposite 18 and R is opposite 15 on this board (each letter sits one number above a plain A..Z count).
 
-Photos (owner, 2026-11-27): the slots on the motherboard, left to right, are J107 (personality), J104, J103, J102 and then the big J101 (CPU board). Owner sees only an A at the pin 1 end of each slot. In an enlarged crop of the third photo, though, tiny letters (W V U T S R P N M) can be read on the black plastic of J107, beside the left row of contacts, so they may be moulded into the housing and only visible with magnification and a raking light. Z102 (SN74LS32N) sits above Z101 (DM74LS42N) with pin 1 at the top left of each chip, so Z102 pins 3 and 6 are on its left side, facing the cartridge slot J109. The traces from them could not be followed at this resolution.
+Photos (owner, 2026-11-27): the slots on the motherboard, left to right, are J107 (personality), J104, J103, J102 and then the big J101 (CPU board). Owner sees only an A at the pin 1 end of each slot. In an enlarged crop of the third photo, tiny letters (W V U T S R P N M) can be read on the black plastic of J107, beside the left row of contacts; the owner confirmed he can see them, very hard to read. Z102 (SN74LS32N) sits above Z101 (DM74LS42N) with pin 1 at the top left of each chip, so Z102 pins 3 and 6 are on its left side, facing the cartridge slot J109. The traces from them could not be followed at this resolution.
 
 ## 5. Motherboard: Z102 gates and the cartridge RD4 / RD5 (in progress)
 Z102 is a 74LS32 (14 pin). Gate A: inputs pin 5 (from Z101 pin 5, S4) and pin 4 (RD4), output pin 6 (gated S4). Gate B: inputs pin 1 (Z101 pin 6, S5... see netlist) and pin 2 (RD5), output pin 3 (gated S5). The gated outputs go to J107 and to J102 and J103.
@@ -94,10 +94,12 @@ Z102 is a 74LS32 (14 pin). Gate A: inputs pin 5 (from Z101 pin 5, S4) and pin 4 
 | Z102 pin 6 to J102 pin 18 | NO beep |
 | Z102 pin 6 to J103 pin P | NO beep |
 | Z102 pin 6 to any pin of any J connector | NO beep (owner) |
-| Z102 pin 3 to J102 pin U | not measured yet |
+| Z102 pin 3 to J102 pin U | NO beep |
+| Z102 pin 6 to every pin of Z101 and Z102 (sweep) | not measured yet |
 
 PARKED: where gated S4 (Z102 pin 6) and gated S5 (pin 3) go is not known; they do not reach any J connector pin, and the trace cannot be followed by eye. A photo of Z102 and the area around it would help.
-| Z102 pin 3 to J102 pin U | not measured yet |
+| Z102 pin 3 to J102 pin U | NO beep |
+| Z102 pin 6 to every pin of Z101 and Z102 (sweep) | not measured yet |
 
 ## 6. Motherboard: keyboard connector J106 pins 15 and 10 (done: order confirmed)
 Reread at 800 dpi; the scan is blurred at two of the eight pins on the Z104 side. The other six (16, 12, 17, 14, 11, 13) read clean, and 15 and 10 are the two left over, so only their order is open. The netlist has 15 at the second position and 10 at the fifth (R120 and R123). Beep J106 pin 15 to the far end of R120; if it beeps to R123 instead, the two are swapped.
