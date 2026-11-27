@@ -61,6 +61,10 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 37. IC124 pin 2 to IC111 pin 13 (D7): G (DRAM bit order confirmed at both ends).
 38. IC116 pin 4 to IC115 pin 1: G (244EN).
 39. IC112 pin 8 to IC114 pin 1: G (373 /OE).
+40. IC110 pin 11 to printer connector pin 1: G (strobe).
+41. IC101 pin 1 to CP002 pin 19: G.
+42. IC107 pin 12 to CP001 pin D: G (tape write).
+43. IC107 pin 25 to CP001 pin E: G (tape read).
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
