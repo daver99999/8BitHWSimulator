@@ -125,6 +125,8 @@ Added after rereading the print at higher resolution. The four 100 ohm resistors
 | J114 pin 2 to R185 | NO (owner: J114 pin 2 goes to R187, as the print's left-to-right order 1, 4, 3, 2 says) |
 | J114 pin 2 to R187 | BEEP |
 | J101 pin Z (/RNMI) to R187 (end away from J114) | NO beep (owner: R187's far end goes to the J101 pin opposite 14; the board has no letters printed, so by count that is P, which my print gives to A9; unresolved) |
+| ANTIC (A302) pin 6 (/RNMI) to the J101 pin opposite 22 | BEEP (owner, CPU board seated; by letter count that is Y or Z, my print has Z = /RNMI and Y = R/W) |
+| ANTIC (A302) pin 6 to R187 (end away from J114) | not measured yet |
 
 ## 11. Video output, motor transistor, serial bus pull-ups (open)
 Netted from the print for continuity only (the simulator draws the picture from the GTIA model): the luminance mixer A103B-F, R179-R183, CR108, Q105, R189, R200-R206, C163, C164, C170, L103-L105, the chroma amplifier A104A/B with R196-R199, Q107 with R159 and L106, and the serial bus pull-ups and capacitors R129A-F, R157, R158A, C182-C188, C189. The unsure items in the generator output say what to check first: the order of R180-R183 on the A103 outputs (36K on pin 4, 18K on 10, 9.1K on 15, 4700 on 12), CR108's polarity, the A104B base pin, and which serial bus line each pull-up is on.
