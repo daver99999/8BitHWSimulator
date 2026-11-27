@@ -124,7 +124,7 @@ Details are listed in the generator output (`python3 tools/atari800_netlist.py`)
 | A102 (PIA) pin 24 (CS1) to J115 pin 18 (+5 V) | BEEP |
 | A102 (PIA) pin 23 (/CS2) to J107 pin 18 | BEEP (the first try said no: a missed contact; the sweep found pin 18) |
 
-## 8. Personality board: ROM chip-select pins and the Ø2B edge pin (in progress)
+## 8. Personality board: ROM chip-select pins and the Ø2B edge pin (done)
 Beep A401 / A403 pin 20 to the edge pin for S7 (H) and pin 21 to A12 (pin 12); A402 pin 20 to S6 (M), 21 to A12, 18 to A11 (L). Find which edge pin carries Ø2B (the print shows 5, which is also A0).
 
 | Check | Result |
@@ -136,7 +136,7 @@ Beep A401 / A403 pin 20 to the edge pin for S7 (H) and pin 21 to A12 (pin 12); A
 | A402 pin 20 to Z401 pin 4 (S6) | BEEP |
 | A401 pin 20 to A403 pin 20 (S7) | BEEP |
 | Z403 pin 10 to R404 (1 ohm) | BEEP |
-| R404 far end (not on Z403 pin 10) to edge pin 5 | not measured yet |
+| R404 far end (not on Z403 pin 10) to edge pin 5 | NO beep (as expected: the clock is on a different edge pin) |
 
 ## 9. 16K RAM board: which DRAM holds which bit (open)
 The netlist puts D6 in Z505, D7 in Z506, D5 in Z507, D3 in Z508, D4 in Z509, D2 in Z510, D1 in Z511, D0 in Z512. Beep DRAM pin 2 (DIN) to the edge pin of its data bit.
