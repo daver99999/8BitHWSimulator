@@ -124,7 +124,7 @@ def cpu_board():
     net('RESETM', pin('A302', ANTIC, 'RESET'), pin('A303', CPU6502, 'RES'))
     net('IRQ', pin('A303', CPU6502, 'IRQ'))
     net('SYNC', pin('A303', CPU6502, 'SYNC'))
-    net('PHI0', pin('A302', ANTIC, 'PHI0'), pin('A303', CPU6502, 'PHI0'))
+    net('PHI0', pin('A303', CPU6502, 'PHI0'))   # Z301 pin 1 (below); ANTIC pin 34 is NOT on this wire (owner board)
     # GTIA video and console
     for s in ('COL', 'LUM0', 'LUM1', 'LUM2', 'LUM3', 'OSC', 'CSYNC', 'S3', 'S2', 'S1', 'S0', 'T3', 'T2', 'T1', 'T0', 'GTIA_CS'):
         net(s, pin('A301', GTIA, s))
@@ -150,7 +150,7 @@ def cpu_board():
     net('Q1N', 'Z302.6', 'Z301.9', 'Z301.2')          # /Q1: buffer enables, Z301B input, Z301C input
     net('Z301B_OUT', 'Z301.10', 'Z301.11', 'Z301.12')  # Z301B output into Z301A (an inverter, inputs tied)
     net('Z301D_OUT', 'Z301.4', 'Z301.3', 'Z302.10')   # Z301D output: Z301C input and Z302 PRST2
-    net('F0', 'Z301.6', 'Z302.13')   # scope on the owner's board: 1.79 MHz here. R310 is NOT on this wire (both its ends read flat high).
+    net('F0H', pin('A302', ANTIC, 'PHI0'), 'Z301.6', 'Z302.13')   # scope on the owner's board: 1.79 MHz here. R310 is NOT on this wire (both its ends read flat high).
     net(GND, 'Z301.5')
     net('PHI0', 'Z301.1')                              # Z301C output = the 6502 and ANTIC phase-0 input
     net(V5, 'R311.1')

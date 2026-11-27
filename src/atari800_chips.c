@@ -457,7 +457,7 @@ static uint8_t gtia_colour(gtia_t *g, int an, int hp) {
 
 static void gtia_eval(sim_t *s, part_t *p) {
     gtia_t *g = p->state;
-    pin_out(s, p, 29, DRV_BIT(g->f0));
+    pin_out(s, p, 29, DRV_BIT(pin_in(s, p, 28)));   /* measured on the board: GTIA pin 29 is the 3.58 MHz clock */
     pin_out(s, p, 22, DRV_BIT(g->lum & 1)); pin_out(s, p, 23, DRV_BIT((g->lum >> 1) & 1));
     pin_out(s, p, 24, DRV_BIT((g->lum >> 2) & 1)); pin_out(s, p, 31, DRV_BIT((g->lum >> 3) & 1));
     pin_out(s, p, 21, g->hue ? DRV_BIT(g->osc) : DRV_LO);
@@ -545,7 +545,7 @@ typedef struct {
     areg_t r;
     uint8_t dmactl, chactl, hscrol, vscrol, pmbase, chbase, nmien, nmist;
     uint16_t dlist, dlptr, memscan, line, addr;
-    uint8_t cyc, ph, own, own_kind, halt, refn, wsync, nmi_cnt, rnmi_prev, res_prev, refrow;
+    uint8_t cyc, ph, own, own_kind, halt, refn, wsync, nmi_cnt, rnmi_prev, res_prev, refrow, f0p, f0q;
     uint8_t lines_left, tot_lines, mode, dli, jump, jvb, lo_byte, an;
     uint8_t sidx, cidx, nb, dc, instr_lms;
     uint8_t plan[114], nplan[8], refcyc[114];
@@ -755,6 +755,7 @@ static uint8_t antic_an(const antic_t *a, int pos) {
 }
 
 static void antic_eval(sim_t *s, part_t *p) {
+    pin_out(s, p, 34, DRV_BIT(((antic_t *)p->state)->f0q));   /* the 1.79 MHz clock: F0 (3.58 MHz) divided by two, to the CPU board */
     antic_t *a = p->state;
     pin_out(s, p, 9, DRV_BIT(!a->halt));
     pin_out(s, p, 4, DRV_PULLUP); pin_out(s, p, 6, DRV_PULLUP);        /* LP and /RNMI: pulled up inside */
@@ -772,6 +773,7 @@ static void antic_commit(sim_t *s, part_t *p) {
     areg_t *r = &a->r;
     int clk = pin_in(s, p, 29), res = pin_in(s, p, 36), rnmi = pin_in(s, p, 6);
     bool dirty = false;
+    { int f = pin_in(s, p, 35); if (f && !a->f0p) a->f0q ^= 1; a->f0p = (uint8_t)f; }
     if (!res) {                                     /* RESET: the registers clear, the beam goes on */
         a->dmactl = 0; a->nmien = 0; a->nmist = 0; a->wsync = 0; a->nmi_cnt = 0; a->halt = 0; a->own = 0;
         a->lines_left = 0; a->mode = 0; memset(a->nplan, 0, sizeof(a->nplan));
@@ -840,7 +842,7 @@ static void antic_reset(sim_t *s, part_t *p) {
 
 const part_type_t PT_ATARI_ANTIC = { "ANTIC",
     "VSS:P AN0:O AN1:O LP:B AN2:O /RNMI:B /NMI:O /REF:O /HALT:O A3:B A2:B A1:B A0:B R/W:m /RDY:O A10:B A12:B A13:B A14:B A15:B VCC:P "
-    "A11:B A9:B A8:B A7:B A6:B A5:B A4:B PHI2:M D0:B D1:B D2:B D3:B PHI0:m F0:M /RES:m D7:B D6:B D5:B D4:B",
+    "A11:B A9:B A8:B A7:B A6:B A5:B A4:B PHI2:M D0:B D1:B D2:B D3:B PHI0:O F0:M /RES:m D7:B D6:B D5:B D4:B",
     antic_eval, antic_commit, antic_reset, sizeof(antic_t), TECH_NMOS };
 
 uint8_t atari_antic_reg_of(const part_t *p, int r) {
