@@ -47,14 +47,14 @@ Why it matters: the owner reports the Atari works fine with Z302 pin 13 unconnec
 ## 2. CPU board: 6502 RDY pin (open)
 The print labels two pins "7" (SYNC and RDY). On a real 6502 SYNC is pin 7 and RDY is pin 2. Beep 6502 (A303) pin 2 to ANTIC pin 15 (RDY) and to the lower end of R311.
 
-## 3. Motherboard: POKEY (A101) power pins (in progress)
+## 3. Motherboard: POKEY (A101) power pins (done)
 The print has Vss on pin 1, Vcc on pin 17 and the signal P5 on pin 11. With A101 out of its socket:
 
 | Check | Result |
 |---|---|
 | socket pin 1 to ground (Z302 pin 7) | BEEP (owner, 2026-11-27) |
 | socket pin 17 to J115 pin 18 (+5 V) | BEEP |
-| socket pin 11 to ground | not measured yet |
+| A101 socket pin 11 to J115 pin 15 (ground) | NO beep (as the print says: pin 11 is the P5 signal, not ground) |
 
 ## 4. Motherboard: RAM slot select lines (open)
 J102, J103, J104 pin 18 and pin U each get one of the eight-kilobyte block selects from Z101. Beep Z101 pins 1, 2, 3, 4 to J102 pin 18, J102 pin U, J103 pin 18, J103 pin U. The netlist assumes in that order.
