@@ -91,7 +91,7 @@ Z102 is a 74LS32 (14 pin). Gate A: inputs pin 5 (from Z101 pin 5, S4) and pin 4 
 | Z102 pin 1 to J109 pin 14 (RD5) | BEEP |
 | Z102 pin 6 to J102 pin 18 | NO beep |
 | Z102 pin 6 to J103 pin P | NO beep |
-| Z102 pin 6 to J107 pin P | not measured yet |
+| Z102 pin 6 to any pin of any J connector | NO beep (owner) |
 | Z102 pin 3 to J102 pin U | not measured yet |
 
 ## 6. Motherboard: keyboard connector J106 pins 15 and 10 (open, narrowed)
