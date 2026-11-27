@@ -34,5 +34,12 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 9. IC106 pin 20 to IC112 pin 14: G (both +5V).
 10. IC112 pin 11 to IC112 pin 14: G. FINDING: IC112 pin 11 (gate output, printer latch clock) is tied to +5V. Netlist expects it on IC106 pin 11 only.
 11. IC112 pin 8 to IC112 pin 14: N (other gate output is not on +5V).
+12. IC112 pin 11 to IC106 pin 20: G (both +5V, no new information).
+13. IC106 pin 11 to IC106 pin 20: N (latch clock is not on +5V).
+
+OPEN (owner on a break): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
+Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
+Also: the tracer joined IC106 pins 12 and 16 (PRQ4 / PRQ6) on the drawing. Probably a crossing on the drawing, beep IC106 pin 12 to pin 16 to confirm they are NOT joined.
+The tracer does not see IC112 (gates are drawn as symbols, not boxes), so its gate pins are checked by eye only.
 
 ROM image supplied by the owner (cpc464.rom, 32768 bytes, md5 a993f85b88ac4350cf4d41554e87fe4f): reads as the 464 firmware v1 (1984 Amstrad copyright string). Kept outside the repo; not for loading programs, only to compare against IC103 if needed.
