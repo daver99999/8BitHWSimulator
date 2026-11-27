@@ -10,7 +10,7 @@ Z302 (74LS74) pin 13 (CLR2) is on one wire with Z301 pin 6 and the lower end of 
 | To | Expected | Why it matters |
 |---|---|---|
 | ANTIC (A302) pin 35 | NO beep (measured 2026-11-27) | netlist assumed yes (F0): wrong, to be changed |
-| GTIA (A301) pin 29 | ? | same net as ANTIC 35 |
+| GTIA (A301) pin 29 | NO beep (measured 2026-11-27) | netlist assumed yes: wrong, to be changed |
 | edge connector pin X (Reset A) | ? | |
 | edge connector pin C (OSC) | ? | |
 | edge connector pin 25 (Reset M) | ? | |
