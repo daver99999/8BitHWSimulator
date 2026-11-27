@@ -53,6 +53,11 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 29. IC116 pin 2 to IC114 pin 11: G.
 30. IC111 pin 24 to IC114 pin 11: G. READY net confirmed: IC111.24, IC116.2, IC114.11.
 31. IC115 pin 2 to IC111 pin 14 (D0): G.
+32. IC115 pin 11 to IC111 pin 13 (D7): G.
+33. IC115 pin 18 to IC114 pin 3: G.
+34. IC114 pin 2 to IC111 pin 14: G.
+35. IC116 pin 24 to IC114 pin 3: G (D0 path confirmed through the buffers).
+36. IC117 pin 14 to IC116 pin 27: G (IC117 = data bit 3, bit order confirmed for this chip).
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
