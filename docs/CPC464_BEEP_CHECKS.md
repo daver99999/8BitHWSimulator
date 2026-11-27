@@ -29,17 +29,17 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 4. IC111 pin 29 to IC107 pin 7: G.
 5. IC111 pin 29 to IC108 pin 1: G.
 6. IC111 pin 29 to IC102 pin 6: G. (Remaining grounds skipped, owner asked, low value.)
-7. IC112 pin 11 to IC106 pin 11: N.
-8. IC112 pin 11 to IC106 pin 14: owner said it beeps to IC106 pin 20.
+7. IC112 pin 11 to IC106 pin 11: G (retest; first N was a slip). Matches the netlist.
+8. IC112 pin 11 to IC106 pin 14: owner said it beeps to IC106 pin 20 (slip, SUSPECT; probe was on the +5V pin).
 9. IC106 pin 20 to IC112 pin 14: G (both +5V).
-10. IC112 pin 11 to IC112 pin 14: G. FINDING: IC112 pin 11 (gate output, printer latch clock) is tied to +5V. Netlist expects it on IC106 pin 11 only.
+10. IC112 pin 11 to IC112 pin 14: first G, retest (18) N. First answer was a slip; IC112 pin 11 is NOT on +5V. Fault finding withdrawn.
 11. IC112 pin 8 to IC112 pin 14: N (other gate output is not on +5V).
 12. IC112 pin 11 to IC106 pin 20: G (both +5V, no new information).
-13. IC106 pin 11 to IC106 pin 20: N (latch clock is not on +5V). SUSPECT, see 16.
+13. IC106 pin 11 to IC106 pin 20: N (latch clock is not on +5V). Consistent with 18.
 14. IC106 pin 11 to IC112 pin 8: N (twice).
 15. IC106 pin 11 to IC112 pin 3: N.
 16. IC106 pin 11 to IC112 pin 11: G (owner: first answer was a slip). Matches the netlist; supersedes beep 7 (N, SUSPECT).
-    Conflict: IC112 pin 11 is on +5V (beep 10) but IC106 pin 11 was N to +5V (13). One of 7, 10, 13 is wrong. Retest 13, then 10.
+18. IC112 pin 11 to IC112 pin 14: N (retest of 10). Conflict resolved: IC112 pin 11 / IC106 pin 11 is the printer latch clock net, not on +5V. Open reading question 1 is closed: the clock is IC106 pin 11.
 
 OPEN (owner on a break): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
