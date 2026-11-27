@@ -4,18 +4,19 @@ Boards unpowered, meter on beep. The netlist (`tools/atari800_netlist.py`) was t
 
 Chip pins are numbered as on the chip (pin 1 at the notch, counter-clockwise). Silkscreen names on your boards may differ from the schematic names; say so and the table will follow your board.
 
-## 1. CPU board: where does the line into Z302 pin 13 come from? (open)
-Z302 (74LS74) pin 13 (CLR2) is on one wire with Z301 pin 6 and the lower end of R310. The print does not show where that wire goes. Beep Z302 pin 13 to each of these:
+## 1. CPU board: where does the line into Z302 pin 13 come from? (measured 2026-11-27)
+Result on the owner's board: Z302 (74LS74) pin 13 (CLR2) has no continuity to ANTIC 35, GTIA 29, edge pin X or the +5 V pin (Z302 pin 14), and there is no trace on it on either side. The print puts it on one wire with Z301 pin 6 and the lower end of R310, and that wire is the F0 clock from GTIA pin 29.
 
-| To | Expected | Why it matters |
-|---|---|---|
-| ANTIC (A302) pin 35 | NO beep (measured 2026-11-27) | netlist assumed yes (F0): wrong, to be changed |
-| GTIA (A301) pin 29 | NO beep (measured 2026-11-27) | netlist assumed yes: wrong, to be changed |
-| edge connector pin X (Reset A) | NO beep (measured 2026-11-27); no trace seen on Z302 pin 13 | |
-| edge connector pin C (OSC) | ? | |
-| edge connector pin 25 (Reset M) | ? | |
-| Z301 pin 6 | beeps | same wire |
-| R310, end away from +5 | beeps | same wire |
+Why it matters: Z302 flop 2 has D and CLK tied to +5 V, so it works only through its preset and clear, which both follow F0. With CLR2 not connected the flop stays preset, PHI2 never falls and the 6502 never runs. In the simulator, lifting Z302 pin 13 gives exactly that (PC stays 0000). So either this is the fault on the board, or the board is a revision that differs from the print.
+
+| To | Result |
+|---|---|
+| ANTIC (A302) pin 35 | NO beep |
+| GTIA (A301) pin 29 | NO beep |
+| edge connector pin X (Reset A) | NO beep |
+| Z302 pin 14 (+5 V) | NO beep |
+| Z301 pin 6 to GTIA (A301) pin 29 | not measured yet |
+| R310, end away from +5, to Z301 pin 6 | not measured yet |
 
 ## 2. CPU board: 6502 RDY pin (open)
 The print labels two pins "7" (SYNC and RDY). On a real 6502 SYNC is pin 7 and RDY is pin 2. Beep 6502 (A303) pin 2 to ANTIC pin 15 (RDY) and to the lower end of R311.
