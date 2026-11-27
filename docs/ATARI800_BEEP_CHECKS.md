@@ -132,7 +132,9 @@ Beep A401 / A403 pin 20 to the edge pin for S7 (H) and pin 21 to A12 (pin 12); A
 | A401 pin 21 to edge pin 12 (A12) | BEEP |
 | A403 pin 21 to edge pin 12 (A12) | BEEP |
 | A402 pin 21 to edge pin 12 (A12) | BEEP |
-| A402 pin 18 to Z401 pin 5 (A11) | not measured yet |
+| A402 pin 18 to Z401 pin 5 (A11) | BEEP |
+| A402 pin 20 to Z401 pin 4 (S6) | not measured yet |
+| A401 pin 20 to A403 pin 20 (S7) | not measured yet |
 
 ## 9. 16K RAM board: which DRAM holds which bit (open)
 The netlist puts D6 in Z505, D7 in Z506, D5 in Z507, D3 in Z508, D4 in Z509, D2 in Z510, D1 in Z511, D0 in Z512. Beep DRAM pin 2 (DIN) to the edge pin of its data bit.
