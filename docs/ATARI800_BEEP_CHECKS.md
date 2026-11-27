@@ -31,6 +31,7 @@ Why it matters: the owner reports the Atari works fine with Z302 pin 13 unconnec
 | Z302 pin 13 to 6502 (A303) pin 40 (/RES) | NO beep |
 | Z302 pin 13, trace followed by eye | goes only to Z301 pin 6 (owner). So these two pins are a two-pin wire on this board. |
 | Z302 pin 13, scope, board running | 1.79 MHz square wave, close to 5 V (F0). So the wire carries F0 although it has no direct copper path to GTIA 29 (there must be a part or a hidden link in between). |
+| R310 far end (away from +5 V) to GTIA (A301) pin 29 | NO beep |
 
 ## 2. CPU board: 6502 RDY pin (open)
 The print labels two pins "7" (SYNC and RDY). On a real 6502 SYNC is pin 7 and RDY is pin 2. Beep 6502 (A303) pin 2 to ANTIC pin 15 (RDY) and to the lower end of R311.
