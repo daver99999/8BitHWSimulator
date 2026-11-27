@@ -111,7 +111,7 @@ Details are listed in the generator output (`python3 tools/atari800_netlist.py`)
 |---|---|
 | Z101 pin 12 to Z101 pin 8 (GND) | NO beep (as expected: pin 12 is EXSEL, not ground) |
 | Z101 pin 12 to Z101 pin 16 (+5 V) | NO beep |
-| Z101 pin 12 to J107 pin 14 (EXSEL) | NO beep (first try; probably a missed contact, repeat) |
+| Z101 pin 12 to J107 pin 14 (EXSEL) | NO beep (twice, second time pressed hard) |
 | Z101 pin 12 to R103 (680) | BEEP |
 | R103 other end to J115 pin 15 (GND) | BEEP |
 | Z101 pin 15 (A13) to J101 pin 20 | BEEP |
