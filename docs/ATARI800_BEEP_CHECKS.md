@@ -53,7 +53,7 @@ The print has Vss on pin 1, Vcc on pin 17 and the signal P5 on pin 11. With A101
 | Check | Result |
 |---|---|
 | socket pin 1 to ground (Z302 pin 7) | BEEP (owner, 2026-11-27) |
-| socket pin 17 to +5 V | not measured yet |
+| socket pin 17 to J115 pin 18 (+5 V) | BEEP |
 | socket pin 11 to ground | not measured yet |
 
 ## 4. Motherboard: RAM slot select lines (open)
