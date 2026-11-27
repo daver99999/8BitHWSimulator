@@ -113,8 +113,13 @@ Beep A401 / A403 pin 20 to the edge pin for S7 (H) and pin 21 to A12 (pin 12); A
 ## 9. 16K RAM board: which DRAM holds which bit (open)
 The netlist puts D6 in Z505, D7 in Z506, D5 in Z507, D3 in Z508, D4 in Z509, D2 in Z510, D1 in Z511, D0 in Z512. Beep DRAM pin 2 (DIN) to the edge pin of its data bit.
 
-## 10. Motherboard: console switch header J114 pin order (open)
+## 10. Motherboard: console switch header J114 pin order (in progress)
 Added after rereading the print at higher resolution. The four 100 ohm resistors R184-R187 sit left to right over J114 pins 1, 4, 3, 2, and the four wires from the CPU slot (S2, S1, S0, /RNMI from the top down) nest without crossing, which puts /RNMI on pin 1, S0 on pin 4, S1 on pin 3 and S2 on pin 2. The netlist and the key map currently have S2 on 1, S1 on 2, S0 on 3 and /RNMI on 4. Beep J101 pin R (S2) to J114 pins 1-4 to settle it; the netlist and the key map change if it is not pin 1.
+
+| Check | Result |
+|---|---|
+| J101 pin R (S2) to J114 pin 1 | NO beep (owner typed "nbc", read as nc). So S2 is not on pin 1, as the higher-resolution reading says. |
+| J101 pin R (S2) to J114 pin 2 | not measured yet |
 
 ## 11. Video output, motor transistor, serial bus pull-ups (open)
 Netted from the print for continuity only (the simulator draws the picture from the GTIA model): the luminance mixer A103B-F, R179-R183, CR108, Q105, R189, R200-R206, C163, C164, C170, L103-L105, the chroma amplifier A104A/B with R196-R199, Q107 with R159 and L106, and the serial bus pull-ups and capacitors R129A-F, R157, R158A, C182-C188, C189. The unsure items in the generator output say what to check first: the order of R180-R183 on the A103 outputs (36K on pin 4, 18K on 10, 9.1K on 15, 4700 on 12), CR108's polarity, the A104B base pin, and which serial bus line each pull-up is on.
