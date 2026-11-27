@@ -113,7 +113,8 @@ Details are listed in the generator output (`python3 tools/atari800_netlist.py`)
 | Z101 pin 12 to Z101 pin 16 (+5 V) | NO beep |
 | Z101 pin 12 to J107 pin 14 (EXSEL) | NO beep (twice, second time pressed hard) |
 | Z101 pin 12 to any pin of J107 (sweep) | none beeps. PARKED: EXSEL is not seen on J107 by beep; the wire only reaches R103 (680 to ground). To resume: follow it by eye or by a photo. |
-| J101 pin 5 to 6502 (A303) pin 33 (D0) | not measured yet |
+| J101 pin 5 to 6502 (A303) pin 33 (D0) | BEEP. So pin 5 is D0 and S3 is the other pin (the netlist uses S). |
+| J101 pin 25 to A102 (PIA) pin 34 (RESET) | not measured yet |
 | Z101 pin 12 to R103 (680) | BEEP |
 | R103 other end to J115 pin 15 (GND) | BEEP |
 | Z101 pin 15 (A13) to J101 pin 20 | BEEP |
