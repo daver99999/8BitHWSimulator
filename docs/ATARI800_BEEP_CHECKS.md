@@ -70,6 +70,9 @@ The netlist (and the print) puts the decoder outputs from Z101 on the slots like
 | Z101 pin 3 to J103 pin T | BEEP |
 | Z101 pin 4 to J103 pin 18 | NO beep |
 | Z101 pin 4 to J103 pin U | NO beep |
+| Z101 pin 4 to J103 pin R (the pin opposite 15) | BEEP |
+
+Letter positions on the slots: U is opposite 18 and R is opposite 15 on this board (each letter sits one number above a plain A..Z count).
 
 ## 5. Motherboard: Z102 gates and the cartridge RD4 / RD5 (open)
 Beep Z102 pins 1, 2, 4, 5 (and outputs 3 and 6) to Z101 pin 5 (S4), Z101 pin 6 (S5), J109 pin A (RD4), J109 pin 14 (RD5), J104 pin 18, J104 pin U.
