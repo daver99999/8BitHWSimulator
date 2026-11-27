@@ -28,6 +28,7 @@ Why it matters: the owner reports the Atari works fine with Z302 pin 13 unconnec
 | Z302 pin 9 to ANTIC (A302) pin 29 (PHI2) | BEEP (owner corrected an earlier "nc": probe slipped). So the print is right here, and the other "nc" results in check 1 are suspect and must be repeated. |
 | Z302 pin 13 to GTIA (A301) pin 29 (repeated, probes pressed hard) | NO beep (definite) |
 | GTIA (A301) pin 29 to ANTIC (A302) pin 35 (F0) | BEEP |
+| Z302 pin 13 to 6502 (A303) pin 40 (/RES) | NO beep |
 
 ## 2. CPU board: 6502 RDY pin (open)
 The print labels two pins "7" (SYNC and RDY). On a real 6502 SYNC is pin 7 and RDY is pin 2. Beep 6502 (A303) pin 2 to ANTIC pin 15 (RDY) and to the lower end of R311.
