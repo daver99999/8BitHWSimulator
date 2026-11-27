@@ -150,12 +150,12 @@ def cpu_board():
     net('Q1N', 'Z302.6', 'Z301.9', 'Z301.2')          # /Q1: buffer enables, Z301B input, Z301C input
     net('Z301B_OUT', 'Z301.10', 'Z301.11', 'Z301.12')  # Z301B output into Z301A (an inverter, inputs tied)
     net('Z301D_OUT', 'Z301.4', 'Z301.3', 'Z302.10')   # Z301D output: Z301C input and Z302 PRST2
-    net('F0', 'Z301.6', 'Z302.13', 'R310.2')   # per the print. NOTE: measured on the owner's board, Z302 pin 13 is not connected to anything (see the unsure text and beep check 1)
+    net('F0', 'Z301.6', 'Z302.13')   # scope on the owner's board: 1.79 MHz here. R310 is NOT on this wire (both its ends read flat high).
     net(GND, 'Z301.5')
     net('PHI0', 'Z301.1')                              # Z301C output = the 6502 and ANTIC phase-0 input
     net(V5, 'R311.1')
     net('RDY', 'R311.2')
-    unsure('CPU board clock: the print puts Z302 pin 13 (CLR2), Z301 pin 6 and R310 on the F0 line from GTIA pin 29. On the owner board (2026-11-27, working Atari) Z302 pin 13 has no continuity to ANTIC 35, GTIA 29, edge pin X or +5 V and no trace on either side, and Z301 pin 6 has none to GTIA 29. So the print is wrong here. The netlist still follows the print so that it boots; the real wiring of Z301 pin 6, R310 and Z302 pin 10 is not known yet.')
+    unsure('CPU board clock: on the owner board Z302 pin 13 and Z301 pin 6 carry the 1.79 MHz F0 clock (scope), but there is no continuity from them to GTIA 29 or ANTIC 35, which beep to each other. How the clock gets onto that wire is not known. R310 is not on it: both ends read flat high, and its far end does not beep to GTIA 29. Where R310 really goes is not known.')
     unsure('CPU board: 6502 RDY pin printed as 7 next to SYNC 7; assumed pin 2 (RDY) joined to ANTIC RDY.')
 
 
