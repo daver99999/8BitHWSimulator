@@ -73,6 +73,13 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 49. IC116 pin 39 to TR3 base: G.
 50. IC111 pin 6 to expansion pin 50 (CLKPHI): G.
 51. IC116 pin 8 to IC125 pin 8 (XTAL): G.
+52-53 (first try): VOID, owner was on the wrong chip. Restarted on IC125 (ZN7400E next to X101).
+52. IC125 pin 7 to IC111 pin 29: G (ground, right chip).
+53. IC125 pin 11 to pin 9: G.
+54. IC125 pin 11 to pin 10: G.
+55. IC125 pin 12 to pin 13: G.
+56. IC125 pin 12 to pin 6: G.
+57. IC125 pin 6 to X101 leg (owner did not say which leg; assumed pin 1): G.
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
