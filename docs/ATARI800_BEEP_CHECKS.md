@@ -222,7 +222,7 @@ The print labels pin S "RAS" and pin R "R/WE" on both slots. The netlist has R o
 | J104 pin 16 (R/W) to the J108 pin opposite 14 | BEEP. So J108 R/W is on pin R (opposite 14), not pin 1. Netlist changed. |
 | J109 pin S to J108 pin S (RAS) | BEEP. So J108 S is RAS (RASTIME) too, as the netlist has it. |
 
-## 15. Controller ports: pot resistors and POKEY pin 11 (in progress)
+## 15. Controller ports: pot resistors and POKEY pin 11 (done)
 Read from the print at 200 dpi and added to the netlist: R130-R137 (1.8K) in series with the pots, R158B-R158I (4.7K) from +5 to PB0-PB7, and the small capacitors on the jack side. Two things are not proved:
 - POKEY pin 11: the print has P5 on it and also a ground at the foot of the chip labelled 11. The netlist has P5 on 11 and ground on pin 1 only. Beep A101 pin 11 to ground; if it beeps, that pin really is ground, and P5 (jack 3 B pot) has no pin.
 - Pot to jack pairing: beep A101 pin 14 (P0) through R131 to J110 pin 9, and A101 pin 15 (P1) through R130 to J110 pin 5. Jack 2 should be P2 / P3 (pins 12 / 13), jack 3 P4 / P5, jack 4 P6 / P7.
@@ -244,7 +244,7 @@ Read from the print at 200 dpi and added to the netlist: R130-R137 (1.8K) in ser
 | R135 far end to J112 pin 9 | BEEP |
 | R134 far end to J112 pin 5 | BEEP. Jack 3 (J112) pot lines done. |
 | R137 far end to J113 pin 9 | BEEP |
-| R136 far end to J113 pin 5 | not measured yet |
+| R136 far end to J113 pin 5 | BEEP. Jack 4 (J113) pot lines done; A101 pin 9 (P7) to R136 was taken by elimination. |
 
 ## 16. Personality board: delayed phase 2 and the EXSEL node
 The gate wiring was reread and matches the netlist. Two points are only from the drawing:
