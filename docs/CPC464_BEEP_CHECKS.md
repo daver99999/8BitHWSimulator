@@ -23,6 +23,16 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 7. J104 jack pin 2 (switch) is not connected.
 
 ## Beep list (not started)
-1. IC111 pin 29 to IC103 pin 14 (both ground): G (beep). Owner first said N, then corrected it: he had probed the wrong IC. Matches the netlist.
+1. IC111 pin 29 to IC103 pin 14 (both ground): G (owner first said N, corrected: wrong IC probed).
+2. J104 pin 3 to IC111 pin 29: G.
+3. IC111 pin 29 to IC116 pin 35: G (settles the gate array ground pin).
+4. IC111 pin 29 to IC107 pin 7: G.
+5. IC111 pin 29 to IC108 pin 1: G.
+6. IC111 pin 29 to IC102 pin 6: G. (Remaining grounds skipped, owner asked, low value.)
+7. IC112 pin 11 to IC106 pin 11: N.
+8. IC112 pin 11 to IC106 pin 14: owner said it beeps to IC106 pin 20.
+9. IC106 pin 20 to IC112 pin 14: G (both +5V).
+10. IC112 pin 11 to IC112 pin 14: G. FINDING: IC112 pin 11 (gate output, printer latch clock) is tied to +5V. Netlist expects it on IC106 pin 11 only.
+11. IC112 pin 8 to IC112 pin 14: N (other gate output is not on +5V).
 
 ROM image supplied by the owner (cpc464.rom, 32768 bytes, md5 a993f85b88ac4350cf4d41554e87fe4f): reads as the 464 firmware v1 (1984 Amstrad copyright string). Kept outside the repo; not for loading programs, only to compare against IC103 if needed.
