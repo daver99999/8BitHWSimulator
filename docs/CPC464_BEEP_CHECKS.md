@@ -67,6 +67,9 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 43. IC107 pin 25 to CP001 pin E: G (tape read).
 44. CP001 pin H to center pin of TR1: G (center leg = collector on the 2SC2120, so TR1 = Q101).
 45. IC116 pin 36 to R125 (either end): G.
+46. IC116 pin 34 to R127: G.
+47. IC116 pin 32 to R129: G.
+48. IC116 pin 11 to R137: G.
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
