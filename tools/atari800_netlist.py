@@ -348,7 +348,7 @@ def motherboard():
         r = 'R%d' % (184 + i)
         part(r, 'R', 2, '100'); net(sig, r + '.1'); net('SW_' + sig, r + '.2', 'J114.%d' % hp)
         part('C%d' % (165 + i), 'C', 2, '.001uF'); net('SW_' + sig, 'C%d.1' % (165 + i)); net(GND, 'C%d.2' % (165 + i))
-    unsure('J114 pin order: measured on the owner board (beep check 10): ANTIC pin 6 (/RNMI) goes to R184 and J114 pin 1, and J114 pin 2 goes to R187, whose other end is on the J101 pin opposite 14 (S2). R185 / R186 on pins 4 and 3 (S0, S1) follow the print and are not measured.')
+    unsure('J114 pin order: measured on the owner board (beep check 10): ANTIC pin 6 (/RNMI) goes to R184 and J114 pin 1, and J114 pin 2 goes to R187, whose other end is on the J101 pin opposite 14 (S2). J114 pin 4 reaches R185 and pin 3 reaches R186, as in the print (which signal is on which of those two resistors is not measured).')
     sio = (('OCLK', 7), ('BCLK', 8), ('SID', 9), ('SOD', 10), ('CB1', 14), ('CA1', 12), ('CB2', 11))
     for i, (sig, jp) in enumerate(sio):
         r = 'R%d' % (168 + i)
