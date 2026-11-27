@@ -205,7 +205,7 @@ Read at 330 dpi, changed in the netlist. Z101 pin 12 (D) is on the EXSEL line (J
 | R102 (1K) to GTIA (A301) pin 15 (S3) | BEEP (owner found R102 and answered g) |
 | R102 to A101 (POKEY) pin 37 (AUD) | NO beep (as expected) |
 
-## 14. Cartridge slots J108 / J109: pin S and pin R
+## 14. Cartridge slots J108 / J109: pin S and pin R (done)
 The print labels pin S "RAS" and pin R "R/WE" on both slots. The netlist has R on R/W (same as the CPU R/W) and S on phase 2 (the FAQ pinout), and J108 now matches J109 (it was wired to pins 1 and A, which was wrong: A is RD4).
 - Beep J109 pin S to J108 pin S (they should be one wire), then J109 pin S to RAM slot J104 pin 14 (phase 2) and to J104 pin 15 (RAS time). Whichever beeps is what pin S really is.
 - Beep J109 pin R to J108 pin R, then to J104 pin 16 (R/W).
@@ -220,7 +220,7 @@ The print labels pin S "RAS" and pin R "R/WE" on both slots. The netlist has R o
 | J104 pin 15 (RASTIME) to any pin of J109 | the pin opposite 15 (letter S): so pin S is RAS = RASTIME, not phase 2. Netlist changed. |
 | J104 pin 16 (R/W) to any pin of J109 | the pin opposite 14 (letter R): R/W on J109 R, as in the netlist |
 | J104 pin 16 (R/W) to the J108 pin opposite 14 | BEEP. So J108 R/W is on pin R (opposite 14), not pin 1. Netlist changed. |
-| J109 pin S to J108 pin S (RAS) | not measured yet |
+| J109 pin S to J108 pin S (RAS) | BEEP. So J108 S is RAS (RASTIME) too, as the netlist has it. |
 
 ## 15. Controller ports: pot resistors and POKEY pin 11
 Read from the print at 200 dpi and added to the netlist: R130-R137 (1.8K) in series with the pots, R158B-R158I (4.7K) from +5 to PB0-PB7, and the small capacitors on the jack side. Two things are not proved:
