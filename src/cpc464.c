@@ -264,6 +264,7 @@ typedef struct {
     uint8_t cpu_ram, cpu_wr;    /* this microsecond's Z80 slot does a RAM cycle / a write */
     /* registers */
     uint8_t pen, ink[17], rmr;  /* rmr: bits 0-1 mode, 2 lower ROM off, 3 upper ROM off */
+    uint8_t mode;               /* the mode in use: rmr's bits 0-1 taken at the next HSYNC */
     /* interrupts */
     uint8_t ic, vs_wait, int_pending;
     uint8_t hs_prev, vs_prev;
@@ -333,7 +334,7 @@ static void ga_tick(sim_t *s, part_t *p) {
     int hs = pin_in(s, p, GA_HSYNC), vs = pin_in(s, p, GA_VSYNC);
 
     if (reset) {
-        g->rmr = 0; g->pen = 0; g->ic = 0; g->int_pending = 0; g->vs_wait = 0;
+        g->rmr = 0; g->mode = 0; g->pen = 0; g->ic = 0; g->int_pending = 0; g->vs_wait = 0;
     }
     /* what the previous tick's strobes brought: video bytes, and a register write */
     if (t == 3) g->vb0 = (uint8_t)part_read_bus(s, p, ga_d_pins, 8);
@@ -346,12 +347,12 @@ static void ga_tick(sim_t *s, part_t *p) {
         g->ic = (uint8_t)((g->ic + 1) & 63);
         if (g->ic == 52) { g->ic = 0; g->int_pending = 1; }
         if (g->vs_wait && --g->vs_wait == 0) {
-            if (g->ic >= 32) g->int_pending = 1;
+            if (g->ic < 32) g->int_pending = 1;          /* two HSYNCs after VSYNC: an interrupt only if the counter is below 32 (bit 5 clear) */
             g->ic = 0;
         }
         g->ly++;
     }
-    if (!g->hs_prev && hs) g->lt = 0;
+    if (!g->hs_prev && hs) { g->lt = 0; g->mode = g->rmr & 3; }        /* a mode change takes effect from the next HSYNC */
     if (!g->vs_prev && vs) { g->vs_wait = 2; g->ly = 0; }
     g->hs_prev = (uint8_t)hs;
     g->vs_prev = (uint8_t)vs;
@@ -392,13 +393,14 @@ static void ga_tick(sim_t *s, part_t *p) {
     if (g->disp_cur) {
         uint8_t byte = (t < 8) ? g->db0 : g->db1;
         int k = t & 7, pen;
-        switch (g->rmr & 3) {
+        switch (g->mode) {
         case 0: {
             int px = k >> 2;
             pen = px == 0 ? (((byte >> 7) & 1) | (((byte >> 3) & 1) << 1) | (((byte >> 5) & 1) << 2) | (((byte >> 1) & 1) << 3))
                           : (((byte >> 6) & 1) | (((byte >> 2) & 1) << 1) | (((byte >> 4) & 1) << 2) | (((byte >> 0) & 1) << 3));
             break; }
         case 1: { int px = k >> 1; pen = ((byte >> (7 - px)) & 1) | (((byte >> (3 - px)) & 1) << 1); break; }
+        case 3: pen = (k >> 2) == 0 ? (((byte >> 7) & 1) | (((byte >> 3) & 1) << 1)) : (((byte >> 6) & 1) | (((byte >> 2) & 1) << 1)); break;   /* the undocumented mode 3: mode 0's pixels with two bits */
         default: pen = (byte >> (7 - k)) & 1; break;
         }
         ink = g->ink[pen];
