@@ -10,6 +10,8 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 ## Unreleased
 
+- **CPC 464 printer port checked.** With BUSY held low, `PRINT #8,"A"` puts `A`, CR, LF on PRN pins 2-8 with a /STROBE for each through IC112, IC106 and IC110, and faults on those chips change the bytes as expected (`tests/cpc464/printer.c`, results in `docs/FAULT_TESTS.md`). With BUSY left high (no printer) the command waits and nothing is strobed.
+
 - **CPC 464 gate array checked against the CPCWiki page.** Three fixes: the interrupt after a VSYNC (two HSYNCs later) is now requested only when the counter is below 32 (it was the other way round); a mode change takes effect at the next HSYNC (it was at once); and the undocumented mode 3 draws 160x200 in four colours (it was drawn like mode 2). Checked and unchanged: the counter (52 HSYNCs, 6 interrupts a frame, 300 Hz: `tests/cpc464/intrate.c`), the reset of bit 5 on the acknowledge, RMR bit 4, the PENR/INKR/RMR decoding, the ROM enables, the mode 0, 1 and 2 pixel bit order and all 32 hardware colours.
 
 - **AY-3-8912: tones were an octave low.** The core counted the tone period at f/16 and toggled once per period, so the pitch came out at f/(32 x period) instead of the datasheet's f/(16 x period). The tone counters now run at f/8 (noise and envelope stay at f/16). This changes the pitch on the TS2068 too: a period of 284 on the CPC's 1 MHz clock now gives 220 Hz (88 edges in 10 frames).

@@ -88,3 +88,18 @@ Notes
 - CPC IC107 removed: BASIC fills with phantom keystrokes ("Syntax error"); IC115 removed: colour garbage; IC114 removed: black screen with specks.
 - Atari A402 is the 2K floating-point ROM at $D800 and is not used by the Memo Pad boot, so the boot is the same without it.
 - Atari A103 (CD4050) removed or the oscillator removed: no CPU clock, dead board.
+
+## CPC 464 printer port (`tests/cpc464/printer.c`)
+
+BUSY (IC107 pin 24) is held low, as a ready printer would, then `PRINT #8,"A"` is typed and the byte on PRN pins 2-8 is read at each falling edge of /STROBE (PRN pin 1).
+The ROM sends CR LF once before the first character after a reset; then `A`, CR, LF.
+
+| Fault | Bytes at the strobes |
+|---|---|
+| none | 0D 0A 41 0D 0A |
+| `IC106.2:open` (Q0, PRN pin 2) | 0C 0A 40 0C 0A (bit 0 lost) |
+| `IC106.16:gnd` (Q6, PRN pin 8) | 0D 0A 01 0D 0A (bit 6 lost) |
+| `IC112.11:open` (the latch clock) | no strobe, PRCK stays low |
+| `IC110:removed` (the strobe gate) | no strobe, PRSTRB stays low |
+| `IC106:removed` | no strobe |
+
