@@ -23,6 +23,6 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 7. J104 jack pin 2 (switch) is not connected.
 
 ## Beep list (not started)
-1. IC111 pin 29 to IC103 pin 14 (both ground): N (no continuity). Unexpected, netlist says GND. Next: test each to the DC jack ground separately.
+1. IC111 pin 29 to IC103 pin 14 (both ground): G (beep). Owner first said N, then corrected it: he had probed the wrong IC. Matches the netlist.
 
 ROM image supplied by the owner (cpc464.rom, 32768 bytes, md5 a993f85b88ac4350cf4d41554e87fe4f): reads as the 464 firmware v1 (1984 Amstrad copyright string). Kept outside the repo; not for loading programs, only to compare against IC103 if needed.
