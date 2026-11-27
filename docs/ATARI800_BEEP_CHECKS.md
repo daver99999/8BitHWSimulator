@@ -86,7 +86,7 @@ Z102 is a 74LS32 (14 pin). Gate A: inputs pin 5 (from Z101 pin 5, S4) and pin 4 
 |---|---|
 | Z102 pin 3 to J104 pin 18 | NO beep (not informative: J104 18 belongs to Z101 pin 1) |
 | Z102 pin 5 to Z101 pin 5 | BEEP |
-| Z102 pin 2 to Z101 pin 6 | not measured yet |
+| Z102 pin 2 to Z101 pin 6 | BEEP |
 | Z102 pin 4 to J109 pin A (RD4) | not measured yet |
 | Z102 pin 1 to J109 pin 14 (RD5) | not measured yet |
 
