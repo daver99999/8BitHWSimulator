@@ -223,7 +223,7 @@ def motherboard():
         net(V5, ref + '.13'); net(GND, ref + '.B')
         net('D5XX', ref + '.15')
         if ref == 'J108':
-            net('R/W', 'J108.1'); net('PHI2', 'J108.A'); net('RASTIME', 'J108.S')   # owner board: PHI2 on the J108 pin opposite 1 (check 14); R/W on pin 1 is the first reading of the print, not measured
+            net('R/W', 'J108.R'); net('PHI2', 'J108.A'); net('RASTIME', 'J108.S')   # owner board (check 14): PHI2 on the J108 pin opposite 1, R/W on the pin opposite 14; S is by the print label
         else:
             net('R/W', ref + '.R'); net('RASTIME', ref + '.S')   # J109 S measured on the owner board (check 14): RAS = RASTIME, the pin opposite 15
     net('S4', 'J109.1', 'J108.12'); net('RD4', 'J109.A', 'J108.14')
@@ -233,7 +233,7 @@ def motherboard():
     for i in range(13): net('A%d' % i, 'CARTL.%d' % (i + 1))
     for i in range(8): net('D%d' % i, 'CARTL.%d' % (14 + i))
     net('S5', 'CARTL.22'); net('RD5', 'CARTL.23')
-    unsure('Cartridge slots: the print labels pin S RAS and pin R R/WE on both slots. Owner board (check 14): J104 pin 14 (PHI2) and ANTIC PHI2 beep to the J108 pin opposite pin 1 (A), so J108 has PHI2 on A and (first reading of the print, not measured) R/W on pin 1; J109 has no PHI2 on any pin; its pin S (opposite 15) is RAS = RASTIME (J104 pin 15, measured); J108 S is put on RASTIME by the print label, not measured. R/W pins are not measured.')
+    unsure('Cartridge slots: the print labels pin S RAS and pin R R/WE on both slots. Owner board (check 14): J104 pin 14 (PHI2) and ANTIC PHI2 beep to the J108 pin opposite pin 1 (A), so J108 has PHI2 on A and R/W on the pin opposite 14 (R); J109 has no PHI2 on any pin; its pin S (opposite 15) is RAS = RASTIME (J104 pin 15, measured); J108 S is put on RASTIME by the print label, not measured. ')
 
     # address decoder Z101 (74LS42): A13/A14/A15 select the eight 8K blocks; Y0-Y3 RAM selects, Y4/Y5/Y6/Y7 = S4..S7
     part('Z101', '74LS42', 16, 'address decoder'); part('Z102', '74LS32', 14, 'OR gates')
