@@ -90,7 +90,7 @@ for lk, pb in zip(['LK1', 'LK2', 'LK3', 'LK4'], ['PB1', 'PB2', 'PB3', 'PB4']):
     net(pb, lk + '.1'); net(GND, lk + '.2')
 for r, n in (('R103', 'BUSY'), ('R104', 'EXP'), ('R105', 'PB4'), ('R106', 'PB3'), ('R107', 'PB2'), ('R108', 'PB1')):
     part(r, 'R', 2, '2.2K'); net(V5, r + '.1'); net(n, r + '.2')
-unsure('LK1-LK4 (the OS links): the schematic shows each as a pad pair from the port B line to ground; whether a link is fitted on the owner board is a beep check.')
+unsure('OWNER BOARD (beeps 20-23): LK1-LK4 all read OPEN. LK1-LK4 (the OS links): the schematic shows each as a pad pair from the port B line to ground; whether a link is fitted on the owner board is a beep check.')
 
 part('IC102', 'AY8912', 28, 'AY-3-8912 sound')
 net(V5, 'IC102.3', 'IC102.17', 'IC102.19'); net(GND, 'IC102.6')

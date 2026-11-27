@@ -52,6 +52,7 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 28. IC111 pin 24 to IC116 pin 2: G.
 29. IC116 pin 2 to IC114 pin 11: G.
 30. IC111 pin 24 to IC114 pin 11: G. READY net confirmed: IC111.24, IC116.2, IC114.11.
+31. IC115 pin 2 to IC111 pin 14 (D0): G.
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
@@ -59,3 +60,18 @@ Also: the tracer joined IC106 pins 12 and 16 (PRQ4 / PRQ6) on the drawing. Proba
 The tracer does not see IC112 (gates are drawn as symbols, not boxes), so its gate pins are checked by eye only.
 
 ROM image supplied by the owner (cpc464.rom, 32768 bytes, md5 a993f85b88ac4350cf4d41554e87fe4f): reads as the 464 firmware v1 (1984 Amstrad copyright string). Kept outside the repo; not for loading programs, only to compare against IC103 if needed.
+
+## Remaining beeps, in order (one per message)
+32. IC115 pin 11 to IC111 pin 13 (D7 into the 74LS244).
+33. IC115 pin 18 to IC114 pin 3 (RD0 from the 244 to the 373).
+34. IC114 pin 2 to IC111 pin 14 (373 output back to Z80 D0).
+35. IC116 pin 24 to IC114 pin 3 (RD0 at the gate array).
+36. IC117 pin 14 (DRAM data out) to IC116 pin 27 (confirms the DRAM bit order; IC117 is D3).
+37. IC124 pin 2 to IC111 pin 13 (DRAM D7 in).
+38. IC116 pin 4 to IC115 pin 1 (244EN).
+39. IC112 pin 8 to IC114 pin 1 (373 /OE).
+40. IC110 pin 11 to IC106 pin 19 side (printer strobe), then PRN pin 1.
+41. IC101 pin 1 to CP002 pin 19 (keyboard row Y1).
+42. IC107 pin 12 to CP001 pin D, IC107 pin 25 to CP001 pin E (tape).
+43. Q101/TR1 collector to CP001 pin H.
+44. Video: IC116 pin 36 to R125 and R126, then J101 pin 1.
