@@ -95,11 +95,11 @@ Z102 is a 74LS32 (14 pin). Gate A: inputs pin 5 (from Z101 pin 5, S4) and pin 4 
 | Z102 pin 6 to J103 pin P | NO beep |
 | Z102 pin 6 to any pin of any J connector | NO beep (owner) |
 | Z102 pin 3 to J102 pin U | NO beep |
-| Z102 pin 6 to every pin of Z101 and Z102 (sweep) | not measured yet |
+| Z102 pin 6 to every pin of Z101 and Z102 (sweep) | none (so pin 6 is not on ground, +5 V or anything else on those chips) |
 
-PARKED: where gated S4 (Z102 pin 6) and gated S5 (pin 3) go is not known; they do not reach any J connector pin, and the trace cannot be followed by eye. A photo of Z102 and the area around it would help.
+PARKED: gated S4 (Z102 pin 6) reaches no J connector pin and no pin of Z101 or Z102 (ground and +5 V included). Gated S5 (pin 3) was beeped to J102 pin U (no) and, with pin 6, to no J pin. Either the gating outputs go to a place not reached by these beeps (a hidden trace or a chip not tried) or they are unused on this board revision. The netlist keeps the print for the RAM slot selects (J102 on the gated lines); a RAM card in J102 would then not be selected by what the board actually does, which is not known.
 | Z102 pin 3 to J102 pin U | NO beep |
-| Z102 pin 6 to every pin of Z101 and Z102 (sweep) | not measured yet |
+| Z102 pin 6 to every pin of Z101 and Z102 (sweep) | none (so pin 6 is not on ground, +5 V or anything else on those chips) |
 
 ## 6. Motherboard: keyboard connector J106 pins 15 and 10 (done: order confirmed)
 Reread at 800 dpi; the scan is blurred at two of the eight pins on the Z104 side. The other six (16, 12, 17, 14, 11, 13) read clean, and 15 and 10 are the two left over, so only their order is open. The netlist has 15 at the second position and 10 at the fifth (R120 and R123). Beep J106 pin 15 to the far end of R120; if it beeps to R123 instead, the two are swapped.
