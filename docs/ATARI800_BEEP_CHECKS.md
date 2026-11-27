@@ -146,7 +146,8 @@ Owner has three RAM cards; the first one tested is called card 1 below. The owne
 | Check (card 1) | Result |
 |---|---|
 | Z512 pin 2 to edge pin 1 (D0) | BEEP |
-| Z510 pin 2 to edge pin 2 (D2) | not measured yet |
+| Z510 pin 2 to edge pin 2 (D2) | BEEP |
+| Z508 pin 2 to edge pin 3 (D3) | not measured yet |
 
 ## 10. Motherboard: console switch header J114 pin order (done)
 Added after rereading the print at higher resolution. The four 100 ohm resistors R184-R187 sit left to right over J114 pins 1, 4, 3, 2, and the four wires from the CPU slot (S2, S1, S0, /RNMI from the top down) nest without crossing, which puts /RNMI on pin 1, S0 on pin 4, S1 on pin 3 and S2 on pin 2. The netlist and the key map currently have S2 on 1, S1 on 2, S0 on 3 and /RNMI on 4. Beep J101 pin R (S2) to J114 pins 1-4 to settle it; the netlist and the key map change if it is not pin 1.
