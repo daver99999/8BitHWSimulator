@@ -210,6 +210,12 @@ The print labels pin S "RAS" and pin R "R/WE" on both slots. The netlist has R o
 - Beep J109 pin S to J108 pin S (they should be one wire), then J109 pin S to RAM slot J104 pin 14 (phase 2) and to J104 pin 15 (RAS time). Whichever beeps is what pin S really is.
 - Beep J109 pin R to J108 pin R, then to J104 pin 16 (R/W).
 
+| Check | Result |
+|---|---|
+| J104 pin 14 (PHI2 on the RAM slot) to any pin of J109 | none |
+| J104 pin 14 to J108 pin 1 | BEEP (owner). The netlist has pin S on J108 for PHI2; this needs sorting out. |
+| ANTIC (A302) pin 29 (PHI2) to J108 pin 1 | not measured yet |
+
 ## 15. Controller ports: pot resistors and POKEY pin 11
 Read from the print at 200 dpi and added to the netlist: R130-R137 (1.8K) in series with the pots, R158B-R158I (4.7K) from +5 to PB0-PB7, and the small capacitors on the jack side. Two things are not proved:
 - POKEY pin 11: the print has P5 on it and also a ground at the foot of the chip labelled 11. The netlist has P5 on 11 and ground on pin 1 only. Beep A101 pin 11 to ground; if it beeps, that pin really is ground, and P5 (jack 3 B pot) has no pin.
