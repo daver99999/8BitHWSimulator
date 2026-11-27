@@ -7,7 +7,7 @@ Chip pins are numbered as on the chip (pin 1 at the notch, counter-clockwise). S
 ## 1. CPU board: where does the line into Z302 pin 13 come from? (measured 2026-11-27)
 Result on the owner's board: Z302 (74LS74) pin 13 (CLR2) has no continuity to ANTIC 35, GTIA 29, edge pin X or the +5 V pin (Z302 pin 14), and there is no trace on it on either side. The print puts it on one wire with Z301 pin 6 and the lower end of R310, and that wire is the F0 clock from GTIA pin 29.
 
-Why it matters: Z302 flop 2 has D and CLK tied to +5 V, so it works only through its preset and clear, which both follow F0. With CLR2 not connected the flop stays preset, PHI2 never falls and the 6502 never runs. In the simulator, lifting Z302 pin 13 gives exactly that (PC stays 0000). So either this is the fault on the board, or the board is a revision that differs from the print.
+Why it matters: the owner reports the Atari works fine with Z302 pin 13 unconnected, so a floating CLR2 is how this board is built (a floating LS input reads high) and my reading of the print is wrong here. The print has Z302 flop 2 (D and CLK on +5 V) working as a buffer that needs CLR2 to follow F0; that cannot be what the real board does. The netlist still keeps the print because it boots; lifting pin 13 in the simulator gives a dead machine (PC stays 0000), which does not match the real board and must be fixed once the real wiring of Z301 pin 6 / Z302 pins 10 and 13 is known.
 
 | To | Result |
 |---|---|
@@ -15,7 +15,7 @@ Why it matters: Z302 flop 2 has D and CLK tied to +5 V, so it works only through
 | GTIA (A301) pin 29 | NO beep |
 | edge connector pin X (Reset A) | NO beep |
 | Z302 pin 14 (+5 V) | NO beep |
-| Z301 pin 6 to GTIA (A301) pin 29 | not measured yet |
+| Z301 pin 6 to GTIA (A301) pin 29 | NO beep (so Z301 pin 6 is not on F0 either) |
 | R310, end away from +5, to Z301 pin 6 | not measured yet |
 
 ## 2. CPU board: 6502 RDY pin (open)
