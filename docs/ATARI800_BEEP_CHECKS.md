@@ -172,8 +172,13 @@ Added after rereading the print at higher resolution. The four 100 ohm resistors
 | J114 pin 4 to R185 | BEEP (matches the print) |
 | J114 pin 3 to R186 | BEEP |
 
-## 11. Video output, motor transistor, serial bus pull-ups (open)
+## 11. Video output, motor transistor, serial bus pull-ups (in progress)
 Netted from the print for continuity only (the simulator draws the picture from the GTIA model): the luminance mixer A103B-F, R179-R183, CR108, Q105, R189, R200-R206, C163, C164, C170, L103-L105, the chroma amplifier A104A/B with R196-R199, Q107 with R159 and L106, and the serial bus pull-ups and capacitors R129A-F, R157, R158A, C182-C188, C189. The unsure items in the generator output say what to check first: the order of R180-R183 on the A103 outputs (36K on pin 4, 18K on 10, 9.1K on 15, 4700 on 12), CR108's polarity, the A104B base pin, and which serial bus line each pull-up is on.
+
+| Check | Result |
+|---|---|
+| A103 pin 4 to R180 (36K) | BEEP |
+| A103 pin 10 to R181 (18K) | not measured yet |
 
 ## 12. Motherboard: RAM slot select wiring and the gated S4 / S5 (open)
 Read at 330 dpi. Z101 Y0 and Y1 go to J104 pins 18 and U (slot 1, so the first 16K board is in J104, and the netlist now has it so), Y2 and Y3 reach J103, and the gated S4 / S5 (Z102A pin 6, Z102B pin 3) go to J107 pins P and N and to J103 pins P and M. Not understood: short wires between J103 pins 18, T, R, N and J104 pins T, S, P, M, and between J102 pins U, 18 and J104 pins N, R. Beep: Z101 pin 1 to J104 pin 18, Z101 pin 2 to J104 pin U, Z101 pins 3 and 4 to every pin of J103 (note which), Z102 pin 6 to J107 pin P and to J103 pin P, Z102 pin 3 to J107 pin N and to J103 pin M, then J102 pins 18 and U to every pin of J103 and J104. The netlist has J103 on Y2/Y3 and J102 on the gated S4/S5 for now, and the personality board's S4 / S5 pins on the raw selects (the print shows the gated ones).
