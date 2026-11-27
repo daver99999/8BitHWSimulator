@@ -184,7 +184,7 @@ static struct {
     char status[512];
     /* A machine chosen in the controls, put on the bench after the frame;
      * the Spectrum and the C64 boards last on the bench (their buttons'). */
-    const machine_t *switch_to, *last_zx, *last_c64, *last_pet, *last_ts, *last_vic, *last_cbm, *last_apple, *last_rs, *last_tano;   /* last_cbm: the last Commodore */
+    const machine_t *switch_to, *last_zx, *last_c64, *last_pet, *last_ts, *last_vic, *last_cbm, *last_apple, *last_rs, *last_tano, *last_atari;   /* last_cbm: the last Commodore */
     /* A fault put on the board from a diagnosis: the view goes to its part
      * (once the board is drawn), which is outlined for a while. */
     bool focus_pending;
@@ -2076,9 +2076,9 @@ static bool load_prg(const char *path, bool run) {
     /* A file for the other machine (a Spectrum ROM dropped on the C64, a
      * C64 one on the Spectrum): that machine goes on the bench after the
      * frame, and gets the file then. */
-    const machine_t *const fams[] = { U.last_c64, U.last_zx, U.last_pet, U.last_ts, U.last_vic, U.last_apple, U.last_rs, U.last_tano };
+    const machine_t *const fams[] = { U.last_c64, U.last_zx, U.last_pet, U.last_ts, U.last_vic, U.last_apple, U.last_rs, U.last_tano, U.last_atari };
     if (!fk || bad) {
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 9; i++) {
             const machine_t *other = fams[i];
             if (i == board_family(U.b)) continue;
             other_bad = true;
@@ -2516,11 +2516,12 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
     static const machine_t *const apple_boards[] = { &machine_apple2e };
     static const machine_t *const rs_boards[] = { &machine_coco2, &machine_mc10 };
     static const machine_t *const tano_boards[] = { &machine_dragon64 };
+    static const machine_t *const atari_boards[] = { &machine_atari800 };
     const machine_t *m = b->m;
     if (!m->issue) return;
     int tab = board_tab(b);
-    const machine_t *const *boards = tab == 1 ? zx_boards : tab == 2 ? ts_boards : tab == 3 ? apple_boards : tab == 4 ? rs_boards : tab == 5 ? tano_boards : cbm_boards;
-    int nb = tab == 1 ? (int)(sizeof(zx_boards) / sizeof(zx_boards[0]))
+    const machine_t *const *boards = tab == 6 ? atari_boards : tab == 1 ? zx_boards : tab == 2 ? ts_boards : tab == 3 ? apple_boards : tab == 4 ? rs_boards : tab == 5 ? tano_boards : cbm_boards;
+    int nb = tab == 6 ? (int)(sizeof(atari_boards) / sizeof(atari_boards[0])) : tab == 1 ? (int)(sizeof(zx_boards) / sizeof(zx_boards[0]))
            : tab == 2 ? (int)(sizeof(ts_boards) / sizeof(ts_boards[0]))
            : tab == 3 ? (int)(sizeof(apple_boards) / sizeof(apple_boards[0]))
            : tab == 4 ? (int)(sizeof(rs_boards) / sizeof(rs_boards[0]))
@@ -2537,6 +2538,7 @@ static void board_choice(struct nk_context *ctx, board_t *b) {
         if (boards[i] == m) cur = i;
     }
     int pick = combo_tip(ctx, issues, nb, cur, 20, nk_vec2(150, 26.0f * nb + 20),
+                         tab == 6 ? "The Atari 800 (motherboard CO14175 with its CPU board, personality board and 16K RAM boards)" :
                          tab == 5 ? "Which Tano is on the bench: the Dragon 64 (issue 6 board, PAL timing: the Tano Dragon was an NTSC Dragon 64)" :
                          tab == 4 ? "Which Radio Shack is on the bench: the Color Computer 2 (the 26-3134B/3136B board) or the MC-10 (the Micro Color Computer: a 6803 and a 6847, netlist from the Eagle schematic, parts placed from a photo of the board)" :
                          tab == 2 ? "Which Timex is on the bench: the TS2068, the TS1000/ZX81 (the American ZX81, Issue 3 or Issue 1), the TS1500 or the Sinclair ZX80" :
@@ -2568,9 +2570,9 @@ static void controls_window(struct nk_context *ctx, float x, float y, float h) {
         board_t *b = U.b;
         /* The machine on the bench: a click puts the other one there (the
          * Spectrum board last on the bench). */
-        const machine_t *const machines[] = { U.last_cbm, U.last_zx, U.last_ts, U.last_apple, U.last_rs, U.last_tano };
-        static const char *const fam_names[] = { "Commodore", "Spectrum", "Timex", "Apple", "Radio Shack", "Tano" };
-        for (int i = 0; i < 6; i++) {
+        const machine_t *const machines[] = { U.last_cbm, U.last_zx, U.last_ts, U.last_apple, U.last_rs, U.last_tano, U.last_atari };
+        static const char *const fam_names[] = { "Commodore", "Spectrum", "Timex", "Apple", "Radio Shack", "Tano", "Atari" };
+        for (int i = 0; i < 7; i++) {
             if (i % 3 == 0) nk_layout_row_dynamic(ctx, 24, 3);
             bool cur = board_tab(b) == i;
             if (nk_widget_is_hovered(ctx) && !cur)
@@ -3489,13 +3491,13 @@ static void handle_event(const sapp_event *ev) {
 
 /* The kind of a board: 0 C64, 1 Spectrum, 2 PET, 3 Timex, 4 VIC-20 and the other Commodores, 5 Apple, 6 Radio Shack, 7 Tano. */
 static int board_family(const board_t *b) {
-    return b->m == &machine_dragon64 ? 7 : (b->m == &machine_coco2 || b->m == &machine_mc10) ? 6 : (b->m == &machine_apple2e) ? 5 : board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : (b->m == &machine_ts2068 || b->m == &machine_ts1000 || b->m == &machine_ts1000i1 || b->m == &machine_ts1500 || b->m == &machine_zx80) ? 3 : (b->m == &machine_vic20a || b->m == &machine_vic20b || b->m == &machine_c16 || b->m == &machine_plus4 || b->m == &machine_c128) ? 4 : 0;
+    return b->m == &machine_atari800 ? 8 : b->m == &machine_dragon64 ? 7 : (b->m == &machine_coco2 || b->m == &machine_mc10) ? 6 : (b->m == &machine_apple2e) ? 5 : board_is_zx48(b) ? 1 : board_is_pet(b) ? 2 : (b->m == &machine_ts2068 || b->m == &machine_ts1000 || b->m == &machine_ts1000i1 || b->m == &machine_ts1500 || b->m == &machine_zx80) ? 3 : (b->m == &machine_vic20a || b->m == &machine_vic20b || b->m == &machine_c16 || b->m == &machine_plus4 || b->m == &machine_c128) ? 4 : 0;
 }
 
 /* The tab of a board: 0 Commodore (the C64's boards, the PET), 1 Spectrum, 2 Timex, 3 Apple, 4 Radio Shack, 5 Tano. */
 static int board_tab(const board_t *b) {
     int k = board_family(b);
-    return k == 1 ? 1 : k == 3 ? 2 : k == 5 ? 3 : k == 6 ? 4 : k == 7 ? 5 : 0;     /* 0, 2 and 4 are Commodores */
+    return k == 1 ? 1 : k == 3 ? 2 : k == 5 ? 3 : k == 6 ? 4 : k == 7 ? 5 : k == 8 ? 6 : 0;     /* 0, 2 and 4 are Commodores */
 }
 
 /* Everything of the interface that depends on the board: at start, and
@@ -3509,6 +3511,7 @@ static void attach_board(board_t *b) {
     case 5: U.last_apple = b->m; break;
     case 6: U.last_rs = b->m; break;
     case 7: U.last_tano = b->m; break;
+    case 8: U.last_atari = b->m; break;
     case 4: U.last_vic = b->m; U.last_cbm = b->m; break;
     default: U.last_c64 = b->m; U.last_cbm = b->m; break;
     }
@@ -3631,6 +3634,7 @@ void ui_init(board_t *b, const char *prg, const char *scope_pin) {
     U.last_apple = &machine_apple2e;
     U.last_rs = &machine_coco2;
     U.last_tano = &machine_dragon64;
+    U.last_atari = &machine_atari800;
     U.last_cbm = &machine_c64;
     if (prg) { snprintf(U.autoload, sizeof(U.autoload), "%s", prg); U.autoload_run = true; }
     U.smp = sg_make_sampler(&(sg_sampler_desc){ .min_filter = SG_FILTER_LINEAR, .mag_filter = SG_FILTER_LINEAR,
