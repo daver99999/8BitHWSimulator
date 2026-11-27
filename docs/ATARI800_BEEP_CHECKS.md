@@ -111,7 +111,8 @@ Details are listed in the generator output (`python3 tools/atari800_netlist.py`)
 |---|---|
 | Z101 pin 12 to Z101 pin 8 (GND) | NO beep (as expected: pin 12 is EXSEL, not ground) |
 | Z101 pin 12 to Z101 pin 16 (+5 V) | NO beep |
-| Z101 pin 12 to J107 pin 14 (EXSEL) | not measured yet |
+| Z101 pin 12 to J107 pin 14 (EXSEL) | NO beep |
+| Z101 pin 12 to R103 (680) | not measured yet |
 
 ## 8. Personality board: ROM chip-select pins and the Ø2B edge pin (open)
 Beep A401 / A403 pin 20 to the edge pin for S7 (H) and pin 21 to A12 (pin 12); A402 pin 20 to S6 (M), 21 to A12, 18 to A11 (L). Find which edge pin carries Ø2B (the print shows 5, which is also A0).
