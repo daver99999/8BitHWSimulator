@@ -243,7 +243,8 @@ Read from the print at 200 dpi and added to the netlist: R130-R137 (1.8K) in ser
 | R133 far end to J111 pin 5 | BEEP. Jack 2 (J111) pot lines done. |
 | R135 far end to J112 pin 9 | BEEP |
 | R134 far end to J112 pin 5 | BEEP. Jack 3 (J112) pot lines done. |
-| R137 far end to J113 pin 9 | not measured yet |
+| R137 far end to J113 pin 9 | BEEP |
+| R136 far end to J113 pin 5 | not measured yet |
 
 ## 16. Personality board: delayed phase 2 and the EXSEL node
 The gate wiring was reread and matches the netlist. Two points are only from the drawing:
