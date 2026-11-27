@@ -16,7 +16,7 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 ## Open reading questions (each is a beep check)
 1. IC106 clock pin: the drawing numbers it 14 (a 74LS273 has CP on pin 11). Beep IC112 pin 11 to IC106 pin 11 (expected G) and to IC106 pin 14 (expected N).
 2. LK1 to LK4 (OS links): which are fitted on the owner board.
-3. Transistor references: the drawing says Q101 (motor), Q102 (luminance), Q103 (clock driver); the board silk screen says TR1 to TR3.
+3. Transistor references: the drawing says Q101 (motor), Q102 (luminance), Q103 (clock driver); the board silk screen says TR1 to TR3. TR1 = Q101 confirmed (beep 44); TR2 and TR3 not checked.
 4. Gate array pin 12 (ROMEN) to IC103 pin 20 (/CS) and to expansion pin 42.
 5. The 56 ohm resistor beside X101 has no reference on the drawing (called RX1 in the netlist).
 6. Decoupling caps C105 to C128 are netted straight across +5 V and ground (only the total is on the drawing).
@@ -65,6 +65,8 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 41. IC101 pin 1 to CP002 pin 19: G.
 42. IC107 pin 12 to CP001 pin D: G (tape write).
 43. IC107 pin 25 to CP001 pin E: G (tape read).
+44. CP001 pin H to center pin of TR1: G (center leg = collector on the 2SC2120, so TR1 = Q101).
+45. IC116 pin 36 to R125 (either end): G.
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
