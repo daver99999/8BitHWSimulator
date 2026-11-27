@@ -66,7 +66,7 @@ The netlist (and the print) puts the decoder outputs from Z101 on the slots like
 | Z101 pin 2 to J104 pin 22 | NO beep | <!-- not confirmed, restarted -->
 | Z101 pin 2 to J104 pin 18 | NO beep | <!-- not confirmed, restarted -->
 | Z101 pin 2 to J104 pin U | BEEP: owner says it reaches the pin directly opposite pin 18 (letter not read; taken as U, which pairs with 18 in the print) |
-| Z101 pin 3 to J103 pin 18 | not measured yet |
+| Z101 pin 3 to J103 pin 18 | NO beep (first try; slot may not have been J103, repeat) |
 | Z101 pin 4 to J103 pin U | not measured yet |
 
 ## 5. Motherboard: Z102 gates and the cartridge RD4 / RD5 (open)
