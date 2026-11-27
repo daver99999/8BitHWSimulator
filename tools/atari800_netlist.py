@@ -212,8 +212,9 @@ def motherboard():
     for sig, ps in PERS_PWR.items():
         for p in ps:
             net(sig, 'J107.' + p)
-    for sig in ('PHI2', 'S7', 'S6', 'S4', 'S5', 'D6XX', 'D5XX', 'PIA_CS', 'POKEY_CS', 'GTIA_CS', 'EXSEL', 'GBA', 'GBAN', 'WRITIME'):
+    for sig in ('PHI2', 'S7', 'S6', 'S5', 'D6XX', 'D5XX', 'PIA_CS', 'POKEY_CS', 'GTIA_CS', 'EXSEL', 'GBA', 'GBAN', 'WRITIME'):
         net(sig, 'J107.' + PERS[sig])
+    net('S5G', 'J107.P')   # owner beeps: Z102 pin 3 -> J107 P (not N); J107 N = Z101 pin 6 (raw S5); Z102 pin 6 and Z101 pin 5 reach no J107 pin
     unsure('J107: pin letters taken from the personality board edge connector; the motherboard drawing agrees where it is legible.')
     # cartridge slots
     for ref in ('J108', 'J109'):
