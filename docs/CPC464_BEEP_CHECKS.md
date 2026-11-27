@@ -58,6 +58,9 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 34. IC114 pin 2 to IC111 pin 14: G.
 35. IC116 pin 24 to IC114 pin 3: G (D0 path confirmed through the buffers).
 36. IC117 pin 14 to IC116 pin 27: G (IC117 = data bit 3, bit order confirmed for this chip).
+37. IC124 pin 2 to IC111 pin 13 (D7): G (DRAM bit order confirmed at both ends).
+38. IC116 pin 4 to IC115 pin 1: G (244EN).
+39. IC112 pin 8 to IC114 pin 1: G (373 /OE).
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
