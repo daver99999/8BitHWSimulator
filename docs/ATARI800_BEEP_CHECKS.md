@@ -308,3 +308,6 @@ New this pass, read at 300 dpi.
 
 ## Not netted
 The six supply chokes L107-L112 at J115 (the netlist has the rails go straight to the connector, because the simulator feeds power in there) and the power supply board. The oscillator, RF stage, sound amplifier and the capacitors at J115 are netted from check 17, but the chokes and the oscillator's simulator clock (the part OSCSIM, which is not a real part) are not real continuity.
+
+## STATUS: CLOSED (owner, 2026-11-27)
+Atari 800 beep work closed by the owner so the machine can be reassembled. Open items stay listed above (RAM select feed for J102 / J103, S4 outputs, EXSEL, Z102 pin 4 / J109 conflict, RAM cards 2 and 3 untested, checks 16 and 17 skipped). Next: Amstrad CPC 464.
