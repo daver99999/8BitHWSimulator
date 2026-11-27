@@ -202,7 +202,8 @@ Read at 330 dpi, changed in the netlist. Z101 pin 12 (D) is on the EXSEL line (J
 | Check | Result |
 |---|---|
 | Z101 pin 12 to the J101 pin opposite 5 (letter E) | NO beep. With check 7, EXSEL (Z101 pin 12) reaches R103 only: not J107 pin 14, no J107 pin, and not J101 E. Parked. |
-| R102 (1K) to GTIA (A301) pin 15 (S3) | not measured yet |
+| R102 (1K) to GTIA (A301) pin 15 (S3) | BEEP (owner found R102 and answered g) |
+| R102 to A101 (POKEY) pin 37 (AUD) | not measured yet (should not beep) |
 
 ## 14. Cartridge slots J108 / J109: pin S and pin R
 The print labels pin S "RAS" and pin R "R/WE" on both slots. The netlist has R on R/W (same as the CPU R/W) and S on phase 2 (the FAQ pinout), and J108 now matches J109 (it was wired to pins 1 and A, which was wrong: A is RD4).
