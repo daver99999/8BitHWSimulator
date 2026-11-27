@@ -218,7 +218,8 @@ The print labels pin S "RAS" and pin R "R/WE" on both slots. The netlist has R o
 | J108 pin 1 to J108 pin opposite 1 | NO beep (so the two earlier statements cannot both be exact) |
 | J104 pin 14 (PHI2) to the J108 pin opposite 1 | BEEP. So PHI2 is on J108 pin A (opposite 1); the netlist has it there now, with R/W on J108 pin 1 (unmeasured). J109 has no PHI2. |
 | J104 pin 15 (RASTIME) to any pin of J109 | the pin opposite 15 (letter S): so pin S is RAS = RASTIME, not phase 2. Netlist changed. |
-| J104 pin 16 (R/W) to any pin of J109 | not measured yet |
+| J104 pin 16 (R/W) to any pin of J109 | the pin opposite 14 (letter R): R/W on J109 R, as in the netlist |
+| J104 pin 16 (R/W) to the J108 pin opposite 14 | not measured yet |
 
 ## 15. Controller ports: pot resistors and POKEY pin 11
 Read from the print at 200 dpi and added to the netlist: R130-R137 (1.8K) in series with the pots, R158B-R158I (4.7K) from +5 to PB0-PB7, and the small capacitors on the jack side. Two things are not proved:
