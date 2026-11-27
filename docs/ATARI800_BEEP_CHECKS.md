@@ -73,6 +73,9 @@ The netlist (and the print) puts the decoder outputs from Z101 on the slots like
 | Z101 pin 4 to J103 pin R (the pin opposite 15) | BEEP |
 | Z101 pin 3 to J104 pin T | NO beep |
 | J103 pin T to J104 pin S | NO beep |
+| J103 pin 18 to J103 pin T | NO beep |
+
+PARKED: on J103 the decoder lines Z101 pin 3 and 4 arrive on pins T and R, not on 18 and U; how J103's 18 and U are fed is not known (the netlist keeps the print's assumption). To resume: find where J103 pin 18 and pin U come from.
 
 Letter positions on the slots: U is opposite 18 and R is opposite 15 on this board (each letter sits one number above a plain A..Z count).
 
