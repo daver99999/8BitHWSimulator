@@ -85,6 +85,10 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 60. IC125 pin 3 to pin 1: N (expected, R143 between).
 61. IC125 pin 1 to pin 2: G.
 62. IC125 pin 8 to R145: G.
+63. R145 far end to IC125 pin 14: G (pull-up to +5V).
+64. IC125 pin 4 to one end of R144: G.
+65. IC125 pin 6 to other end of R144: G.
+66. IC125 pin 1 to one end of R143: G.
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
