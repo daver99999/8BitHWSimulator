@@ -70,6 +70,9 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 46. IC116 pin 34 to R127: G.
 47. IC116 pin 32 to R129: G.
 48. IC116 pin 11 to R137: G.
+49. IC116 pin 39 to TR3 base: G.
+50. IC111 pin 6 to expansion pin 50 (CLKPHI): G.
+51. IC116 pin 8 to IC125 pin 8 (XTAL): G.
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
