@@ -115,6 +115,7 @@ Z102 is a 74LS32 (14 pin). Gate A: inputs pin 5 (from Z101 pin 5, S4) and pin 4 
 | Z101 pin 4 to J103 pin T (beep 7j) | NO beep (owner). |
 | Z101 pin 4 to J103 pin R (beep 7k) | NO beep (owner). |
 | Z101 pin 4 to J102 pin U (beep 7l) | NO beep. Owner: Z101 pin 4 goes to J109 pin A. CONFLICT to resolve: earlier Z102 pin 4 (RD4) also beeped to J109 pin A. Either J109 A is being read as two different pads, or Z101 pin 4 and Z102 pin 4 are one wire. Next: Z101 pin 4 to Z102 pin 4 (7m). |
+| Z101 pin 4 to Z102 pin 4 (beep 7m) | NO beep (owner). So they are separate wires and J109 "A" has been probed at two different places. Resolve by probing both from the same pad (7n). |
 
 PARKED: gated S4 (Z102 pin 6) reaches no J connector pin and no pin of Z101 or Z102 (ground and +5 V included). Gated S5 (pin 3) was beeped to J102 pin U (no) and, with pin 6, to no J pin. Either the gating outputs go to a place not reached by these beeps (a hidden trace or a chip not tried) or they are unused on this board revision. The netlist keeps the print for the RAM slot selects (J102 on the gated lines); a RAM card in J102 would then not be selected by what the board actually does, which is not known.
 | Z102 pin 3 to J102 pin U | NO beep |
