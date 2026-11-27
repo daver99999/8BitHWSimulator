@@ -189,7 +189,8 @@ Netted from the print for continuity only (the simulator draws the picture from 
 | A101 pin 28 (SOD) to R129 | leg 3 |
 | A101 pin 27 (OCLK) to R129 | leg 4 |
 | A102 pin 40 (CA1) to R129 | leg 6. So leg 2 is CB2 by elimination. Netlist changed (legs 2 to 7: CB2, SOD, OCLK, BCLK, CA1, SID). |
-| A102 pin 19 (CB2) to R129 leg 2 | not measured yet |
+| A102 pin 19 (CB2) to R129 | leg 10 (R129 has 10 legs, not 7; the leg 2 guess was wrong). Legs 2, 8 and 9 are not identified yet. |
+| A102 pin 18 (CB1) to R129 | not measured yet |
 
 ## 12. Motherboard: RAM slot select wiring and the gated S4 / S5 (open)
 Read at 330 dpi. Z101 Y0 and Y1 go to J104 pins 18 and U (slot 1, so the first 16K board is in J104, and the netlist now has it so), Y2 and Y3 reach J103, and the gated S4 / S5 (Z102A pin 6, Z102B pin 3) go to J107 pins P and N and to J103 pins P and M. Not understood: short wires between J103 pins 18, T, R, N and J104 pins T, S, P, M, and between J102 pins U, 18 and J104 pins N, R. Beep: Z101 pin 1 to J104 pin 18, Z101 pin 2 to J104 pin U, Z101 pins 3 and 4 to every pin of J103 (note which), Z102 pin 6 to J107 pin P and to J103 pin P, Z102 pin 3 to J107 pin N and to J103 pin M, then J102 pins 18 and U to every pin of J103 and J104. The netlist has J103 on Y2/Y3 and J102 on the gated S4/S5 for now, and the personality board's S4 / S5 pins on the raw selects (the print shows the gated ones).

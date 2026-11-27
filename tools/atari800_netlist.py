@@ -362,13 +362,13 @@ def motherboard():
     net('MOTOR', 'A102.39', 'R159.1'); net('MOTORB', 'R159.2', 'Q107.B'); net(V5, 'Q107.E')
     net('MOTORC', 'Q107.C', 'L106.1'); net('MOTORJ', 'L106.2', 'J115.4', 'C189.1'); net(GND, 'C189.2')
     # serial bus: 4.7K pull-ups R129A-F on the chip side of R168-R174, R157 1K on AUD, C182-C188 .001 from each connector pin to ground
-    for ref, sig in (('R129A', 'CB2'), ('R129B', 'SOD'), ('R129C', 'OCLK'), ('R129D', 'BCLK'), ('R129E', 'CA1'), ('R129F', 'SID'), ('R158A', 'CB1')):
+    for ref, sig in (('R129A', 'SOD'), ('R129B', 'OCLK'), ('R129C', 'BCLK'), ('R129D', 'CA1'), ('R129E', 'SID'), ('R129F', 'CB2'), ('R158A', 'CB1')):
         part(ref, 'R', 2, '4.7K'); net(V5, ref + '.1'); net('SIO_%s_I' % sig, ref + '.2')
     part('R157', 'R', 2, '1K'); net(V5, 'R157.1'); net('AUD', 'R157.2')
     for i, jp in enumerate((7, 8, 9, 10, 14, 12, 11)):
         c = 'C%d' % (182 + i)
         part(c, 'C', 2, '.001uF'); net('SIO_' + 'OCLK BCLK SID SOD CB1 CA1 CB2'.split()[(7, 8, 9, 10, 14, 12, 11).index(jp)], c + '.1'); net(GND, c + '.2')
-    unsure('SIO pull-ups: R129 is a pack with the common +5 V leg (dotted) as leg 1; measured on the owner board (beep check 11): leg 3 SOD, leg 4 OCLK, leg 5 BCLK, leg 6 CA1, leg 7 SID, so leg 2 is CB2 by elimination. They are called R129A to R129F in that leg order here. R158A (value not printed, 4.7K assumed) to CB1; C182-C188 top to bottom on pins 7, 8, 9, 10, 14, 12, 11.')
+    unsure('SIO pull-ups: R129 is a 10-pin pack with the common +5 V leg (dotted) as leg 1; measured on the owner board (beep check 11): leg 3 SOD, leg 4 OCLK, leg 5 BCLK, leg 6 CA1, leg 7 SID, leg 10 CB2. Legs 2, 8 and 9 are not identified (CB1 is netted to a separate R158A here). They are called R129A to R129F in the order of the legs 3, 4, 5, 6, 7, 10. C182-C188 top to bottom on pins 7, 8, 9, 10, 14, 12, 11.')
     # supply filters at J115: the capacitors C190-C193, C199 and C200 are netted; the chokes L107-L112 that sit in series on the real board are not,
     # because the simulator feeds the supplies in at the connector pins and a series part would cut the rails
     for ref, v in (('C190', '.1uF'), ('C191', '.1uF'), ('C192', '.1uF'), ('C193', '.1uF'), ('C199', '10uF'), ('C200', '.001uF')): part(ref, 'C', 2, v)
