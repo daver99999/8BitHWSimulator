@@ -104,7 +104,7 @@ Reread at 800 dpi; the scan is blurred at two of the eight pins on the Z104 side
 | J106 pin 15 to R120 | BEEP (owner did not say which end of R120) |
 | J106 pin 10 to R123 | BEEP |
 
-## 7. Motherboard: Z101 74LS42 inputs, PIA chip selects, power-on reset, J115 power pins, J101 pin 5 / S3 (in progress)
+## 7. Motherboard: Z101 74LS42 inputs, PIA chip selects, power-on reset, J115 power pins, J101 pin 5 / S3 (done; EXSEL parked)
 Details are listed in the generator output (`python3 tools/atari800_netlist.py`).
 
 | Check | Result |
@@ -114,7 +114,7 @@ Details are listed in the generator output (`python3 tools/atari800_netlist.py`)
 | Z101 pin 12 to J107 pin 14 (EXSEL) | NO beep (twice, second time pressed hard) |
 | Z101 pin 12 to any pin of J107 (sweep) | none beeps. PARKED: EXSEL is not seen on J107 by beep; the wire only reaches R103 (680 to ground). To resume: follow it by eye or by a photo. |
 | J101 pin 5 to 6502 (A303) pin 33 (D0) | BEEP. So pin 5 is D0 and S3 is the other pin (the netlist uses S). |
-| J101 pin 25 to A102 (PIA) pin 34 (RESET) | not measured yet |
+| J101 pin 25 to A102 (PIA) pin 34 (RESET) | BEEP |
 | Z101 pin 12 to R103 (680) | BEEP |
 | R103 other end to J115 pin 15 (GND) | BEEP |
 | Z101 pin 15 (A13) to J101 pin 20 | BEEP |
