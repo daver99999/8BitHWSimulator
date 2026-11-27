@@ -56,8 +56,12 @@ The print has Vss on pin 1, Vcc on pin 17 and the signal P5 on pin 11. With A101
 | socket pin 17 to J115 pin 18 (+5 V) | BEEP |
 | A101 socket pin 11 to J115 pin 15 (ground) | NO beep (as the print says: pin 11 is the P5 signal, not ground) |
 
-## 4. Motherboard: RAM slot select lines (open)
+## 4. Motherboard: RAM slot select lines (in progress)
 J102, J103, J104 pin 18 and pin U each get one of the eight-kilobyte block selects from Z101. Beep Z101 pins 1, 2, 3, 4 to J102 pin 18, J102 pin U, J103 pin 18, J103 pin U. The netlist assumes in that order.
+
+| Check | Result |
+|---|---|
+| Z101 pin 1 to J102 pin 18 | NO beep |
 
 ## 5. Motherboard: Z102 gates and the cartridge RD4 / RD5 (open)
 Beep Z102 pins 1, 2, 4, 5 (and outputs 3 and 6) to Z101 pin 5 (S4), Z101 pin 6 (S5), J109 pin A (RD4), J109 pin 14 (RD5), J104 pin 18, J104 pin U.
