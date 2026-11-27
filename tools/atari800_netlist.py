@@ -308,7 +308,7 @@ def motherboard():
     unsure('J106 keyboard connector: reread at 330 and 800 dpi, the scan itself is blurred. Z103 side 6/1/4/7/2/8/3/5 and the NC pin 22 are clear; on the Z104 side 16, 12, 17, 14, 11 and 13 are clear and the glyphs at positions 2 and 5 are not, but the pins are 10 and 15 by elimination (the set is 10-17), so only whether position 2 is 15 and position 5 is 10, or the other way round, is open.')
     # controller jacks J110-J113 (jack 1..4)
     jack_pia = {1: ('PA0', 'PA1', 'PA2', 'PA3'), 2: ('PA4', 'PA5', 'PA6', 'PA7'), 3: ('PB0', 'PB1', 'PB2', 'PB3'), 4: ('PB4', 'PB5', 'PB6', 'PB7')}
-    POTROW = ('P1', 'P0', 'P3', 'P2', 'P5', 'P4', 'P7', 'P6')  # resistor rows R130-R137 top to bottom
+    POTROW = ('P1', 'P0', 'P2', 'P3', 'P5', 'P4', 'P7', 'P6')  # R130-R137: R130 P1, R131 P0, R132 P2, R133 P3 measured (check 15); R134-R137 not measured
     jack_pot = {1: ('P0', 'P1'), 2: ('P2', 'P3'), 3: ('P4', 'P5'), 4: ('P6', 'P7')}
     for j in range(1, 5):
         ref = 'J%d' % (109 + j)
