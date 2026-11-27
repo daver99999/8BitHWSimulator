@@ -35,6 +35,7 @@ Why it matters: the owner reports the Atari works fine with Z302 pin 13 unconnec
 | R310, scope, both ends | both flat high (owner could not tell which end is the +5 V end). So R310 is not on the F0 wire. |
 | Z301 pin 4, scope | 1.79 MHz wave (inverse of the clock on pin 6/13, as expected for a NOR with pin 5 grounded) |
 | GTIA (A301) pin 29, scope | 3.57 MHz (colour clock), NOT 1.79 MHz. So GTIA 29 is a 3.58 MHz line, which explains why the 1.79 MHz wire (Z301 pin 6 / Z302 pin 13) has no continuity to it. My netlist and the simulator put 1.79 MHz on GTIA 29 / ANTIC 35, which does not match. |
+| Z302 pin 13 to GTIA (A301) pin 30 | NO beep. Owner: the Z302 pin 13 / Z301 pin 6 wire goes to ANTIC (A302) pin 34. (In my print ANTIC pin 34 is PHI0, fed from Z301 pin 1, which is not on this wire.) |
 
 ## 2. CPU board: 6502 RDY pin (open)
 The print labels two pins "7" (SYNC and RDY). On a real 6502 SYNC is pin 7 and RDY is pin 2. Beep 6502 (A303) pin 2 to ANTIC pin 15 (RDY) and to the lower end of R311.
