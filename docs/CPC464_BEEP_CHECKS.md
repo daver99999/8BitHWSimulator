@@ -40,8 +40,13 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 15. IC106 pin 11 to IC112 pin 3: N.
 16. IC106 pin 11 to IC112 pin 11: G (owner: first answer was a slip). Matches the netlist; supersedes beep 7 (N, SUSPECT).
 18. IC112 pin 11 to IC112 pin 14: N (retest of 10). Conflict resolved: IC112 pin 11 / IC106 pin 11 is the printer latch clock net, not on +5V. Open reading question 1 is closed: the clock is IC106 pin 11.
+19. IC106 pin 12 to pin 16: N (tracer misread confirmed, they are not joined).
+20. IC107 pin 19 to IC107 pin 7 (LK1): N, not fitted.
+21. IC107 pin 20 to pin 7 (LK2): N, not fitted.
+22. IC107 pin 21 to pin 7 (LK3): N, not fitted.
+23. IC107 pin 22 to pin 7 (LK4): N, not fitted. (All four links open; whether the pads exist on his board is not checked.)
 
-OPEN (owner on a break): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
+OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
 Also: the tracer joined IC106 pins 12 and 16 (PRQ4 / PRQ6) on the drawing. Probably a crossing on the drawing, beep IC106 pin 12 to pin 16 to confirm they are NOT joined.
 The tracer does not see IC112 (gates are drawn as symbols, not boxes), so its gate pins are checked by eye only.
