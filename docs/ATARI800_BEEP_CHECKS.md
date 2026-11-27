@@ -104,8 +104,12 @@ Reread at 800 dpi; the scan is blurred at two of the eight pins on the Z104 side
 | J106 pin 15 to R120 | BEEP (owner did not say which end of R120) |
 | J106 pin 10 to R123 | BEEP |
 
-## 7. Motherboard: Z101 74LS42 inputs, PIA chip selects, power-on reset, J115 power pins, J101 pin 5 / S3 (open)
+## 7. Motherboard: Z101 74LS42 inputs, PIA chip selects, power-on reset, J115 power pins, J101 pin 5 / S3 (in progress)
 Details are listed in the generator output (`python3 tools/atari800_netlist.py`).
+
+| Check | Result |
+|---|---|
+| Z101 pin 12 to Z101 pin 8 (GND) | NO beep (as expected: pin 12 is EXSEL, not ground) |
 
 ## 8. Personality board: ROM chip-select pins and the Ø2B edge pin (open)
 Beep A401 / A403 pin 20 to the edge pin for S7 (H) and pin 21 to A12 (pin 12); A402 pin 20 to S6 (M), 21 to A12, 18 to A11 (L). Find which edge pin carries Ø2B (the print shows 5, which is also A0).
