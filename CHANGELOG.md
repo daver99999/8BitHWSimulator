@@ -10,6 +10,8 @@ PET, by David Green, github.com/daver99999). It started as antirez's
 
 ## Unreleased
 
+- **CPC 464 tape port checked.** `SAVE` raises the motor line (PC4, Q101) when a key is pressed at the REC/PLAY prompt and, after the ROM's start-up wait, writes the tape signal on WRDATA (`tests/cpc464/tape.c`; an open IC107 pin 12 stops it). Reading a tape is not built: RDDATA (IC107 pin 25) is not driven.
+
 - **CPC 464 printer port checked.** With BUSY held low, `PRINT #8,"A"` puts `A`, CR, LF on PRN pins 2-8 with a /STROBE for each through IC112, IC106 and IC110, and faults on those chips change the bytes as expected (`tests/cpc464/printer.c`, results in `docs/FAULT_TESTS.md`). With BUSY left high (no printer) the command waits and nothing is strobed.
 
 - **CPC 464 gate array checked against the CPCWiki page.** Three fixes: the interrupt after a VSYNC (two HSYNCs later) is now requested only when the counter is below 32 (it was the other way round); a mode change takes effect at the next HSYNC (it was at once); and the undocumented mode 3 draws 160x200 in four colours (it was drawn like mode 2). Checked and unchanged: the counter (52 HSYNCs, 6 interrupts a frame, 300 Hz: `tests/cpc464/intrate.c`), the reset of bit 5 on the acknowledge, RMR bit 4, the PENR/INKR/RMR decoding, the ROM enables, the mode 0, 1 and 2 pixel bit order and all 32 hardware colours.

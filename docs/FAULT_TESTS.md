@@ -103,3 +103,16 @@ The ROM sends CR LF once before the first character after a reset; then `A`, CR,
 | `IC110:removed` (the strobe gate) | no strobe, PRSTRB stays low |
 | `IC106:removed` | no strobe |
 
+## CPC 464 tape port (`tests/cpc464/tape.c`)
+
+`SAVE "T"` is typed and a key pressed at "Press REC and PLAY then any key:". The 8255's PC4 (MOTORB, IC107 pin 13) goes high when the key is pressed and the
+motor switch Q101 pulls the MOTOR line (CP001 pin 8) low; the ROM then waits about 6 s of emulated time (300 frames) before it writes, and WRDATA (IC107 pin 12 to CP001 pin 4)
+toggles about 1400 times a second. The ROM's start-up wait has not been compared with a real CPC.
+
+| Fault | Result |
+|---|---|
+| none | MOTORB high after the key, WRDATA toggling from frame 300 on |
+| `IC107.12:open` (WRDATA) | MOTORB high, WRDATA never toggles |
+
+The MOTOR line is not a useful probe in the simulator: a floating net reads low, so Q101 removed looks the same as Q101 on.
+
