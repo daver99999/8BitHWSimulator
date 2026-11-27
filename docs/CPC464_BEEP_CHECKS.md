@@ -89,6 +89,10 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 64. IC125 pin 4 to one end of R144: G.
 65. IC125 pin 6 to other end of R144: G.
 66. IC125 pin 1 to one end of R143: G.
+67. IC125 pin 3 to other end of R143: G.
+68. X101 leg (the one not on IC125 pin 6) to IC125 pin 1: N (expected, C103 between; owner could not find C103 by label, so the part is unconfirmed, probably a small capacitor or trimmer beside X101).
+
+OSCILLATOR: gates, R143, R144, R145, X101 pin on gate 3 confirmed. Capacitors C103, C129, C130 and the 56 ohm RX1 are not testable by continuity.
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
