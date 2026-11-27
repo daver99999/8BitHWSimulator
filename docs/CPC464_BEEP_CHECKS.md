@@ -80,6 +80,11 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 55. IC125 pin 12 to pin 13: G.
 56. IC125 pin 12 to pin 6: G.
 57. IC125 pin 6 to X101 leg (owner did not say which leg; assumed pin 1): G.
+58. IC125 pin 6 to pin 4: N (expected, R144 between).
+59. IC125 pin 4 to pin 5: G.
+60. IC125 pin 3 to pin 1: N (expected, R143 between).
+61. IC125 pin 1 to pin 2: G.
+62. IC125 pin 8 to R145: G.
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
