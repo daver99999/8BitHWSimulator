@@ -121,4 +121,4 @@ ROM image supplied by the owner (cpc464.rom, 32768 bytes, md5 a993f85b88ac4350cf
 and answers `print 6*7` typed on the matrix (tests/cpc464/boot.c, keys.c, trace.c).
 Models: gate array IC116, 8255 IC107, AY IC102, ROM IC103, oscillator IC125 (the machine drives XTAL); the Z80, 6845, 74LS parts and 4164s are the simulator's own.
 The gate array's strobe timing inside each microsecond is this model's own and approximate (RAS/CAS/CCLK on a scope will not match a real board tick for tick).
-Netlist stand-ins that are not on the drawing: R600 (READY pull-up, 600 ohm, on the drawing) and R601 (INT pull-up, 1K, simulator's own, see the generator's UNSURE list).
+Netlist stand-ins that are not on the drawing: R600 (READY pull-up, 600 ohm, on the drawing) and R601 (INT pull-up: the simulator's own name; measured 5.6K from IC111 pin 16 to +5V on the owner board, so it is 5.6K here; which part it is on the board is not known).
