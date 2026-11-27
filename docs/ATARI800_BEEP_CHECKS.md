@@ -132,6 +132,8 @@ Z102 is a 74LS32 (14 pin). Gate A: inputs pin 5 (from Z101 pin 5, S4) and pin 4 
 | Z101 pin 1 to every pad of J102 (beep s7, slide) | NONE (owner). |
 | Z101 pin 2 to every pad of J102 (beep s8, slide) | NONE (owner). So none of Z101 pins 1-4 reach J102 directly; J102 U and 18 get their signals only through J104 N and R (jumpers 7e, 7f). |
 | J104 pin N to every pin of Z101 (beep s9, slide) | NONE (owner). |
+| J104 pin R to every pin of Z101 (beep s10, slide) | NONE (owner). |
+| STATE after s1-s10 | J104 18 / U = Z101 pins 1 / 2. J103 U = Z101 pin 3, J103 S = Z101 pin 4 (J103 18 is NOT Z101 pin 4; it goes to J104 T). J102: no Z101 pin reaches it; its U and 18 go only to J104 N and R, which reach no Z101 pin. Netlist not changed (J103 still 18 = MS2 / U = MS3, J102 on S4G/S5G): the card needs two selects on 18 and U and the board does not put Y2/Y3 on both. Open: what feeds J104 T, N, R, M, S, P. |
 
 PARKED: gated S4 (Z102 pin 6) reaches no J connector pin and no pin of Z101 or Z102 (ground and +5 V included). Gated S5 (pin 3) was beeped to J102 pin U (no) and, with pin 6, to no J pin. Either the gating outputs go to a place not reached by these beeps (a hidden trace or a chip not tried) or they are unused on this board revision. The netlist keeps the print for the RAM slot selects (J102 on the gated lines); a RAM card in J102 would then not be selected by what the board actually does, which is not known.
 | Z102 pin 3 to J102 pin U | NO beep |
