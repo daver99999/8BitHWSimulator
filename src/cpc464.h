@@ -30,6 +30,8 @@ typedef struct cpc464 {
     kbd_t kbd;
     uint16_t key_matrix[8];     /* per matrix bit (AY port A line), the rows that are pressed */
     int pin_row[10], pin_col[8];
+    uint8_t joy;                /* joystick J102 (bit 0 up, 1 down, 2 left, 3 right, 4 fire 2, 5 fire 1): the directions it closes to the common pin */
+    int pin_jcom, pin_joy[6];
     int pin_rc;
     uint64_t reset_until;
 } cpc464_t;

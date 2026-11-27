@@ -77,4 +77,16 @@ Shifted symbols (the CPC's own layout):
 
 Keys with their own plain character: `^ - @ [ ] \ ; : / . ,`.
 
-**Not mapped:** the joystick (it shares the matrix, row 9) and the keypad digits (the keypad f-keys are the F1 to F10 above).
+Keypad: the CPC's keypad digits are its f0 to f9 keys (they type the function key strings), so they are F10 and F1 to F9 above; the keypad `.` is the PC keypad `.`.
+
+Joystick (J102, on the matrix's row 9 through the AY's port A lines, so a pushed direction can ghost with a key on the same column, as on the board):
+
+| PC key | Joystick |
+|---|---|
+| Keypad 8 / 2 / 4 / 6 | up / down / left / right |
+| Keypad 0 | fire 1 |
+| Keypad 5 | fire 2 |
+
+`PRINT JOY(0)` gives 1 for up, 2 down, 4 left, 8 right, 16 fire 2, 32 fire 1 (`tests/cpc464/joy.c`). An open J102 pin 8 (the common) or a direction pin kills that direction.
+
+**Not mapped:** nothing on the CPC 464's own keyboard and joystick port.

@@ -16,7 +16,7 @@
  * WHAT IS MODELED: Z80A, gate array, ROM (32K, lower 16K OS at $0000, upper 16K BASIC at $C000), the 8255, the AY-3-8912, the 6845
  * (the simulator's 6545 core), the multiplexers and buffers, the eight 4164s, the keyboard matrix and the reset circuit. NOT modeled: the
  * tape and printer circuits' analog parts, the sound output (it is not played), the monitor's analog levels (the picture is drawn from
- * the gate array's colours), the joystick, the expansion port's devices. The purpose is to troubleshoot the board, not to load programs. */
+ * the gate array's colours), the expansion port's devices. The purpose is to troubleshoot the board, not to load programs. */
 #include "cpc464.h"
 #include "coco_chips.h"
 #include "sokol/sokol_app.h"
@@ -504,7 +504,7 @@ static void cpc_make_element(board_t *b, const char *ref, int pin_a, int pin_b, 
 }
 
 /* Key codes: the character it types, or these */
-enum { K_UP = 0x81, K_RIGHT, K_DOWN, K_LEFT, K_CLR, K_COPY, K_CAPS, K_SHIFT, K_CTRL, K_F0 = 0x90 };
+enum { K_UP = 0x81, K_RIGHT, K_DOWN, K_LEFT, K_CLR, K_COPY, K_CAPS, K_SHIFT, K_CTRL, K_F0 = 0x90, K_JOY = 0xA0 };
 
 static void cpc_init_keymap(cpc464_t *z) {
     kbd_init(&z->kbd, 1);
@@ -580,6 +580,10 @@ static void cpc_create(board_t *b) {
     static const int rowpin[10] = { 19, 18, 17, 16, 15, 14, 13, 12, 11, 2 };
     for (int r = 0; r < 10; r++) z->pin_row[r] = cpc_pin_of(b, "CP002", rowpin[r]);
     for (int c = 0; c < 8; c++) z->pin_col[c] = cpc_pin_of(b, "CP002", 3 + c);
+    z->pin_jcom = cpc_pin_of(b, "J102", 8);
+    { static const int jp[6] = { 1, 2, 3, 4, 7, 6 };       /* up, down, left, right, fire 1, fire 2 on J102; fire 1 reads on IOA5 (row 9 bit 5) */
+      for (int i = 0; i < 6; i++) z->pin_joy[i] = cpc_pin_of(b, "J102", jp[i]); }
+    z->joy = 0;
     cpc_init_keymap(z);
     memset(z->key_matrix, 0, sizeof(z->key_matrix));
     z->pin_rc = cpc_pin_of(b, "C102", 1);                   /* the reset RC node, held low at power on */
@@ -615,6 +619,13 @@ static void cpc_joins(board_t *b) {
             if (rp < 0 || cp < 0 || s->pins[rp].fault == PF_OPEN || s->pins[cp].fault == PF_OPEN) continue;
             sim_join(s, s->pins[rp].net, s->pins[cp].net);
         }
+    /* the joystick: a pushed direction joins the common pin (the row 9 line, KY10) to that direction's pin, which is on its AY port A line */
+    for (int i = 0; i < 6; i++) {
+        if (!((z->joy >> i) & 1)) continue;
+        int jp = z->pin_joy[i];
+        if (jp < 0 || z->pin_jcom < 0 || s->pins[jp].fault == PF_OPEN || s->pins[z->pin_jcom].fault == PF_OPEN) continue;
+        sim_join(s, s->pins[jp].net, s->pins[z->pin_jcom].net);
+    }
 }
 
 static void cpc_sync_keys(board_t *b) {
@@ -626,8 +637,14 @@ static void cpc_sync_keys(board_t *b) {
     }
     if (changed) board_rebuild(b);
 }
-static void cpc_key_down(board_t *b, int key) { kbd_key_down(&CPC(b)->kbd, key); cpc_sync_keys(b); }
-static void cpc_key_up(board_t *b, int key) { kbd_key_up(&CPC(b)->kbd, key); cpc_sync_keys(b); }
+static void cpc_joy(board_t *b, int key, bool down) {
+    cpc464_t *z = CPC(b);
+    uint8_t m = (uint8_t)(1u << (key - K_JOY)), was = z->joy;
+    z->joy = down ? (uint8_t)(z->joy | m) : (uint8_t)(z->joy & ~m);
+    if (z->joy != was) board_rebuild(b);
+}
+static void cpc_key_down(board_t *b, int key) { if (key >= K_JOY && key < K_JOY + 6) { cpc_joy(b, key, true); return; } kbd_key_down(&CPC(b)->kbd, key); cpc_sync_keys(b); }
+static void cpc_key_up(board_t *b, int key) { if (key >= K_JOY && key < K_JOY + 6) { cpc_joy(b, key, false); return; } kbd_key_up(&CPC(b)->kbd, key); cpc_sync_keys(b); }
 static void cpc_frame_update(board_t *b, uint32_t us) { kbd_update(&CPC(b)->kbd, us); cpc_sync_keys(b); }
 
 static int cpc_host_key(int keycode) {
@@ -650,6 +667,9 @@ static int cpc_host_key(int keycode) {
     case SAPP_KEYCODE_F4: return K_F0 + 4; case SAPP_KEYCODE_F5: return K_F0 + 5; case SAPP_KEYCODE_F6: return K_F0 + 6;
     case SAPP_KEYCODE_F7: return K_F0 + 7; case SAPP_KEYCODE_F8: return K_F0 + 8; case SAPP_KEYCODE_F9: return K_F0 + 9;
     case SAPP_KEYCODE_F10: return K_F0;
+    case SAPP_KEYCODE_KP_DECIMAL: return K_F0 + 10;
+    case SAPP_KEYCODE_KP_8: return K_JOY; case SAPP_KEYCODE_KP_2: return K_JOY + 1; case SAPP_KEYCODE_KP_4: return K_JOY + 2; case SAPP_KEYCODE_KP_6: return K_JOY + 3;
+    case SAPP_KEYCODE_KP_0: return K_JOY + 4; case SAPP_KEYCODE_KP_5: return K_JOY + 5;
     default: return 0;
     }
 }
@@ -762,7 +782,7 @@ const machine_t machine_cpc464 = {
     .link_resistors = "R146 R147 R148 R149 R150 R151 R152 R153 R138 R139 R141 R113",
     .crystals = "X101",
     .diodes = "", .jumpers = "", .supplies = "",
-    .keys_help = "Keys: type; Left Shift = SHIFT, Ctrl = CONTROL, Esc = ESC, Backspace = DEL, Home = CLR, End = COPY, F1-F9, F10 = F0",
+    .keys_help = "Keys: type; Left Shift = SHIFT, Ctrl = CONTROL, Esc = ESC, Backspace = DEL, Home = CLR, End = COPY, F1-F9, F10 = F0, keypad 8/2/4/6 = joystick up/down/left/right, keypad 0 = fire 1, keypad 5 = fire 2",
     .reset_help = "Hold to press RESET: pulls BUS RESET (IC110 pin 2, expansion pin 40) to GND",
     .create = cpc_create,
     .destroy = cpc_destroy,
