@@ -344,11 +344,11 @@ def motherboard():
     net('RCNODE', 'R155.2', 'C198.1', 'R156.1', 'CR102.1', 'A103.3'); net(V5, 'R156.2', 'CR102.2'); net(GND, 'C198.2')
     net('RESETA', 'J101.X')
     part('J114', 'HDR4', 4, 'console switch header'); part('J115', 'CONN22', 22, 'to power supply')
-    for i, (sig, hp) in enumerate((('S2', 1), ('S1', 2), ('S0', 3), ('RNMI', 4))):
+    for i, (sig, hp) in enumerate((('RNMI', 1), ('S0', 4), ('S1', 3), ('S2', 2))):
         r = 'R%d' % (184 + i)
         part(r, 'R', 2, '100'); net(sig, r + '.1'); net('SW_' + sig, r + '.2', 'J114.%d' % hp)
         part('C%d' % (165 + i), 'C', 2, '.001uF'); net('SW_' + sig, 'C%d.1' % (165 + i)); net(GND, 'C%d.2' % (165 + i))
-    unsure('J114 pin order: the print nests the S2/S1/S0//RNMI wires so that /RNMI would be on pin 1 and S0, S1, S2 on 4, 3, 2 (the netlist has the reverse); beep check 10 (2026-11-27) found S2 on R184 on J114 pin 1, as the netlist has; pins 2 to 4 are still open.')
+    unsure('J114 pin order: measured on the owner board (beep check 10): ANTIC pin 6 (/RNMI) goes to R184 and J114 pin 1, and J114 pin 2 goes to R187, whose other end is on the J101 pin opposite 14 (S2). R185 / R186 on pins 4 and 3 (S0, S1) follow the print and are not measured.')
     sio = (('OCLK', 7), ('BCLK', 8), ('SID', 9), ('SOD', 10), ('CB1', 14), ('CA1', 12), ('CB2', 11))
     for i, (sig, jp) in enumerate(sio):
         r = 'R%d' % (168 + i)

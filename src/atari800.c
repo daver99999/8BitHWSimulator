@@ -21,7 +21,7 @@ static const conn_def_t at_conn_defs[] = {
     { "J115", "POWER / SIO", "1=-5V 17=+5V 18=+5V 19=+5V 21=+12V 15=GND 16=GND 22=GND 2=AUDIO" },
     { "J105", "SPEAKER", "1=SPEAKER+ 2=SPEAKER-" },
     { "J106", "KEYBOARD", "9=KEYCOM 6=KB0 1=KB1 4=KB2 7=KB3 2=KB4 8=KB5 3=KB6 5=KB7 16=KC0 15=KC1 12=KC2 17=KC3 10=KC4 14=KC5 11=KC6 13=KC7" },
-    { "J114", "CONSOLE SWITCHES", "1=OPTION 2=SELECT 3=START 4=RESET" },
+    { "J114", "CONSOLE SWITCHES", "1=RESET 2=OPTION 3=SELECT 4=START" },
     { "J110", "CONTROLLER 1", "1=UP 2=DOWN 3=LEFT 4=RIGHT 6=TRIGGER 7=+5V 8=GND" },
     { "J111", "CONTROLLER 2", "1=UP 2=DOWN 3=LEFT 4=RIGHT 6=TRIGGER 7=+5V 8=GND" },
     { "J112", "CONTROLLER 3", "1=UP 2=DOWN 3=LEFT 4=RIGHT 6=TRIGGER 7=+5V 8=GND" },
@@ -209,7 +209,7 @@ static void at_joins(board_t *b) {
             if ((z->km[row] >> col) & 1)
                 at_join_pins(b, board_pad_pin(b, sim_find_part(s, "J106"), at_kc_pin[row]), board_pad_pin(b, sim_find_part(s, "J106"), at_kb_pin[col]));
     if (z->km[8] & 1) at_join_pins(b, board_pad_pin(b, sim_find_part(s, "J106"), "9"), gnd);
-    static const char *const cons[3] = { "3", "2", "1" };           /* START, SELECT, OPTION */
+    static const char *const cons[3] = { "4", "3", "2" };           /* START, SELECT, OPTION (J114 pin order measured, check 10) */
     for (int i = 0; i < 3; i++)
         if (z->km[9 + i] & 1) at_join_pins(b, board_pad_pin(b, sim_find_part(s, "J114"), cons[i]), gnd);
 }
