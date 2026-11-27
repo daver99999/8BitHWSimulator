@@ -21,6 +21,7 @@ Why it matters: the owner reports the Atari works fine with Z302 pin 13 unconnec
 | Z301 pin 4 to Z302 pin 10 | BEEP (g = good) |
 | Z301 pin 5 to Z301 pin 7 (GND) | BEEP |
 | Z301 pin 6 to Z302 pin 13 | BEEP (owner: pin 6 goes to Z302 pin 13). So pin 13 is joined to Z301 pin 6, but not to F0, R310, +5 V, ground or edge X. What drives this wire is not known yet. |
+| Z302 pin 13 to any edge-connector pin | NO beep (owner, 2026-11-27) |
 
 ## 2. CPU board: 6502 RDY pin (open)
 The print labels two pins "7" (SYNC and RDY). On a real 6502 SYNC is pin 7 and RDY is pin 2. Beep 6502 (A303) pin 2 to ANTIC pin 15 (RDY) and to the lower end of R311.
