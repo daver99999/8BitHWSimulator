@@ -45,6 +45,9 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 21. IC107 pin 20 to pin 7 (LK2): N, not fitted.
 22. IC107 pin 21 to pin 7 (LK3): N, not fitted.
 23. IC107 pin 22 to pin 7 (LK4): N, not fitted. (All four links open; whether the pads exist on his board is not checked.)
+24. IC116 pin 12 to IC103 pin 20: G (ROMEN to ROM /CS).
+25. IC116 pin 12 to expansion pin 42: G.
+26. IC103 pin 22 to expansion pin 43: G (ROMDIS).
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
