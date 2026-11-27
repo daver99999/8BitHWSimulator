@@ -115,3 +115,10 @@ ROM image supplied by the owner (cpc464.rom, 32768 bytes, md5 a993f85b88ac4350cf
 42. IC107 pin 12 to CP001 pin D, IC107 pin 25 to CP001 pin E (tape).
 43. Q101/TR1 collector to CP001 pin H.
 44. Video: IC116 pin 36 to R125 and R126, then J101 pin 1.
+
+## Simulator (src/cpc464.c)
+`--machine cpc464`, or the Amstrad tab. Put the 32768-byte firmware in `roms/cpc464/cpc464.rom` (not in the repo). Boots to "Amstrad 64K Microcomputer (v1) ... BASIC 1.0 Ready"
+and answers `print 6*7` typed on the matrix (tests/cpc464/boot.c, keys.c, trace.c).
+Models: gate array IC116, 8255 IC107, AY IC102, ROM IC103, oscillator IC125 (the machine drives XTAL); the Z80, 6845, 74LS parts and 4164s are the simulator's own.
+The gate array's strobe timing inside each microsecond is this model's own and approximate (RAS/CAS/CCLK on a scope will not match a real board tick for tick).
+Netlist stand-ins that are not on the drawing: R600 (READY pull-up, 600 ohm, on the drawing) and R601 (INT pull-up, 1K, simulator's own, see the generator's UNSURE list).

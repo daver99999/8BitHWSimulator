@@ -116,8 +116,8 @@ net('KY10', 'J102.8'); net('KY7', 'J102.9')
 unsure('Keyboard connector: IOA7 (AY pin 7) feeds both CP002 pins 10 and 1; Y10 is shared with J102 pin 8 (COMMON) and Y7 with J102 pin 9 (COM 2). Taken from the trace of the drawing.')
 
 part('CP001', 'CONN', 8, 'tape port (A-H = 1-8)')
-net(V5, 'CP001.A', 'CP001.C'); net(GND, 'CP001.B'); net('WRDATA', 'CP001.D'); net('RDDATA', 'CP001.E'); net('SOUND', 'CP001.G'); net('MOTOR', 'CP001.H')
-part('Q101', 'NPN', 3, '2SC2120 motor switch'); net('MOTOR', 'Q101.C'); net(GND, 'Q101.E'); net('MOTORB1', 'Q101.B')
+net(V5, 'CP001.1', 'CP001.3'); net(GND, 'CP001.2'); net('WRDATA', 'CP001.4'); net('RDDATA', 'CP001.5'); net('SOUND', 'CP001.7'); net('MOTOR', 'CP001.8')   # A-H = 1-8
+part('Q101', 'NPN', 3, '2SC2120 motor switch'); net('MOTOR', 'Q101.2'); net(GND, 'Q101.1'); net('MOTORB1', 'Q101.3')   # pins 1 E, 2 C, 3 B (TO-92 flat side up: E C B)
 part('R113', 'R', 2, '1K'); net('MOTORB', 'R113.1'); net('MOTORB1', 'R113.2')
 
 # sound mixer J103 (stereo jack) and the EXP SOUND line
@@ -136,7 +136,7 @@ unsure('Sound mixer: channel C goes to the left output through R117, B to both t
 part('IC110', 'LS132', 14, '74LS132'); net(V5, 'IC110.14'); net(GND, 'IC110.7')
 part('IC112', 'LS32', 14, '74LS32'); net(V5, 'IC112.14'); net(GND, 'IC112.7')
 part('R101', 'R', 2, '22k'); net(V5, 'R101.1'); net('RC', 'R101.2')
-part('D101', 'D', 2, '1S2472'); net('RC', 'D101.A'); net(V5, 'D101.K')
+part('D101', 'D', 2, '1S2472'); net('RC', 'D101.1'); net(V5, 'D101.2')   # 1 anode, 2 cathode
 part('C102', 'CE', 2, '10V47'); net('RC', 'C102.1'); net(GND, 'C102.2')
 part('R102', 'R', 2, '2.2K'); net(V5, 'R102.1'); net('BUSRESET', 'R102.2')
 net('RC', 'IC110.1'); net('BUSRESET', 'IC110.2'); net('RESETH', 'IC110.3')
@@ -240,6 +240,10 @@ for i, p in enumerate([24, 25, 26, 27, 28, 29, 30, 31]):
     net('RD%d' % i, 'IC116.%d' % p)
 net('GA_B', 'IC116.32'); net('VCC2', 'IC116.33'); net('GA_G', 'IC116.34'); net(GND, 'IC116.35'); net('GA_R', 'IC116.36')
 net('RESET', 'IC116.37'); net(V5, 'IC116.38'); net('PHI', 'IC116.39'); net('CCLK', 'IC116.40')
+part('R600', 'R', 2, '600'); net(V5, 'R600.1'); net('READY', 'R600.2')
+unsure('READY pull-up: the drawing shows a 600 ohm resistor at IC116 pin 2 (open collector output) with no reference; called R600 here.')
+part('R601', 'R', 2, '1K'); net(V5, 'R601.1'); net('INT', 'R601.2')
+unsure('INT pull-up: IC116 pin 10 (/INT) is open collector and the Z80 /INT needs a pull-up; none is on the drawing as read. R601 (1K) is the simulator\'s stand-in, check by beep IC111 pin 16 to +5V through a resistor (meter reads about 1K).')
 part('R138', 'R', 2, '12'); net('VCC2', 'R138.1'); net(V5, 'R138.2')
 part('R139', 'R', 2, '12'); net('VCC2', 'R139.1'); net(V5, 'R139.2')
 part('C104', 'C', 2, '0.1'); net(V5, 'C104.1'); net(GND, 'C104.2')
@@ -258,7 +262,7 @@ net('OSC5', 'IC125.1', 'IC125.2', 'R143.2', 'C103.2'); net('OSC6', 'X101.2', 'C1
 unsure('Crystal oscillator: gate 1 (pins 9, 10 in, 8 out) feeds XTAL; gate 2 (12, 13 in, 11 out); gate 3 (4, 5 in, 6 out); gate 4 (1, 2 in, 3 out). Gate 2 output (11) goes to gate 1 inputs (9, 10) with C130, X101 / C103 as in the drawing. The 56 ohm resistor has no reference on the drawing (called RX1).')
 
 # 4 MHz clock driver: Q103 ZTX312L
-part('Q103', 'NPN', 3, 'ZTX312L clock driver'); net('PHI', 'Q103.B'); net(GND, 'Q103.E'); net('QC', 'Q103.C')
+part('Q103', 'NPN', 3, 'ZTX312L clock driver'); net('PHI', 'Q103.3'); net(GND, 'Q103.1'); net('QC', 'Q103.2')
 part('R140', 'R', 2, '100'); net(V5, 'R140.1'); net('QC', 'R140.2')
 part('R141', 'R', 2, '68'); net('QC', 'R141.1'); net('CLKPHI', 'R141.2')
 
@@ -271,7 +275,7 @@ part('R131', 'R', 2, '3.3K'); net('GA_R', 'R131.1'); net('LUMB', 'R131.2')
 part('R132', 'R', 2, '1K'); net('GA_G', 'R132.1'); net('LUMB', 'R132.2')
 part('R133', 'R', 2, '10K'); net('GA_B', 'R133.1'); net('LUMB', 'R133.2')
 part('R135', 'R', 2, '680'); net('LUMB', 'R135.1'); net('SYNC', 'R135.2')
-part('Q102', 'NPN', 3, '2SC1815 luminance'); net('LUMB', 'Q102.B'); net(V5, 'Q102.C'); net('LUME', 'Q102.E')
+part('Q102', 'NPN', 3, '2SC1815 luminance'); net('LUMB', 'Q102.3'); net(V5, 'Q102.2'); net('LUME', 'Q102.1')
 part('R134', 'R', 2, '100'); net('LUME', 'R134.1'); net('LUM', 'R134.2', 'J101.6')
 part('R136', 'R', 2, '220'); net('LUM', 'R136.1'); net(GND, 'R136.2')
 part('R137', 'R', 2, '220'); net('SYNC', 'R137.1'); net('J101_4', 'R137.2', 'J101.4')
