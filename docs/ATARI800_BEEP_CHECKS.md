@@ -79,7 +79,7 @@ PARKED: on J103 the decoder lines Z101 pin 3 and 4 arrive on pins T and R, not o
 
 Letter positions on the slots: U is opposite 18 and R is opposite 15 on this board (each letter sits one number above a plain A..Z count).
 
-Photos (owner, 2026-11-27): the slots on the motherboard, left to right, are J107 (personality), J104, J103, J102 and then the big J101 (CPU board). Tiny silkscreen letters are printed down the middle of each slot between the two rows of contacts. Z102 (SN74LS32N) sits above Z101 (DM74LS42N) with pin 1 at the top left of each chip, so Z102 pins 3 and 6 are on its left side, facing the cartridge slot J109. The traces from them could not be followed at this resolution.
+Photos (owner, 2026-11-27): the slots on the motherboard, left to right, are J107 (personality), J104, J103, J102 and then the big J101 (CPU board). The only letter printed on each slot is an A at the pin 1 end (owner); there are no letters down the middle, and my first reading of the photos was wrong. Z102 (SN74LS32N) sits above Z101 (DM74LS42N) with pin 1 at the top left of each chip, so Z102 pins 3 and 6 are on its left side, facing the cartridge slot J109. The traces from them could not be followed at this resolution.
 
 ## 5. Motherboard: Z102 gates and the cartridge RD4 / RD5 (in progress)
 Z102 is a 74LS32 (14 pin). Gate A: inputs pin 5 (from Z101 pin 5, S4) and pin 4 (RD4), output pin 6 (gated S4). Gate B: inputs pin 1 (Z101 pin 6, S5... see netlist) and pin 2 (RD5), output pin 3 (gated S5). The gated outputs go to J107 and to J102 and J103.
