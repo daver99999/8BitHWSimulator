@@ -22,7 +22,8 @@ typedef struct cpc464 {
     int p_cpu, p_ga, p_crtc, p_ppi, p_ay, p_rom, p_osc;
     int pin_clk, clk;
     bool in_reset;
-    uint8_t xtal;               /* level of the 16 MHz oscillator (stands in for X101 and the gates around it) */
+    uint8_t xtal;          /* level of the 16 MHz oscillator (stands in for X101 and the gates around it) */
+    uint8_t xtal_seen;     /* the level of the gate array's XTAL pin at the last step */
     int32_t cache_addr, cache_data;
     uint8_t rom[32768];         /* IC103: lower ROM (OS) in the first 16K, upper ROM (BASIC) in the second */
     bool rom_ok;

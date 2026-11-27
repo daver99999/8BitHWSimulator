@@ -679,7 +679,11 @@ static void cpc_step(board_t *b) {
     uint8_t x = (uint8_t)(!z->xtal);
     z->xtal = x;
     sim_mark_dirty(s, z->p_osc);
-    if (x) ga_tick(s, &s->parts[z->p_ga]);
+    sim_settle(s);
+    /* the gate array only counts the edges that reach its pin 8: no IC125, or an open or shorted XTAL leg, and the board has no clock */
+    int xp = pin_in(s, &s->parts[z->p_ga], 8);
+    if (xp && !z->xtal_seen) ga_tick(s, &s->parts[z->p_ga]);       /* a rising edge on the pin */
+    z->xtal_seen = (uint8_t)xp;
     sim_settle(s);
     int clk = sim_read(s, z->pin_clk);
     if (clk != z->clk) {
