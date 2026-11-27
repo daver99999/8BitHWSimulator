@@ -233,7 +233,8 @@ Read from the print at 200 dpi and added to the netlist: R130-R137 (1.8K) in ser
 | A101 pin 14 (P0) to R131 | BEEP (owner found R131 by beeping from pin 14) |
 | R131 far end to J110 pin 9 | BEEP |
 | A101 pin 15 (P1) to R130 | BEEP (R130) |
-| R130 far end to J110 pin 5 | not measured yet |
+| R130 far end to J110 pin 5 | BEEP. Jack 1 (J110) pot lines match the print. |
+| A101 pin 13 (P3) to the 1.8K resistors | not measured yet |
 
 ## 16. Personality board: delayed phase 2 and the EXSEL node
 The gate wiring was reread and matches the netlist. Two points are only from the drawing:
