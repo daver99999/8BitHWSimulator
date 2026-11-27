@@ -133,7 +133,7 @@ Beep A401 / A403 pin 20 to the edge pin for S7 (H) and pin 21 to A12 (pin 12); A
 | A403 pin 21 to edge pin 12 (A12) | BEEP |
 | A402 pin 21 to edge pin 12 (A12) | BEEP |
 | A402 pin 18 to Z401 pin 5 (A11) | BEEP |
-| A402 pin 20 to Z401 pin 4 (S6) | not measured yet |
+| A402 pin 20 to Z401 pin 4 (S6) | BEEP |
 | A401 pin 20 to A403 pin 20 (S7) | not measured yet |
 
 ## 9. 16K RAM board: which DRAM holds which bit (open)
