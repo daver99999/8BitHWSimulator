@@ -63,6 +63,7 @@ The netlist (and the print) puts the decoder outputs from Z101 on the slots like
 |---|---|
 | Z101 pin 1 to J102 pin 18 | NO beep (expected, J102 is not on Z101) |
 | Z101 pin 1 to J104 pin 18 | not measured yet (owner: Z101 pin 1 goes to pin 22 on J102, J103 and J104, all three RAM slots; that is different from my print) |
+| Z101 pin 2 to J104 pin 22 | NO beep |
 | Z101 pin 2 to J104 pin U | not measured yet |
 | Z101 pin 3 to J103 pin 18 | not measured yet |
 | Z101 pin 4 to J103 pin U | not measured yet |
