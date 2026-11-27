@@ -238,7 +238,8 @@ Read from the print at 200 dpi and added to the netlist: R130-R137 (1.8K) in ser
 | A101 pin 12 (P2) to the 1.8K resistors | R132. So R132 is P2 and R133 is P3; the netlist is changed (it had them the other way round). |
 | A101 pin 10 (P4) to the 1.8K resistors | R135 (as in the netlist) |
 | A101 pin 11 (P5) to the 1.8K resistors | R134 (as in the netlist) |
-| A101 pin 8 (P6) to the 1.8K resistors | not measured yet |
+| A101 pin 8 (P6) to the 1.8K resistors | R137 (as in the netlist). So P7 is R136 by elimination. |
+| R134 far end to J112 pin 9 or 5 (jack 3) | not measured yet |
 
 ## 16. Personality board: delayed phase 2 and the EXSEL node
 The gate wiring was reread and matches the netlist. Two points are only from the drawing:
