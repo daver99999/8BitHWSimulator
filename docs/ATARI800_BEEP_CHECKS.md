@@ -40,6 +40,7 @@ Why it matters: the owner reports the Atari works fine with Z302 pin 13 unconnec
 | Z301 pin 1 to 6502 (A303) pin 37 (PHI0) | NO beep (first try; the print says they are joined, so it needs a repeat or a scope reading) |
 | 6502 (A303) pin 37, scope | 1.79 MHz wave |
 | Z301 pin 1, scope | wave, frequency changing (what the design predicts: the gate stretches or stops the clock while ANTIC halts the CPU) |
+| 6502 (A303) pin 37, scope again | frequency moves around, like Z301 pin 1. Same signal, so the earlier "no beep" was a missed contact and the print is right: Z301 pin 1 drives the 6502 clock. |
 
 ## 2. CPU board: 6502 RDY pin (open)
 The print labels two pins "7" (SYNC and RDY). On a real 6502 SYNC is pin 7 and RDY is pin 2. Beep 6502 (A303) pin 2 to ANTIC pin 15 (RDY) and to the lower end of R311.
