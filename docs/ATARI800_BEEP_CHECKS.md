@@ -115,7 +115,8 @@ Details are listed in the generator output (`python3 tools/atari800_netlist.py`)
 | Z101 pin 12 to R103 (680) | BEEP |
 | R103 other end to J115 pin 15 (GND) | BEEP |
 | Z101 pin 15 (A13) to J101 pin 20 | BEEP |
-| Z101 pin 13 (A15) to J101 pin 24 | not measured yet |
+| Z101 pin 13 (A15) to J101 pin 24 | BEEP |
+| Z101 pin 14 (A14) to ANTIC (A302) A14 pin | not measured yet |
 
 ## 8. Personality board: ROM chip-select pins and the Ø2B edge pin (open)
 Beep A401 / A403 pin 20 to the edge pin for S7 (H) and pin 21 to A12 (pin 12); A402 pin 20 to S6 (M), 21 to A12, 18 to A11 (L). Find which edge pin carries Ø2B (the print shows 5, which is also A0).
