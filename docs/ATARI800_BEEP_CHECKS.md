@@ -119,7 +119,7 @@ Added after rereading the print at higher resolution. The four 100 ohm resistors
 | Check | Result |
 |---|---|
 | J101 pin R (S2) to J114 pin 1 | NO beep (owner typed "nbc", read as nc). So S2 is not on pin 1, as the higher-resolution reading says. |
-| J101 pin R (S2) to J114 pin 2 | not measured yet |
+| J101 pin R (S2) to J114 pin 2 | NO beep. Owner: none of the J114 pins beep to any J101 pin (so the 100 ohm resistors R184-R187 are probably in between, and a continuity test may not see through them). |
 
 ## 11. Video output, motor transistor, serial bus pull-ups (open)
 Netted from the print for continuity only (the simulator draws the picture from the GTIA model): the luminance mixer A103B-F, R179-R183, CR108, Q105, R189, R200-R206, C163, C164, C170, L103-L105, the chroma amplifier A104A/B with R196-R199, Q107 with R159 and L106, and the serial bus pull-ups and capacitors R129A-F, R157, R158A, C182-C188, C189. The unsure items in the generator output say what to check first: the order of R180-R183 on the A103 outputs (36K on pin 4, 18K on 10, 9.1K on 15, 4700 on 12), CR108's polarity, the A104B base pin, and which serial bus line each pull-up is on.
