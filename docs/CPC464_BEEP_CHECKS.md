@@ -48,6 +48,10 @@ Connectors: J101 video DIN, J102 joystick, J103 stereo jack, J104 DC jack, CP001
 24. IC116 pin 12 to IC103 pin 20: G (ROMEN to ROM /CS).
 25. IC116 pin 12 to expansion pin 42: G.
 26. IC103 pin 22 to expansion pin 43: G (ROMDIS).
+27. IC111 pin 24 to IC114 pin 11: first N, retest (30) G. First was a slip.
+28. IC111 pin 24 to IC116 pin 2: G.
+29. IC116 pin 2 to IC114 pin 11: G.
+30. IC111 pin 24 to IC114 pin 11: G. READY net confirmed: IC111.24, IC116.2, IC114.11.
 
 OPEN (superseded, see 16-18): where does IC106 pin 11 go? Not IC112 pin 11 (N), not +5V (N).
 Next beeps, one per message: IC106 pin 11 to IC112 pin 8; then to IC112 pin 3; then IC112 pin 12 / 13 to find which gate really drives it.
