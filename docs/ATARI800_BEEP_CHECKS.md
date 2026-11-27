@@ -138,7 +138,7 @@ Beep A401 / A403 pin 20 to the edge pin for S7 (H) and pin 21 to A12 (pin 12); A
 | Z403 pin 10 to R404 (1 ohm) | BEEP |
 | R404 far end (not on Z403 pin 10) to edge pin 5 | NO beep (as expected: the clock is on a different edge pin) |
 
-## 9. 16K RAM board: which DRAM holds which bit (in progress)
+## 9. 16K RAM board: which DRAM holds which bit (done on card 1; cards 2 and 3 not tested)
 The netlist puts D6 in Z505, D7 in Z506, D5 in Z507, D3 in Z508, D4 in Z509, D2 in Z510, D1 in Z511, D0 in Z512. Beep DRAM pin 2 (DIN) to the edge pin of its data bit.
 
 Owner has three RAM cards; the first one tested is called card 1 below. The owner did not say whether the chips are labelled Z505-Z512.
@@ -152,7 +152,7 @@ Owner has three RAM cards; the first one tested is called card 1 below. The owne
 | Z511 pin 2 to the edge pin opposite 1 (letter A, D1) | BEEP (owner: opposite pin 1, not pin 2: on this card letter A sits opposite 1) |
 | Z509 pin 2 to the edge pin opposite 2 (letter B, D4) | BEEP |
 | Z507 pin 2 to the edge pin opposite 3 (letter C, D5) | BEEP |
-| Z505 pin 2 to the edge pin opposite 4 (letter D, D6) | not measured yet |
+| Z505 pin 2 to the edge pin opposite 4 (letter D, D6) | BEEP. All eight data bits on card 1 match the netlist (D0 Z512, D1 Z511, D2 Z510, D3 Z508, D4 Z509, D5 Z507, D6 Z505, D7 Z506). |
 
 ## 10. Motherboard: console switch header J114 pin order (done)
 Added after rereading the print at higher resolution. The four 100 ohm resistors R184-R187 sit left to right over J114 pins 1, 4, 3, 2, and the four wires from the CPU slot (S2, S1, S0, /RNMI from the top down) nest without crossing, which puts /RNMI on pin 1, S0 on pin 4, S1 on pin 3 and S2 on pin 2. The netlist and the key map currently have S2 on 1, S1 on 2, S0 on 3 and /RNMI on 4. Beep J101 pin R (S2) to J114 pins 1-4 to settle it; the netlist and the key map change if it is not pin 1.
